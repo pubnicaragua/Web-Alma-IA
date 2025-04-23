@@ -64,8 +64,9 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center">
             <School className="h-6 w-6 text-primary mr-2" />
-            <h2 className="text-xl font-bold text-primary">
-              Alma<span className="text-pink-400">IA</span>
+            <h2 className="text-xl font-bold">
+              <span className="text-primary">Alma</span>
+              <span className="text-pink-400">IA</span>
             </h2>
           </div>
           <button

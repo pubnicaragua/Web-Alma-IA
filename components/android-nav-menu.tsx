@@ -61,8 +61,9 @@ export function AndroidNavMenu({ isOpen, onClose }: AndroidNavMenuProps) {
         <div className="flex items-center justify-between p-4 border-b bg-primary">
           <div className="flex items-center">
             <School className="h-6 w-6 text-white mr-2" />
-            <h2 className="text-xl font-bold text-white">
-              Alma<span className="text-pink-200">IA</span>
+            <h2 className="text-xl font-bold">
+              <span className="text-white">Alma</span>
+              <span className="text-pink-200">IA</span>
             </h2>
           </div>
           <button
