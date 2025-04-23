@@ -2,6 +2,7 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Badge } from "@/components/ui/badge"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface DataPoint {
   month: string
@@ -17,6 +18,8 @@ interface LineChartComparisonProps {
 }
 
 export function LineChartComparison({ title, data, selectedCourses, onToggleCourse }: LineChartComparisonProps) {
+  const isMobile = useIsMobile()
+
   return (
     <div className="bg-white rounded-lg p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
@@ -47,8 +50,8 @@ export function LineChartComparison({ title, data, selectedCourses, onToggleCour
         </div>
       </div>
 
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className={`h-64 ${isMobile ? "w-[calc(100vw-3rem)]" : ""} overflow-x-auto`}>
+        <ResponsiveContainer width={isMobile ? 600 : "100%"} height="100%">
           <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="month" />

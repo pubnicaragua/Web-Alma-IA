@@ -282,7 +282,14 @@ export default function StudentDetailPage() {
     <AppLayout>
       <div className="container mx-auto px-3 sm:px-6 py-8">
         {/* Información del estudiante */}
-        <StudentHeader student={student} />
+        <StudentHeader
+          student={{
+            name: student.name,
+            course: student.course,
+            status: student.status,
+            image: student.image,
+          }}
+        />
 
         {/* Pestañas */}
         <Tabs defaultValue="ficha" className="mb-6" onValueChange={setActiveTab}>

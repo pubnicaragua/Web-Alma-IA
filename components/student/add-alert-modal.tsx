@@ -3,13 +3,14 @@
 import type React from "react"
 
 import { useState } from "react"
-import { X } from "lucide-react"
+import { X, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { useModal } from "@/lib/modal-utils"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface AddAlertModalProps {
   onAddAlert: (alert: {
@@ -24,6 +25,7 @@ export function AddAlertModal({ onAddAlert }: AddAlertModalProps) {
   const [tipo, setTipo] = useState("")
   const [descripcion, setDescripcion] = useState("")
   const [fecha, setFecha] = useState("")
+  const isMobile = useIsMobile()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,21 +52,8 @@ export function AddAlertModal({ onAddAlert }: AddAlertModalProps) {
   return (
     <>
       <Button className="bg-blue-500 hover:bg-blue-600" onClick={onOpen}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="mr-2"
-        >
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-        Agregar alerta manual
+        <Plus className={isMobile ? "" : "mr-2"} size={16} />
+        {!isMobile && <span>Agregar alerta manual</span>}
       </Button>
 
       <Dialog open={isOpen} onOpenChange={onClose}>

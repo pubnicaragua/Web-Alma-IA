@@ -8,6 +8,7 @@ import { LineChartComparison } from "@/components/line-chart-comparison"
 import { Button } from "@/components/ui/button"
 import { Download } from "lucide-react"
 import { colors } from "@/lib/colors"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function ComparativePage() {
   // Estados para los filtros
@@ -118,6 +119,8 @@ export default function ComparativePage() {
     alert("Descargando comparación...")
     // Aquí iría la lógica para descargar la comparación
   }
+
+  const isMobile = useIsMobile()
 
   return (
     <AppLayout>
