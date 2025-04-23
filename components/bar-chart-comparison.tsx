@@ -1,6 +1,6 @@
 "use client"
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { Smile } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
@@ -76,11 +76,11 @@ export function BarChartComparison({ title, data, selectedEmotions, onToggleEmot
               labelFormatter={(name) => `${name}`}
               contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
             />
-            <Bar dataKey="value" fill="#8884d8" radius={[4, 4, 0, 0]}>
+            <Bar dataKey="value" radius={[4, 4, 0, 0]}>
               {chartData
                 .filter((emotion) => selectedEmotions.includes(emotion.name))
-                .map((entry, index) => (
-                  <Bar key={`bar-${index}`} dataKey="value" fill={entry.color} />
+                .map((entry) => (
+                  <Cell key={`cell-${entry.name}`} fill={entry.color} />
                 ))}
             </Bar>
           </BarChart>

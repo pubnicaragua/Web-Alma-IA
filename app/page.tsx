@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-// Asegúrate de que la importación de AppLayout sea correcta
 import { AppLayout } from "@/components/layout/app-layout"
 import { StatCard } from "@/components/stat-card"
-import { EmotionChart } from "@/components/emotion-chart"
+import { BarChartComparison } from "@/components/bar-chart-comparison"
 import { DonutChart } from "@/components/donut-chart"
 import { ImportantDates } from "@/components/important-dates"
 import { RecentAlerts } from "@/components/recent-alerts"
@@ -15,6 +14,39 @@ export default function Home() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [schoolName, setSchoolName] = useState("Colegio Santiago Apostol")
+  const [selectedEmotionsGeneral, setSelectedEmotionsGeneral] = useState<string[]>([
+    "Tristeza",
+    "Felicidad",
+    "Estrés",
+    "Ansiedad",
+    "Enojo",
+    "Otros",
+  ])
+  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([
+    "Tristeza",
+    "Felicidad",
+    "Estrés",
+    "Ansiedad",
+    "Enojo",
+    "Otros",
+  ])
+
+  // Funciones para manejar la selección de emociones
+  const handleToggleEmotionGeneral = (emotion: string) => {
+    if (selectedEmotionsGeneral.includes(emotion)) {
+      setSelectedEmotionsGeneral(selectedEmotionsGeneral.filter((e) => e !== emotion))
+    } else {
+      setSelectedEmotionsGeneral([...selectedEmotionsGeneral, emotion])
+    }
+  }
+
+  const handleToggleEmotion = (emotion: string) => {
+    if (selectedEmotions.includes(emotion)) {
+      setSelectedEmotions(selectedEmotions.filter((e) => e !== emotion))
+    } else {
+      setSelectedEmotions([...selectedEmotions, emotion])
+    }
+  }
 
   useEffect(() => {
     // Comprobar si el usuario está autenticado
@@ -100,12 +132,22 @@ export default function Home() {
 
   // Datos para el gráfico de emociones con valores fijos diferentes
   const emotionData = [
-    { label: "Tristeza", value: 1500, color: colors.chart.blue },
-    { label: "Felicidad", value: 3000, color: colors.chart.yellow },
-    { label: "Estrés", value: 1000, color: colors.chart.gray },
-    { label: "Ansias", value: 2500, color: colors.chart.orange },
-    { label: "Enojo", value: 800, color: colors.chart.red },
-    { label: "Otros", value: 2000, color: colors.chart.gray },
+    { name: "Tristeza", value: 1500, color: colors.chart.blue },
+    { name: "Felicidad", value: 3000, color: colors.chart.yellow },
+    { name: "Estrés", value: 1000, color: colors.chart.gray },
+    { name: "Ansiedad", value: 2500, color: colors.chart.orange },
+    { name: "Enojo", value: 800, color: colors.chart.red },
+    { name: "Otros", value: 2000, color: colors.chart.gray },
+  ]
+
+  // Datos para el gráfico de emociones general (con valores ligeramente diferentes)
+  const emotionDataGeneral = [
+    { name: "Tristeza", value: 2000, color: colors.chart.blue },
+    { name: "Felicidad", value: 4000, color: colors.chart.yellow },
+    { name: "Estrés", value: 1800, color: colors.chart.gray },
+    { name: "Ansiedad", value: 3200, color: colors.chart.orange },
+    { name: "Enojo", value: 1200, color: colors.chart.red },
+    { name: "Otros", value: 2800, color: colors.chart.gray },
   ]
 
   // Datos para el gráfico circular
@@ -192,12 +234,22 @@ export default function Home() {
 
         {/* Media emocional General */}
         <div className="mb-8">
-          <EmotionChart title="Media emocional General" data={emotionData} maxValue={5000} />
+          <BarChartComparison
+            title="Media emocional General"
+            data={emotionDataGeneral}
+            selectedEmotions={selectedEmotionsGeneral}
+            onToggleEmotion={handleToggleEmotionGeneral}
+          />
         </div>
 
         {/* Gráficos y datos */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <EmotionChart title="Emociones" data={emotionData} maxValue={5000} />
+          <BarChartComparison
+            title="Emociones"
+            data={emotionData}
+            selectedEmotions={selectedEmotions}
+            onToggleEmotion={handleToggleEmotion}
+          />
           <DonutChart data={donutData} />
         </div>
 
