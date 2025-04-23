@@ -166,7 +166,7 @@ export default function QuestionsPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-3 sm:px-6 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Historial de preguntas cargadas</h2>
           <div className="flex justify-end">

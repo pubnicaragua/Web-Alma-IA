@@ -41,15 +41,15 @@ export default function ProfilePage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-3 sm:px-6 py-8">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-32 h-32 rounded-full overflow-hidden mb-4">
+          <div className="w-32 h-32 rounded-full overflow-hidden mb-4 flex-shrink-0">
             <Image
               src="/confident-businessman.png"
               alt={userData.name}
               width={128}
               height={128}
-              className="object-cover"
+              className="w-full h-full object-cover"
             />
           </div>
           <h1 className="text-3xl font-bold text-gray-800">{userData.name}</h1>

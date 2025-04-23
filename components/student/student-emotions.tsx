@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
+import { Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 interface EmotionData {
   name: string
@@ -43,7 +44,7 @@ export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps
       <h3 className="text-xl font-semibold text-gray-800 mb-6">Registro emocional del alumno</h3>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6">
           <div className="flex items-center mb-4">
             <span className="text-2xl mr-2">😊</span>
             <h4 className="text-lg font-medium">Emociones</h4>
@@ -66,42 +67,29 @@ export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps
             ))}
           </div>
 
-          <div className="h-64 relative">
-            {/* Escala vertical */}
-            <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-gray-500">
-              <span>20</span>
-              <span>10</span>
-              <span>05</span>
-              <span>01</span>
-            </div>
-
-            {/* Gráfico de barras */}
-            <div className="flex items-end h-full pl-8 gap-2 overflow-x-auto min-w-[300px]">
-              {chartData
-                .filter((emotion) => selectedEmotions.includes(emotion.name))
-                .map((emotion, index) => {
-                  // Calcular la altura como porcentaje del valor máximo, con un mínimo de 5%
-                  const heightPercentage = Math.max((emotion.value / 20) * 100, 5)
-
-                  return (
-                    <div key={index} className="flex flex-col items-center flex-1 min-w-0">
-                      <div
-                        className="w-full rounded-t-md"
-                        style={{
-                          backgroundColor: emotion.color,
-                          height: `${heightPercentage}%`,
-                          minHeight: "20px",
-                        }}
-                      />
-                      <span className="text-xs text-gray-500 mt-2 truncate w-full text-center">{emotion.name}</span>
-                    </div>
-                  )
-                })}
-            </div>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData.filter((emotion) => selectedEmotions.includes(emotion.name))}
+                margin={{ top: 5, right: 10, left: 0, bottom: 20 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
+                <YAxis hide={true} />
+                <Tooltip formatter={(value) => [`${value}`, "Valor"]} labelFormatter={(name) => `${name}`} />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {chartData
+                    .filter((emotion) => selectedEmotions.includes(emotion.name))
+                    .map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-lg font-medium">Comparativa</h4>
             <div className="flex items-center gap-4 text-xs">

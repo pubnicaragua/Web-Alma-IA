@@ -92,7 +92,7 @@ export default function SelectSchoolPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Header toggleSidebar={toggleSidebar} />
-      <div className="flex-1 px-6 py-8">
+      <div className="flex-1 px-3 sm:px-6 py-8">
         <div className="container mx-auto">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Seleccionar colegio</h2>
 

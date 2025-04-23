@@ -80,7 +80,9 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
 
         {/* Contenido del sidebar */}
         <div className="flex-1 overflow-y-auto">
-          <NavigationMenu onItemClick={onClose} />
+          <div className="px-2">
+            <NavigationMenu onItemClick={onClose} />
+          </div>
         </div>
 
         {/* Footer del sidebar con información del usuario */}

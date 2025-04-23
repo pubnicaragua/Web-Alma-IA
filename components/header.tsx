@@ -47,7 +47,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
       </div>
 
       {/* Contenido del header */}
-      <div className="relative z-10 w-full h-full py-4 px-6 flex items-center justify-between">
+      <div className="relative z-10 w-full h-full py-4 px-3 sm:px-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           {/* Botón de hamburguesa para móviles */}
           {toggleSidebar && (
@@ -96,7 +96,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center space-x-3 focus:outline-none">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/30">
+                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/30 flex-shrink-0">
                   <Image
                     src="/confident-businessman.png"
                     alt="Perfil de usuario"

@@ -35,7 +35,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </aside>
 
         {/* Contenido principal */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-2 md:p-6">{children}</main>
       </div>
 
       {/* Menú para Android (solo en dispositivos móviles) */}

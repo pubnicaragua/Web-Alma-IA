@@ -58,6 +58,7 @@ interface Student {
     apoderados: Contact[]
     antecedentesClinicosContactos: Contact[]
     entrevistaFamiliarContactos: Contact[]
+    entrevistaFamiliarContactos: Contact[]
   }
   alerts: Alert[]
   reports: Report[]
@@ -256,7 +257,7 @@ export default function StudentDetailPage() {
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-3 sm:px-6 py-8">
           <div className="flex justify-center items-center h-64">
             <p className="text-xl text-gray-500">Cargando información del alumno...</p>
           </div>
@@ -268,7 +269,7 @@ export default function StudentDetailPage() {
   if (!student) {
     return (
       <AppLayout>
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-3 sm:px-6 py-8">
           <div className="flex justify-center items-center h-64">
             <p className="text-xl text-gray-500">No se encontró información del alumno</p>
           </div>
@@ -279,7 +280,7 @@ export default function StudentDetailPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-3 sm:px-6 py-8">
         {/* Información del estudiante */}
         <StudentHeader student={student} />
 

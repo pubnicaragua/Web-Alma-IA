@@ -164,13 +164,13 @@ export default function TeachersPage() {
             className="flex items-center space-x-3 cursor-pointer hover:text-blue-500"
             onClick={() => handleTeacherClick(teacher)}
           >
-            <div className="w-8 h-8 rounded-full overflow-hidden">
+            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
               <Image
                 src={teacher.image || "/placeholder.svg"}
                 alt={teacher.name}
                 width={32}
                 height={32}
-                className="object-cover"
+                className="w-full h-full object-cover"
               />
             </div>
             <span>{teacher.name}</span>
@@ -232,7 +232,7 @@ export default function TeachersPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-3 sm:px-6 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Docentes</h2>
           <div className="flex justify-end">

@@ -140,7 +140,7 @@ export default function TeacherDetailPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-3 sm:px-6 py-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
             <div className="relative w-24 h-24 rounded-full overflow-hidden mr-6 bg-gray-200 flex-shrink-0">

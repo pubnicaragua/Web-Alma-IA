@@ -166,7 +166,7 @@ export default function AlertDetailPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-3 sm:px-6 py-8">
         {/* Información del alumno */}
         {alert.student && (
           <div className="flex items-center mb-6">

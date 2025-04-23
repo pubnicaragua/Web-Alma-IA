@@ -141,13 +141,13 @@ export default function StudentsPage() {
             className="flex items-center space-x-3 cursor-pointer hover:text-blue-500"
             onClick={() => handleStudentClick(student)}
           >
-            <div className="w-8 h-8 rounded-full overflow-hidden">
+            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
               <Image
                 src={student.image || "/placeholder.svg"}
                 alt={student.name}
                 width={32}
                 height={32}
-                className="object-cover"
+                className="w-full h-full object-cover"
               />
             </div>
             <span>{student.name}</span>
@@ -162,7 +162,7 @@ export default function StudentsPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-3 sm:px-6 py-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Alumnos</h2>
 
         {/* Filtros */}

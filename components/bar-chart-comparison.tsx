@@ -29,7 +29,7 @@ export function BarChartComparison({ title, data, selectedEmotions, onToggleEmot
   ]
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm">
+    <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm">
       <div className="flex items-center mb-4">
         <Smile className="mr-2 text-gray-700" />
         <h3 className="font-medium text-gray-800">{title}</h3>

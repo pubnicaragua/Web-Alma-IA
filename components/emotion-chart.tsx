@@ -41,7 +41,7 @@ export function EmotionChart({ title, data, maxValue }: EmotionChartProps) {
       : fixedData
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm">
+    <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           {title === "Media emocional General" ? <Smile className="text-gray-700" /> : null}

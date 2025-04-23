@@ -64,7 +64,7 @@ export default function QuestionDetailPage() {
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-3 sm:px-6 py-8">
           <div className="flex justify-center items-center h-64">
             <p className="text-xl text-gray-500">Cargando información de la pregunta...</p>
           </div>
@@ -76,7 +76,7 @@ export default function QuestionDetailPage() {
   if (!question) {
     return (
       <AppLayout>
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-3 sm:px-6 py-8">
           <div className="flex justify-center items-center h-64">
             <p className="text-xl text-gray-500">No se encontró información de la pregunta</p>
           </div>
@@ -87,7 +87,7 @@ export default function QuestionDetailPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-3 sm:px-6 py-8">
         <div className="flex justify-between items-center mb-8">
           <button
             onClick={handleGoBack}

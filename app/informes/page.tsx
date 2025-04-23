@@ -167,7 +167,7 @@ export default function ReportsPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-3 sm:px-6 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Informes</h2>
           <Button className="bg-blue-500 hover:bg-blue-600" onClick={handleGenerateReport}>
