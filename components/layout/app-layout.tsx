@@ -2,10 +2,12 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Header } from "@/components/header"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 import { DesktopSidebar } from "@/components/desktop-sidebar"
+import { AndroidNavMenu } from "@/components/android-nav-menu"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -13,31 +15,14 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-
-  // Detectar si estamos en un dispositivo móvil
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    // Comprobar al cargar
-    checkIfMobile()
-
-    // Comprobar al cambiar el tamaño de la ventana
-    window.addEventListener("resize", checkIfMobile)
-
-    return () => {
-      window.removeEventListener("resize", checkIfMobile)
-    }
-  }, [])
+  const isMobile = useIsMobile()
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-white">
       {/* Header */}
       <Header toggleSidebar={toggleMobileMenu} />
 
@@ -45,12 +30,16 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Sidebar para escritorio (siempre visible en md y superior) */}
         <DesktopSidebar className="hidden md:block" />
 
-        {/* Sidebar para móvil (visible solo cuando está abierto) */}
-        <MobileSidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
-
         {/* Contenido principal */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
+
+      {/* Menú para Android (solo en dispositivos móviles) */}
+      {isMobile ? (
+        <AndroidNavMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      ) : (
+        <MobileSidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      )}
     </div>
   )
 }

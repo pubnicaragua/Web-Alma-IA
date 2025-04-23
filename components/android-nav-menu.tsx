@@ -6,26 +6,26 @@ import Link from "next/link"
 import { Home, Users, Bell, BarChart2, FileText, User, Settings, ChevronDown, School, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface MobileSidebarProps {
+interface AndroidNavMenuProps {
   isOpen: boolean
   onClose: () => void
 }
 
-export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
+export function AndroidNavMenu({ isOpen, onClose }: AndroidNavMenuProps) {
   const pathname = usePathname()
-  const sidebarRef = React.useRef<HTMLDivElement>(null)
+  const menuRef = React.useRef<HTMLDivElement>(null)
 
-  // Cerrar el sidebar cuando cambia la ruta
+  // Cerrar el menú cuando cambia la ruta
   React.useEffect(() => {
     if (isOpen && pathname) {
       onClose()
     }
   }, [pathname, isOpen, onClose])
 
-  // Cerrar el sidebar cuando se hace clic fuera de él
+  // Cerrar el menú cuando se hace clic fuera de él
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node) && isOpen) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node) && isOpen) {
         onClose()
       }
     }
@@ -36,7 +36,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     }
   }, [isOpen, onClose])
 
-  // Bloquear el scroll cuando el sidebar está abierto
+  // Bloquear el scroll cuando el menú está abierto
   React.useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden"
@@ -62,48 +62,49 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     { name: "Perfil", href: "/perfil", icon: User },
   ]
 
+  if (!isOpen) return null
+
   return (
-    <>
-      {/* Overlay */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Overlay oscuro */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
       />
 
-      {/* Sidebar */}
+      {/* Menú de navegación */}
       <div
-        ref={sidebarRef}
-        className={`fixed inset-y-0 right-0 z-50 w-72 bg-white shadow-xl transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        ref={menuRef}
+        className="relative w-[85%] max-w-[320px] bg-white rounded-xl shadow-2xl overflow-hidden transform transition-all duration-300 ease-out"
+        style={{
+          animation: isOpen ? "scaleIn 0.2s ease-out forwards" : "none",
+        }}
       >
-        {/* Header del sidebar */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <Link href="/" className="flex items-center">
-            <School className="h-6 w-6 text-primary mr-2" />
-            <h2 className="text-xl font-bold text-primary">Alma IA</h2>
-          </Link>
+        {/* Header del menú */}
+        <div className="flex items-center justify-between p-4 border-b bg-primary">
+          <div className="flex items-center">
+            <School className="h-6 w-6 text-white mr-2" />
+            <h2 className="text-xl font-bold text-white">Alma IA</h2>
+          </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-gray-100 focus:outline-none"
+            className="p-1 rounded-full text-white hover:bg-white/20 focus:outline-none"
             aria-label="Cerrar menú"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Contenido del sidebar */}
-        <div className="flex-1 overflow-y-auto p-4">
+        {/* Contenido del menú */}
+        <div className="max-h-[70vh] overflow-y-auto p-2">
           <nav>
-            <ul className="space-y-2">
+            <ul className="space-y-1">
               {menuItems.map((item) => (
                 <li key={item.name}>
                   <Link
                     href={item.href}
                     className={cn(
-                      "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      "flex items-center rounded-md px-4 py-3 text-sm font-medium transition-colors",
                       isActive(item.href) ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100",
                     )}
                     onClick={onClose}
@@ -119,7 +120,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                 <details className={cn(pathname?.startsWith("/configuracion") && "open")}>
                   <summary
                     className={cn(
-                      "flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors list-none",
+                      "flex w-full cursor-pointer items-center justify-between rounded-md px-4 py-3 text-sm font-medium transition-colors list-none",
                       pathname?.startsWith("/configuracion")
                         ? "bg-primary text-white"
                         : "text-gray-700 hover:bg-gray-100",
@@ -156,7 +157,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                 <details className={cn(pathname?.startsWith("/administrativo") && "open")}>
                   <summary
                     className={cn(
-                      "flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors list-none",
+                      "flex w-full cursor-pointer items-center justify-between rounded-md px-4 py-3 text-sm font-medium transition-colors list-none",
                       pathname?.startsWith("/administrativo")
                         ? "bg-primary text-white"
                         : "text-gray-700 hover:bg-gray-100",
@@ -191,10 +192,10 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
           </nav>
         </div>
 
-        {/* Footer del sidebar */}
-        <div className="border-t p-4">
+        {/* Footer del menú */}
+        <div className="border-t p-4 bg-gray-50">
           <div className="flex items-center">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
+            <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white">
               <User className="h-5 w-5" />
             </div>
             <div className="ml-3">
@@ -204,6 +205,6 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }

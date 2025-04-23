@@ -17,6 +17,29 @@ interface EmotionChartProps {
 export function EmotionChart({ title, data, maxValue }: EmotionChartProps) {
   const [isOpen, setIsOpen] = useState(false)
 
+  // Valores fijos para las barras, diferentes para cada emoción
+  const fixedData = [
+    { label: "Tristeza", value: 1500, color: "#78b6ff" },
+    { label: "Felicidad", value: 3000, color: "#ffd166" },
+    { label: "Estrés", value: 1000, color: "#6c757d" },
+    { label: "Ansias", value: 2500, color: "#f4a261" },
+    { label: "Enojo", value: 800, color: "#e63946" },
+    { label: "Otros", value: 2000, color: "#6c757d" },
+  ]
+
+  // Usar los datos fijos en lugar de los datos pasados como prop
+  const chartData =
+    title === "Media emocional General"
+      ? [
+          { label: "Tristeza", value: 2000, color: "#78b6ff" },
+          { label: "Felicidad", value: 4000, color: "#ffd166" },
+          { label: "Estrés", value: 1800, color: "#6c757d" },
+          { label: "Ansias", value: 3200, color: "#f4a261" },
+          { label: "Enojo", value: 1200, color: "#e63946" },
+          { label: "Otros", value: 2800, color: "#6c757d" },
+        ]
+      : fixedData
+
   return (
     <div className="bg-white rounded-lg p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">
@@ -30,7 +53,7 @@ export function EmotionChart({ title, data, maxValue }: EmotionChartProps) {
       </div>
 
       {title === "Media emocional General" && (
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 flex-wrap">
           {["A", "B", "C", "D", "E", "F"].map((letter) => (
             <div
               key={letter}
@@ -86,20 +109,25 @@ export function EmotionChart({ title, data, maxValue }: EmotionChartProps) {
         )}
       </div>
 
-      <div className="mt-4 flex items-end h-64 gap-4">
-        {data.map((item, index) => (
-          <div key={index} className="flex flex-col items-center flex-1">
-            <div
-              className="w-full rounded-md"
-              style={{
-                backgroundColor: item.color,
-                height: `${(item.value / maxValue) * 100}%`,
-                minHeight: "20px",
-              }}
-            />
-            <span className="text-xs text-gray-500 mt-2">{item.label}</span>
-          </div>
-        ))}
+      <div className="mt-4 flex items-end h-64 gap-2 overflow-hidden">
+        {chartData.map((item, index) => {
+          // Calcular la altura como porcentaje del valor máximo, con un mínimo de 20px
+          const heightPercentage = Math.max((item.value / maxValue) * 100, 5)
+
+          return (
+            <div key={index} className="flex flex-col items-center flex-1 min-w-0">
+              <div
+                className="w-full rounded-md"
+                style={{
+                  backgroundColor: item.color,
+                  height: `${heightPercentage}%`,
+                  minHeight: "20px",
+                }}
+              />
+              <span className="text-xs text-gray-500 mt-2 truncate w-full text-center">{item.label}</span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

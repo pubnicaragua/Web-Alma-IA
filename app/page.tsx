@@ -98,14 +98,14 @@ export default function Home() {
     },
   ]
 
-  // Datos para el gráfico de emociones
+  // Datos para el gráfico de emociones con valores fijos diferentes
   const emotionData = [
     { label: "Tristeza", value: 1500, color: colors.chart.blue },
     { label: "Felicidad", value: 3000, color: colors.chart.yellow },
-    { label: "Estrés", value: 3000, color: colors.chart.gray },
-    { label: "Ansias", value: 4000, color: colors.chart.orange },
-    { label: "Enojo", value: 1200, color: colors.chart.red },
-    { label: "Otros", value: 3500, color: colors.chart.gray },
+    { label: "Estrés", value: 1000, color: colors.chart.gray },
+    { label: "Ansias", value: 2500, color: colors.chart.orange },
+    { label: "Enojo", value: 800, color: colors.chart.red },
+    { label: "Otros", value: 2000, color: colors.chart.gray },
   ]
 
   // Datos para el gráfico circular

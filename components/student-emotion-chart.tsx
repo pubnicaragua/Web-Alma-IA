@@ -63,22 +63,27 @@ export function StudentEmotionChart({ emotionData, radarData }: StudentEmotionCh
           </div>
 
           {/* Gráfico de barras */}
-          <div className="flex items-end h-full pl-8">
+          <div className="flex items-end h-full pl-8 gap-2 overflow-hidden">
             {emotionData
               .filter((emotion) => selectedEmotions.includes(emotion.name))
-              .map((emotion, index) => (
-                <div key={index} className="flex flex-col items-center flex-1">
-                  <div
-                    className="w-full rounded-t-md"
-                    style={{
-                      backgroundColor: emotion.color,
-                      height: `${(emotion.value / 20) * 100}%`,
-                      minHeight: "20px",
-                    }}
-                  />
-                  <span className="text-xs text-gray-500 mt-2">{emotion.name}</span>
-                </div>
-              ))}
+              .map((emotion, index) => {
+                // Calcular la altura como porcentaje del valor máximo, con un mínimo de 5%
+                const heightPercentage = Math.max((emotion.value / 20) * 100, 5)
+
+                return (
+                  <div key={index} className="flex flex-col items-center flex-1 min-w-0">
+                    <div
+                      className="w-full rounded-t-md"
+                      style={{
+                        backgroundColor: emotion.color,
+                        height: `${heightPercentage}%`,
+                        minHeight: "20px",
+                      }}
+                    />
+                    <span className="text-xs text-gray-500 mt-2 truncate w-full text-center">{emotion.name}</span>
+                  </div>
+                )
+              })}
           </div>
         </div>
       </div>
@@ -140,16 +145,6 @@ export function StudentEmotionChart({ emotionData, radarData }: StudentEmotionCh
             </text>
             <text x="5" y="75" textAnchor="end" fontSize="10" fill="#333">
               Ansiosa
-            </text>
-
-            {/* Leyenda */}
-            <circle cx="40" cy="30" r="4" fill="rgba(66, 153, 255, 0.5)" stroke="#4299ff" />
-            <text x="50" y="33" fontSize="8" fill="#333">
-              Alumno
-            </text>
-            <circle cx="100" cy="30" r="4" fill="rgba(128, 128, 128, 0.3)" stroke="#888888" strokeDasharray="5,3" />
-            <text x="110" y="33" fontSize="8" fill="#333">
-              Promedio
             </text>
           </svg>
         </div>

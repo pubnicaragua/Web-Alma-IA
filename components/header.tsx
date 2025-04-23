@@ -34,22 +34,15 @@ export function Header({ toggleSidebar }: HeaderProps) {
   }
 
   return (
-    <div className="relative w-full">
-      {/* Imagen de fondo del header */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-        <Image src="/header-bg.jpeg" alt="Header background" fill style={{ objectFit: "cover" }} />
-        {/* Overlay para mejorar la legibilidad del texto */}
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-      </div>
-
+    <div className="w-full bg-primary">
       {/* Contenido del header */}
-      <div className="relative z-10 w-full py-4 px-6 flex items-center justify-between">
+      <div className="w-full py-4 px-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           {/* Botón de hamburguesa para móviles */}
           {toggleSidebar && (
             <button
-              onClick={() => toggleSidebar()}
-              className="text-white block focus:outline-none"
+              onClick={toggleSidebar}
+              className="text-white block md:hidden focus:outline-none"
               aria-label="Toggle navigation menu"
               type="button"
             >
@@ -86,8 +79,14 @@ export function Header({ toggleSidebar }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden">
-            <Image src="/chilean-flag-waving.png" alt="Bandera de Chile" width={32} height={32} />
+          <div className="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden bg-white/10">
+            <Image
+              src="/chilean-flag-waving.png"
+              alt="Bandera de Chile"
+              width={32}
+              height={32}
+              className="w-full h-full object-cover"
+            />
           </div>
           <Bell className="text-white h-5 w-5 hidden sm:block" />
           <Mail className="text-white h-5 w-5 hidden sm:block" />
@@ -95,13 +94,13 @@ export function Header({ toggleSidebar }: HeaderProps) {
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center space-x-3 focus:outline-none">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full overflow-hidden">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10">
                   <Image
                     src="/confident-businessman.png"
                     alt="Perfil de usuario"
                     width={40}
                     height={40}
-                    className="object-cover"
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="text-white text-right hidden sm:block">

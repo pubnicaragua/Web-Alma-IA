@@ -90,7 +90,7 @@ export default function SelectSchoolPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-white">
       <Header toggleSidebar={toggleSidebar} />
       <div className="flex-1 px-6 py-8">
         <div className="container mx-auto">

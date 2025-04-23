@@ -20,6 +20,16 @@ interface StudentEmotionsProps {
 export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps) {
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>(emotionData.map((e) => e.name))
 
+  // Valores fijos para las barras, diferentes para cada emoción
+  const chartData = [
+    { name: "Tristeza", value: 5, color: "#78b6ff" },
+    { name: "Felicidad", value: 18, color: "#ffd166" },
+    { name: "Estrés", value: 10, color: "#6c757d" },
+    { name: "Ansiedad", value: 20, color: "#f4a261" },
+    { name: "Enojo", value: 5, color: "#e63946" },
+    { name: "Otros", value: 15, color: "#6c757d" },
+  ]
+
   const toggleEmotion = (emotion: string) => {
     if (selectedEmotions.includes(emotion)) {
       setSelectedEmotions(selectedEmotions.filter((e) => e !== emotion))
@@ -40,7 +50,7 @@ export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps
           </div>
 
           <div className="flex flex-wrap gap-2 mb-6">
-            {emotionData.map((emotion, index) => (
+            {chartData.map((emotion, index) => (
               <Badge
                 key={index}
                 variant={selectedEmotions.includes(emotion.name) ? "default" : "outline"}
@@ -66,22 +76,27 @@ export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps
             </div>
 
             {/* Gráfico de barras */}
-            <div className="flex items-end h-full pl-8">
-              {emotionData
+            <div className="flex items-end h-full pl-8 gap-2 overflow-hidden">
+              {chartData
                 .filter((emotion) => selectedEmotions.includes(emotion.name))
-                .map((emotion, index) => (
-                  <div key={index} className="flex flex-col items-center flex-1">
-                    <div
-                      className="w-full rounded-t-md"
-                      style={{
-                        backgroundColor: emotion.color,
-                        height: `${(emotion.value / 20) * 100}%`,
-                        minHeight: "20px",
-                      }}
-                    />
-                    <span className="text-xs text-gray-500 mt-2">{emotion.name}</span>
-                  </div>
-                ))}
+                .map((emotion, index) => {
+                  // Calcular la altura como porcentaje del valor máximo, con un mínimo de 5%
+                  const heightPercentage = Math.max((emotion.value / 20) * 100, 5)
+
+                  return (
+                    <div key={index} className="flex flex-col items-center flex-1 min-w-0">
+                      <div
+                        className="w-full rounded-t-md"
+                        style={{
+                          backgroundColor: emotion.color,
+                          height: `${heightPercentage}%`,
+                          minHeight: "20px",
+                        }}
+                      />
+                      <span className="text-xs text-gray-500 mt-2 truncate w-full text-center">{emotion.name}</span>
+                    </div>
+                  )
+                })}
             </div>
           </div>
         </div>

@@ -18,6 +18,16 @@ interface BarChartComparisonProps {
 }
 
 export function BarChartComparison({ title, data, selectedEmotions, onToggleEmotion }: BarChartComparisonProps) {
+  // Valores fijos para las barras, diferentes para cada emoción
+  const chartData = [
+    { name: "Tristeza", value: 1500, color: "#78b6ff" },
+    { name: "Felicidad", value: 3000, color: "#ffd166" },
+    { name: "Estrés", value: 1000, color: "#6c757d" },
+    { name: "Ansiedad", value: 2500, color: "#f4a261" },
+    { name: "Enojo", value: 800, color: "#e63946" },
+    { name: "Otros", value: 2000, color: "#6c757d" },
+  ]
+
   return (
     <div className="bg-white rounded-lg p-6 shadow-sm">
       <div className="flex items-center mb-4">
@@ -26,7 +36,7 @@ export function BarChartComparison({ title, data, selectedEmotions, onToggleEmot
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        {data.map((emotion) => (
+        {chartData.map((emotion) => (
           <Badge
             key={emotion.name}
             variant={selectedEmotions.includes(emotion.name) ? "default" : "outline"}
@@ -50,11 +60,16 @@ export function BarChartComparison({ title, data, selectedEmotions, onToggleEmot
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={data.filter((emotion) => selectedEmotions.includes(emotion.name))}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            data={chartData.filter((emotion) => selectedEmotions.includes(emotion.name))}
+            margin={{ top: 5, right: 10, left: 10, bottom: 20 }}
+            maxBarSize={50}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="name" />
+            <XAxis
+              dataKey="name"
+              tick={{ fontSize: 12 }}
+              tickFormatter={(value) => (value.length > 6 ? `${value.substring(0, 6)}...` : value)}
+            />
             <YAxis />
             <Tooltip
               formatter={(value) => [`${value}`, "Cantidad"]}
@@ -62,7 +77,7 @@ export function BarChartComparison({ title, data, selectedEmotions, onToggleEmot
               contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
             />
             <Bar dataKey="value" fill="#8884d8" radius={[4, 4, 0, 0]}>
-              {data
+              {chartData
                 .filter((emotion) => selectedEmotions.includes(emotion.name))
                 .map((entry, index) => (
                   <Bar key={`bar-${index}`} dataKey="value" fill={entry.color} />

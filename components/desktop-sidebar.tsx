@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Users, Bell, BarChart2, FileText, User, Settings, ChevronDown, ChevronRight, School } from "lucide-react"
+import Link from "next/link"
+import { Home, Users, Bell, BarChart2, FileText, User, Settings, ChevronDown, School } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface DesktopSidebarProps {
@@ -12,8 +11,6 @@ interface DesktopSidebarProps {
 
 export function DesktopSidebar({ className }: DesktopSidebarProps) {
   const pathname = usePathname()
-  const [settingsOpen, setSettingsOpen] = useState(false)
-  const [adminOpen, setAdminOpen] = useState(false)
 
   const isActive = (path: string) => {
     if (path === "/") return pathname === path
@@ -57,23 +54,19 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
 
           {/* Settings Submenu */}
           <li>
-            <button
-              onClick={() => setSettingsOpen(!settingsOpen)}
-              className={cn(
-                "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                settingsOpen || pathname?.startsWith("/configuracion")
-                  ? "bg-primary text-white"
-                  : "text-gray-700 hover:bg-gray-100",
-              )}
-            >
-              <div className="flex items-center">
-                <Settings className="mr-3 h-5 w-5" />
-                Configuración
-              </div>
-              {settingsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            </button>
-
-            {settingsOpen && (
+            <details className={cn(pathname?.startsWith("/configuracion") && "open")}>
+              <summary
+                className={cn(
+                  "flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors list-none",
+                  pathname?.startsWith("/configuracion") ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100",
+                )}
+              >
+                <div className="flex items-center">
+                  <Settings className="mr-3 h-5 w-5" />
+                  Configuración
+                </div>
+                <ChevronDown className="h-4 w-4 transition-transform ui-open:rotate-180" />
+              </summary>
               <ul className="mt-1 space-y-1 pl-10">
                 <li>
                   <Link
@@ -90,28 +83,24 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
                   </Link>
                 </li>
               </ul>
-            )}
+            </details>
           </li>
 
           {/* Administrative Submenu */}
           <li>
-            <button
-              onClick={() => setAdminOpen(!adminOpen)}
-              className={cn(
-                "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                adminOpen || pathname?.startsWith("/administrativo")
-                  ? "bg-primary text-white"
-                  : "text-gray-700 hover:bg-gray-100",
-              )}
-            >
-              <div className="flex items-center">
-                <School className="mr-3 h-5 w-5" />
-                Administrativo
-              </div>
-              {adminOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            </button>
-
-            {adminOpen && (
+            <details className={cn(pathname?.startsWith("/administrativo") && "open")}>
+              <summary
+                className={cn(
+                  "flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors list-none",
+                  pathname?.startsWith("/administrativo") ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100",
+                )}
+              >
+                <div className="flex items-center">
+                  <School className="mr-3 h-5 w-5" />
+                  Administrativo
+                </div>
+                <ChevronDown className="h-4 w-4 transition-transform ui-open:rotate-180" />
+              </summary>
               <ul className="mt-1 space-y-1 pl-10">
                 <li>
                   <Link
@@ -128,7 +117,7 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
                   </Link>
                 </li>
               </ul>
-            )}
+            </details>
           </li>
         </ul>
       </nav>
