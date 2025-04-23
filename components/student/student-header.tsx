@@ -13,12 +13,12 @@ interface StudentHeaderProps {
 export function StudentHeader({ student }: StudentHeaderProps) {
   return (
     <div className="flex items-center mb-6">
-      <div className="w-24 h-24 rounded-full overflow-hidden mr-6">
+      <div className="relative w-24 h-24 rounded-full overflow-hidden mr-6 flex-shrink-0">
         <Image
           src={student.image || "/placeholder.svg"}
           alt={student.name}
-          width={96}
-          height={96}
+          fill
+          sizes="96px"
           className="object-cover"
         />
       </div>

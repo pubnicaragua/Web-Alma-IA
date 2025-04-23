@@ -17,9 +17,10 @@ interface AddActionModalProps {
     fechaCompromiso: string
     observaciones: string
   }) => void
+  isMobile?: boolean
 }
 
-export function AddActionModal({ onAddAction }: AddActionModalProps) {
+export function AddActionModal({ onAddAction, isMobile = false }: AddActionModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false)
   const [accionRealizada, setAccionRealizada] = useState("")
   const [fechaCompromiso, setFechaCompromiso] = useState("")
@@ -60,11 +61,11 @@ export function AddActionModal({ onAddAction }: AddActionModalProps) {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="mr-2"
+          className={isMobile ? "" : "mr-2"}
         >
           <path d="M12 5v14M5 12h14" />
         </svg>
-        Agregar nueva acción
+        {!isMobile && <span>Agregar nueva acción</span>}
       </Button>
 
       <Dialog open={isOpen} onOpenChange={onClose}>

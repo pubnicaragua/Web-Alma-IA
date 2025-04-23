@@ -47,8 +47,8 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
         <AddAlertModal onAddAlert={handleAddAlert} />
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <table className="w-full">
+      <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
+        <table className="w-full min-w-[640px]">
           <thead>
             <tr className="bg-blue-300">
               <th className="px-4 py-3 text-left font-medium text-white">Fecha</th>

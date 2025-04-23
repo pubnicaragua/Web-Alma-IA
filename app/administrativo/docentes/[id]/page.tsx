@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { AppLayout } from "@/components/layout/app-layout"
 import { Button } from "@/components/ui/button"
+import { Trash2 } from "lucide-react"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface TeacherCourseInfo {
   curso: string
@@ -43,6 +45,7 @@ export default function TeacherDetailPage() {
   const router = useRouter()
   const [teacher, setTeacher] = useState<Teacher | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     // Simulación de carga de datos del docente
@@ -140,12 +143,12 @@ export default function TeacherDetailPage() {
       <div className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
-            <div className="w-24 h-24 rounded-full overflow-hidden mr-6 bg-gray-200">
+            <div className="relative w-24 h-24 rounded-full overflow-hidden mr-6 bg-gray-200 flex-shrink-0">
               <Image
                 src={teacher.image || "/placeholder.svg"}
                 alt={teacher.name}
-                width={96}
-                height={96}
+                fill
+                sizes="96px"
                 className="object-cover"
               />
             </div>
@@ -157,7 +160,14 @@ export default function TeacherDetailPage() {
             </div>
           </div>
           <Button onClick={handleDeleteTeacher} className="bg-red-500 hover:bg-red-600">
-            Borrar docente
+            {isMobile ? (
+              <Trash2 className="h-5 w-5" />
+            ) : (
+              <>
+                <Trash2 className="h-5 w-5 mr-2" />
+                Borrar docente
+              </>
+            )}
           </Button>
         </div>
 

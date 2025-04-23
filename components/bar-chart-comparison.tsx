@@ -57,11 +57,11 @@ export function BarChartComparison({ title, data, selectedEmotions, onToggleEmot
         ))}
       </div>
 
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-64 w-full overflow-x-auto">
+        <ResponsiveContainer width="100%" height="100%" minWidth={320}>
           <BarChart
             data={chartData.filter((emotion) => selectedEmotions.includes(emotion.name))}
-            margin={{ top: 5, right: 10, left: 10, bottom: 20 }}
+            margin={{ top: 5, right: 5, left: 0, bottom: 20 }}
             maxBarSize={50}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} />

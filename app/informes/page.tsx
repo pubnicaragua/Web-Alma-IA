@@ -181,11 +181,11 @@ export default function ReportsPage() {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="mr-2"
+              className="md:mr-2"
             >
               <path d="M12 5v14M5 12h14" />
             </svg>
-            Generar informe
+            <span className="hidden md:inline">Generar informe</span>
           </Button>
         </div>
 

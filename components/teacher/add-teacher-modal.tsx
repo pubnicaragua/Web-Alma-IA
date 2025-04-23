@@ -24,9 +24,10 @@ interface AddTeacherModalProps {
     type: string
     courses: string
   }) => void
+  isMobile?: boolean
 }
 
-export function AddTeacherModal({ onAddTeacher }: AddTeacherModalProps) {
+export function AddTeacherModal({ onAddTeacher, isMobile = false }: AddTeacherModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false)
   const [formData, setFormData] = useState({
     name: "",
@@ -90,14 +91,14 @@ export function AddTeacherModal({ onAddTeacher }: AddTeacherModalProps) {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="mr-2"
+          className={isMobile ? "" : "mr-2"}
         >
           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
           <circle cx="9" cy="7" r="4" />
           <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
           <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
-        Agregar docente
+        {!isMobile && <span>Agregar docente</span>}
       </Button>
 
       <Dialog open={isOpen} onOpenChange={onClose}>

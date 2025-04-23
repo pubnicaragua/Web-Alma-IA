@@ -76,7 +76,7 @@ export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps
             </div>
 
             {/* Gráfico de barras */}
-            <div className="flex items-end h-full pl-8 gap-2 overflow-hidden">
+            <div className="flex items-end h-full pl-8 gap-2 overflow-x-auto min-w-[300px]">
               {chartData
                 .filter((emotion) => selectedEmotions.includes(emotion.name))
                 .map((emotion, index) => {

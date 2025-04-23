@@ -125,8 +125,8 @@ export default function ComparativePage() {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Comparativos</h2>
           <Button onClick={handleDownloadComparison} className="bg-blue-500 hover:bg-blue-600">
-            <Download className="mr-2 h-4 w-4" />
-            Descargar comparación
+            <Download className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Descargar comparación</span>
           </Button>
         </div>
 

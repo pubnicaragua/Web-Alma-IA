@@ -169,7 +169,9 @@ export default function QuestionsPage() {
       <div className="container mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Historial de preguntas cargadas</h2>
-          <AddQuestionModal onAddQuestion={handleAddQuestion} />
+          <div className="flex justify-end">
+            <AddQuestionModal onAddQuestion={handleAddQuestion} isMobile={true} />
+          </div>
         </div>
 
         {/* Tabla de preguntas */}

@@ -6,6 +6,7 @@ import Image from "next/image"
 import { AppLayout } from "@/components/layout/app-layout"
 import { AddActionModal } from "@/components/alert/add-action-modal"
 import { Lock } from "lucide-react"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface Action {
   fecha: string
@@ -39,6 +40,7 @@ export default function AlertDetailPage() {
   const { id } = useParams()
   const [alert, setAlert] = useState<Alert | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     // Simulación de carga de datos de la alerta
@@ -168,12 +170,12 @@ export default function AlertDetailPage() {
         {/* Información del alumno */}
         {alert.student && (
           <div className="flex items-center mb-6">
-            <div className="w-24 h-24 rounded-full overflow-hidden mr-6">
+            <div className="relative w-24 h-24 rounded-full overflow-hidden mr-6 flex-shrink-0">
               <Image
                 src={alert.student.image || "/placeholder.svg"}
                 alt={alert.student.name}
-                width={96}
-                height={96}
+                fill
+                sizes="96px"
                 className="object-cover"
               />
             </div>
@@ -193,12 +195,12 @@ export default function AlertDetailPage() {
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-3">Responsable Actual:</h3>
           <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
+            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
               <Image
                 src={alert.responsible.image || "/placeholder.svg"}
                 alt={alert.responsible.name}
-                width={40}
-                height={40}
+                fill
+                sizes="40px"
                 className="object-cover"
               />
             </div>
@@ -224,11 +226,11 @@ export default function AlertDetailPage() {
         <div className="mb-6">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-lg font-semibold text-gray-800">Bitácora de acciones</h3>
-            <AddActionModal onAddAction={handleAddAction} />
+            <AddActionModal onAddAction={handleAddAction} isMobile={isMobile} />
           </div>
 
           <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[640px]">
               <thead>
                 <tr className="bg-blue-300">
                   <th className="px-4 py-3 text-left font-medium text-white">Fecha</th>

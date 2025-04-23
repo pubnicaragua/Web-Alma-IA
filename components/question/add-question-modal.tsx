@@ -20,9 +20,10 @@ interface AddQuestionModalProps {
     sintomas: string
     palabrasClave: string
   }) => void
+  isMobile?: boolean
 }
 
-export function AddQuestionModal({ onAddQuestion }: AddQuestionModalProps) {
+export function AddQuestionModal({ onAddQuestion, isMobile = false }: AddQuestionModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false)
   const [pregunta, setPregunta] = useState("")
   const [tipoRespuesta, setTipoRespuesta] = useState("opcion_multiple")
@@ -94,11 +95,11 @@ export function AddQuestionModal({ onAddQuestion }: AddQuestionModalProps) {
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="mr-2"
+          className={isMobile ? "" : "mr-2"}
         >
           <path d="M12 5v14M5 12h14" />
         </svg>
-        Agregar pregunta
+        {!isMobile && <span>Agregar pregunta</span>}
       </Button>
 
       <Dialog open={isOpen} onOpenChange={onClose}>

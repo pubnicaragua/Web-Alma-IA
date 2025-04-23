@@ -235,7 +235,9 @@ export default function TeachersPage() {
       <div className="container mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Docentes</h2>
-          <AddTeacherModal onAddTeacher={handleAddTeacher} />
+          <div className="flex justify-end">
+            <AddTeacherModal onAddTeacher={handleAddTeacher} isMobile={true} />
+          </div>
         </div>
 
         {/* Filtros */}
