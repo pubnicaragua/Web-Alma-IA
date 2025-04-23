@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
+import { AppLayout } from "@/components/layout/app-layout"
 import { FilterDropdown } from "@/components/filter-dropdown"
 import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
@@ -167,49 +166,43 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header toggleSidebar={() => {}} />
-        <main className="flex-1 overflow-y-auto pb-10">
-          <div className="container mx-auto px-6 py-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Informes</h2>
-              <Button className="bg-blue-500 hover:bg-blue-600" onClick={handleGenerateReport}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mr-2"
-                >
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-                Generar informe
-              </Button>
-            </div>
+    <AppLayout>
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Informes</h2>
+          <Button className="bg-blue-500 hover:bg-blue-600" onClick={handleGenerateReport}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-2"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Generar informe
+          </Button>
+        </div>
 
-            {/* Filtros */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-              <FilterDropdown label="Tipo" options={typeOptions} value={typeFilter} onChange={setTypeFilter} />
-              <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
-              <FilterDropdown label="Fecha" options={dateOptions} value={dateFilter} onChange={setDateFilter} />
-              <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
-              <FilterDropdown label="Autor" options={authorOptions} value={authorFilter} onChange={setAuthorFilter} />
-            </div>
+        {/* Filtros */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <FilterDropdown label="Tipo" options={typeOptions} value={typeFilter} onChange={setTypeFilter} />
+          <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
+          <FilterDropdown label="Fecha" options={dateOptions} value={dateFilter} onChange={setDateFilter} />
+          <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
+          <FilterDropdown label="Autor" options={authorOptions} value={authorFilter} onChange={setAuthorFilter} />
+        </div>
 
-            {/* Tabla de informes */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <DataTable columns={columns} data={filteredReports} renderCell={renderCell} />
-            </div>
-          </div>
-        </main>
+        {/* Tabla de informes */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <DataTable columns={columns} data={filteredReports} renderCell={renderCell} />
+        </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }

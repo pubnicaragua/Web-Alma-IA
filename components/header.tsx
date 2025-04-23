@@ -38,6 +38,8 @@ export function Header({ toggleSidebar }: HeaderProps) {
       {/* Imagen de fondo del header */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
         <Image src="/header-bg.jpeg" alt="Header background" fill style={{ objectFit: "cover" }} />
+        {/* Overlay para mejorar la legibilidad del texto */}
+        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
       </div>
 
       {/* Contenido del header */}
@@ -45,7 +47,12 @@ export function Header({ toggleSidebar }: HeaderProps) {
         <div className="flex items-center gap-4">
           {/* Botón de hamburguesa para móviles */}
           {toggleSidebar && (
-            <button onClick={toggleSidebar} className="text-white block" aria-label="Toggle navigation menu">
+            <button
+              onClick={() => toggleSidebar()}
+              className="text-white block focus:outline-none"
+              aria-label="Toggle navigation menu"
+              type="button"
+            >
               <Menu size={24} />
             </button>
           )}

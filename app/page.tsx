@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+// Asegúrate de que la importación de AppLayout sea correcta
 import { AppLayout } from "@/components/layout/app-layout"
 import { StatCard } from "@/components/stat-card"
 import { EmotionChart } from "@/components/emotion-chart"

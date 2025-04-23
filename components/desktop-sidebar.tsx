@@ -1,0 +1,149 @@
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Home, Users, Bell, BarChart2, FileText, User, Settings, ChevronDown, ChevronRight, School } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+interface DesktopSidebarProps {
+  className?: string
+}
+
+export function DesktopSidebar({ className }: DesktopSidebarProps) {
+  const pathname = usePathname()
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [adminOpen, setAdminOpen] = useState(false)
+
+  const isActive = (path: string) => {
+    if (path === "/") return pathname === path
+    return pathname?.startsWith(path)
+  }
+
+  const menuItems = [
+    { name: "Dashboard", href: "/", icon: Home },
+    { name: "Alumnos", href: "/alumnos", icon: Users },
+    { name: "Alertas", href: "/alertas", icon: Bell },
+    { name: "Comparativo", href: "/comparativo", icon: BarChart2 },
+    { name: "Informes", href: "/informes", icon: FileText },
+    { name: "Perfil", href: "/perfil", icon: User },
+  ]
+
+  return (
+    <aside className={cn("w-64 bg-white border-r border-gray-200", className)}>
+      <div className="flex h-16 items-center px-4 border-b">
+        <Link href="/" className="flex items-center">
+          <School className="h-6 w-6 text-primary mr-2" />
+          <h2 className="text-xl font-bold text-primary">Alma IA</h2>
+        </Link>
+      </div>
+
+      <nav className="flex-1 p-4">
+        <ul className="space-y-1">
+          {menuItems.map((item) => (
+            <li key={item.name}>
+              <Link
+                href={item.href}
+                className={cn(
+                  "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  isActive(item.href) ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100",
+                )}
+              >
+                <item.icon className="mr-3 h-5 w-5" />
+                {item.name}
+              </Link>
+            </li>
+          ))}
+
+          {/* Settings Submenu */}
+          <li>
+            <button
+              onClick={() => setSettingsOpen(!settingsOpen)}
+              className={cn(
+                "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                settingsOpen || pathname?.startsWith("/configuracion")
+                  ? "bg-primary text-white"
+                  : "text-gray-700 hover:bg-gray-100",
+              )}
+            >
+              <div className="flex items-center">
+                <Settings className="mr-3 h-5 w-5" />
+                Configuración
+              </div>
+              {settingsOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </button>
+
+            {settingsOpen && (
+              <ul className="mt-1 space-y-1 pl-10">
+                <li>
+                  <Link
+                    href="/configuracion/preguntas"
+                    className={cn(
+                      "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      isActive("/configuracion/preguntas")
+                        ? "bg-primary/80 text-white"
+                        : "text-gray-700 hover:bg-gray-100",
+                    )}
+                  >
+                    <FileText className="mr-3 h-4 w-4" />
+                    Preguntas
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+
+          {/* Administrative Submenu */}
+          <li>
+            <button
+              onClick={() => setAdminOpen(!adminOpen)}
+              className={cn(
+                "flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                adminOpen || pathname?.startsWith("/administrativo")
+                  ? "bg-primary text-white"
+                  : "text-gray-700 hover:bg-gray-100",
+              )}
+            >
+              <div className="flex items-center">
+                <School className="mr-3 h-5 w-5" />
+                Administrativo
+              </div>
+              {adminOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </button>
+
+            {adminOpen && (
+              <ul className="mt-1 space-y-1 pl-10">
+                <li>
+                  <Link
+                    href="/administrativo/docentes"
+                    className={cn(
+                      "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      isActive("/administrativo/docentes")
+                        ? "bg-primary/80 text-white"
+                        : "text-gray-700 hover:bg-gray-100",
+                    )}
+                  >
+                    <School className="mr-3 h-4 w-4" />
+                    Docentes
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+        </ul>
+      </nav>
+
+      <div className="border-t p-4">
+        <div className="flex items-center">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
+            <User className="h-5 w-5" />
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium">Emilio Aguilera</p>
+            <p className="text-xs text-gray-500">Rector</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  )
+}

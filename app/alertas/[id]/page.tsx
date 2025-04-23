@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import Image from "next/image"
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
+import { AppLayout } from "@/components/layout/app-layout"
 import { AddActionModal } from "@/components/alert/add-action-modal"
 import { Lock } from "lucide-react"
 
@@ -141,139 +140,121 @@ export default function AlertDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header toggleSidebar={() => {}} />
-          <main className="flex-1 overflow-y-auto pb-10">
-            <div className="container mx-auto px-6 py-8">
-              <div className="flex justify-center items-center h-64">
-                <p className="text-xl text-gray-500">Cargando información de la alerta...</p>
-              </div>
-            </div>
-          </main>
+      <AppLayout>
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex justify-center items-center h-64">
+            <p className="text-xl text-gray-500">Cargando información de la alerta...</p>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     )
   }
 
   if (!alert) {
     return (
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header toggleSidebar={() => {}} />
-          <main className="flex-1 overflow-y-auto pb-10">
-            <div className="container mx-auto px-6 py-8">
-              <div className="flex justify-center items-center h-64">
-                <p className="text-xl text-gray-500">No se encontró información de la alerta</p>
-              </div>
-            </div>
-          </main>
+      <AppLayout>
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex justify-center items-center h-64">
+            <p className="text-xl text-gray-500">No se encontró información de la alerta</p>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     )
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header toggleSidebar={() => {}} />
-        <main className="flex-1 overflow-y-auto pb-10">
-          <div className="container mx-auto px-6 py-8">
-            {/* Información del alumno */}
-            {alert.student && (
-              <div className="flex items-center mb-6">
-                <div className="w-24 h-24 rounded-full overflow-hidden mr-6">
-                  <Image
-                    src={alert.student.image || "/placeholder.svg"}
-                    alt={alert.student.name}
-                    width={96}
-                    height={96}
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-800">{alert.student.name}</h1>
-                  <p className="text-xl text-gray-600">{alert.student.course}</p>
-                  <p className="text-sm text-gray-500">
-                    Fecha de generación: {alert.generationDate} - {alert.generationTime}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Alerta del alumno</h2>
-
-            {/* Responsable actual */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Responsable Actual:</h3>
-              <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
-                  <Image
-                    src={alert.responsible.image || "/placeholder.svg"}
-                    alt={alert.responsible.name}
-                    width={40}
-                    height={40}
-                    className="object-cover"
-                  />
-                </div>
-                <span className="text-gray-700">
-                  {alert.responsible.role} - {alert.responsible.name}
-                </span>
-              </div>
-              {!alert.isAnonymous && (
-                <div className="flex items-center mt-2 text-gray-600">
-                  <Lock className="h-4 w-4 mr-1" />
-                  <span className="text-sm">No es anónimo</span>
-                </div>
-              )}
+    <AppLayout>
+      <div className="container mx-auto px-6 py-8">
+        {/* Información del alumno */}
+        {alert.student && (
+          <div className="flex items-center mb-6">
+            <div className="w-24 h-24 rounded-full overflow-hidden mr-6">
+              <Image
+                src={alert.student.image || "/placeholder.svg"}
+                alt={alert.student.name}
+                width={96}
+                height={96}
+                className="object-cover"
+              />
             </div>
-
-            {/* Descripción de la alerta */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-3">Descripción de la alerta</h3>
-              <p className="text-gray-700">{alert.description}</p>
-            </div>
-
-            {/* Bitácora de acciones */}
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="text-lg font-semibold text-gray-800">Bitácora de acciones</h3>
-                <AddActionModal onAddAction={handleAddAction} />
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-blue-300">
-                      <th className="px-4 py-3 text-left font-medium text-white">Fecha</th>
-                      <th className="px-4 py-3 text-left font-medium text-white">Hora</th>
-                      <th className="px-4 py-3 text-left font-medium text-white">Usuario Responsable</th>
-                      <th className="px-4 py-3 text-left font-medium text-white">Acción Realizada</th>
-                      <th className="px-4 py-3 text-left font-medium text-white">Fecha de Compromiso</th>
-                      <th className="px-4 py-3 text-left font-medium text-white">Observaciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {alert.actions.map((action, index) => (
-                      <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm">{action.fecha}</td>
-                        <td className="px-4 py-3 text-sm">{action.hora}</td>
-                        <td className="px-4 py-3 text-sm">{action.usuarioResponsable}</td>
-                        <td className="px-4 py-3 text-sm">{action.accionRealizada}</td>
-                        <td className="px-4 py-3 text-sm">{action.fechaCompromiso}</td>
-                        <td className="px-4 py-3 text-sm">{action.observaciones}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">{alert.student.name}</h1>
+              <p className="text-xl text-gray-600">{alert.student.course}</p>
+              <p className="text-sm text-gray-500">
+                Fecha de generación: {alert.generationDate} - {alert.generationTime}
+              </p>
             </div>
           </div>
-        </main>
+        )}
+
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Alerta del alumno</h2>
+
+        {/* Responsable actual */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Responsable Actual:</h3>
+          <div className="flex items-center">
+            <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
+              <Image
+                src={alert.responsible.image || "/placeholder.svg"}
+                alt={alert.responsible.name}
+                width={40}
+                height={40}
+                className="object-cover"
+              />
+            </div>
+            <span className="text-gray-700">
+              {alert.responsible.role} - {alert.responsible.name}
+            </span>
+          </div>
+          {!alert.isAnonymous && (
+            <div className="flex items-center mt-2 text-gray-600">
+              <Lock className="h-4 w-4 mr-1" />
+              <span className="text-sm">No es anónimo</span>
+            </div>
+          )}
+        </div>
+
+        {/* Descripción de la alerta */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Descripción de la alerta</h3>
+          <p className="text-gray-700">{alert.description}</p>
+        </div>
+
+        {/* Bitácora de acciones */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-semibold text-gray-800">Bitácora de acciones</h3>
+            <AddActionModal onAddAction={handleAddAction} />
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-blue-300">
+                  <th className="px-4 py-3 text-left font-medium text-white">Fecha</th>
+                  <th className="px-4 py-3 text-left font-medium text-white">Hora</th>
+                  <th className="px-4 py-3 text-left font-medium text-white">Usuario Responsable</th>
+                  <th className="px-4 py-3 text-left font-medium text-white">Acción Realizada</th>
+                  <th className="px-4 py-3 text-left font-medium text-white">Fecha de Compromiso</th>
+                  <th className="px-4 py-3 text-left font-medium text-white">Observaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {alert.actions.map((action, index) => (
+                  <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm">{action.fecha}</td>
+                    <td className="px-4 py-3 text-sm">{action.hora}</td>
+                    <td className="px-4 py-3 text-sm">{action.usuarioResponsable}</td>
+                    <td className="px-4 py-3 text-sm">{action.accionRealizada}</td>
+                    <td className="px-4 py-3 text-sm">{action.fechaCompromiso}</td>
+                    <td className="px-4 py-3 text-sm">{action.observaciones}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }

@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
+import { AppLayout } from "@/components/layout/app-layout"
 import { Button } from "@/components/ui/button"
 
 interface QuestionDetail {
@@ -64,135 +63,117 @@ export default function QuestionDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header toggleSidebar={() => {}} />
-          <main className="flex-1 overflow-y-auto pb-10">
-            <div className="container mx-auto px-6 py-8">
-              <div className="flex justify-center items-center h-64">
-                <p className="text-xl text-gray-500">Cargando información de la pregunta...</p>
-              </div>
-            </div>
-          </main>
+      <AppLayout>
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex justify-center items-center h-64">
+            <p className="text-xl text-gray-500">Cargando información de la pregunta...</p>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     )
   }
 
   if (!question) {
     return (
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header toggleSidebar={() => {}} />
-          <main className="flex-1 overflow-y-auto pb-10">
-            <div className="container mx-auto px-6 py-8">
-              <div className="flex justify-center items-center h-64">
-                <p className="text-xl text-gray-500">No se encontró información de la pregunta</p>
-              </div>
-            </div>
-          </main>
+      <AppLayout>
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex justify-center items-center h-64">
+            <p className="text-xl text-gray-500">No se encontró información de la pregunta</p>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     )
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header toggleSidebar={() => {}} />
-        <main className="flex-1 overflow-y-auto pb-10">
-          <div className="container mx-auto px-6 py-8">
-            <div className="flex justify-between items-center mb-8">
-              <button
-                onClick={handleGoBack}
-                className="flex items-center text-gray-600 hover:text-blue-500 transition-colors"
-              >
-                <ChevronLeft className="h-5 w-5 mr-1" />
-                <span className="text-xl font-semibold">{question.question}</span>
-              </button>
-              <Button onClick={handleEditQuestion} className="bg-blue-500 hover:bg-blue-600">
-                Editar pregunta
-              </Button>
-            </div>
+    <AppLayout>
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <button
+            onClick={handleGoBack}
+            className="flex items-center text-gray-600 hover:text-blue-500 transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5 mr-1" />
+            <span className="text-xl font-semibold">{question.question}</span>
+          </button>
+          <Button onClick={handleEditQuestion} className="bg-blue-500 hover:bg-blue-600">
+            Editar pregunta
+          </Button>
+        </div>
 
-            <div className="mb-8">
-              <div className="flex justify-end mb-4">
-                <div className="flex items-center">
-                  <div className="w-5 h-5 rounded-full border-2 border-gray-300 mr-2"></div>
-                  <span className="text-gray-700">{question.responseType}</span>
-                </div>
-              </div>
-
-              {/* Opciones de respuesta */}
-              <div className="space-y-4">
-                {question.options.map((option, index) => (
-                  <div key={index} className="flex items-center">
-                    <div className="w-5 h-5 rounded-full border-2 border-gray-300 mr-2"></div>
-                    <span className="text-gray-800">{option}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              {/* Diagnóstico */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Diagnóstico</h3>
-                <p className="text-gray-700">{question.diagnostic}</p>
-              </div>
-
-              {/* Prioridad de preguntas y horario */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Prioridad de preguntas y horario</h3>
-                <p className="text-gray-700">
-                  {question.priority} - {question.timeOfDay}
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Síntomas */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Síntomas</h3>
-                <p className="text-gray-700">{question.symptoms}</p>
-              </div>
-
-              {/* Palabras clave */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Palabras clave</h3>
-                <p className="text-gray-700">{question.keywords}</p>
-              </div>
-            </div>
-
-            {/* Navegación entre preguntas */}
-            <div className="flex justify-center mt-8">
-              <div className="flex space-x-2">
-                <button className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-600">
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-600">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="9 18 15 12 9 6"></polyline>
-                  </svg>
-                </button>
-              </div>
+        <div className="mb-8">
+          <div className="flex justify-end mb-4">
+            <div className="flex items-center">
+              <div className="w-5 h-5 rounded-full border-2 border-gray-300 mr-2"></div>
+              <span className="text-gray-700">{question.responseType}</span>
             </div>
           </div>
-        </main>
+
+          {/* Opciones de respuesta */}
+          <div className="space-y-4">
+            {question.options.map((option, index) => (
+              <div key={index} className="flex items-center">
+                <div className="w-5 h-5 rounded-full border-2 border-gray-300 mr-2"></div>
+                <span className="text-gray-800">{option}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          {/* Diagnóstico */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Diagnóstico</h3>
+            <p className="text-gray-700">{question.diagnostic}</p>
+          </div>
+
+          {/* Prioridad de preguntas y horario */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Prioridad de preguntas y horario</h3>
+            <p className="text-gray-700">
+              {question.priority} - {question.timeOfDay}
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Síntomas */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Síntomas</h3>
+            <p className="text-gray-700">{question.symptoms}</p>
+          </div>
+
+          {/* Palabras clave */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Palabras clave</h3>
+            <p className="text-gray-700">{question.keywords}</p>
+          </div>
+        </div>
+
+        {/* Navegación entre preguntas */}
+        <div className="flex justify-center mt-8">
+          <div className="flex space-x-2">
+            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-600">
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }

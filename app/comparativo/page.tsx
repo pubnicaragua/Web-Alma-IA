@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
+import { AppLayout } from "@/components/layout/app-layout"
 import { FilterDropdown } from "@/components/filter-dropdown"
 import { BarChartComparison } from "@/components/bar-chart-comparison"
 import { LineChartComparison } from "@/components/line-chart-comparison"
@@ -121,56 +120,50 @@ export default function ComparativePage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header toggleSidebar={() => {}} />
-        <main className="flex-1 overflow-y-auto pb-10">
-          <div className="container mx-auto px-6 py-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Comparativos</h2>
-              <Button onClick={handleDownloadComparison} className="bg-blue-500 hover:bg-blue-600">
-                <Download className="mr-2 h-4 w-4" />
-                Descargar comparación
-              </Button>
-            </div>
+    <AppLayout>
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Comparativos</h2>
+          <Button onClick={handleDownloadComparison} className="bg-blue-500 hover:bg-blue-600">
+            <Download className="mr-2 h-4 w-4" />
+            Descargar comparación
+          </Button>
+        </div>
 
-            {/* Filtros */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <FilterDropdown label="Nivel" options={levelOptions} value={levelFilter} onChange={setLevelFilter} />
-              <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
-              <FilterDropdown label="Año" options={yearOptions} value={yearFilter} onChange={setYearFilter} />
-              <FilterDropdown label="Mes" options={monthOptions} value={monthFilter} onChange={setMonthFilter} />
-            </div>
+        {/* Filtros */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <FilterDropdown label="Nivel" options={levelOptions} value={levelFilter} onChange={setLevelFilter} />
+          <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
+          <FilterDropdown label="Año" options={yearOptions} value={yearFilter} onChange={setYearFilter} />
+          <FilterDropdown label="Mes" options={monthOptions} value={monthFilter} onChange={setMonthFilter} />
+        </div>
 
-            {/* Gráficos de barras */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <BarChartComparison
-                title="Curso A"
-                data={emotionsDataCourseA}
-                selectedEmotions={selectedEmotionsCourseA}
-                onToggleEmotion={handleToggleEmotionCourseA}
-              />
-              <BarChartComparison
-                title="Curso B"
-                data={emotionsDataCourseB}
-                selectedEmotions={selectedEmotionsCourseB}
-                onToggleEmotion={handleToggleEmotionCourseB}
-              />
-            </div>
+        {/* Gráficos de barras */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <BarChartComparison
+            title="Curso A"
+            data={emotionsDataCourseA}
+            selectedEmotions={selectedEmotionsCourseA}
+            onToggleEmotion={handleToggleEmotionCourseA}
+          />
+          <BarChartComparison
+            title="Curso B"
+            data={emotionsDataCourseB}
+            selectedEmotions={selectedEmotionsCourseB}
+            onToggleEmotion={handleToggleEmotionCourseB}
+          />
+        </div>
 
-            {/* Gráfico de líneas */}
-            <div className="mb-6">
-              <LineChartComparison
-                title="Alertas totales"
-                data={alertsData}
-                selectedCourses={selectedCourses}
-                onToggleCourse={handleToggleCourse}
-              />
-            </div>
-          </div>
-        </main>
+        {/* Gráfico de líneas */}
+        <div className="mb-6">
+          <LineChartComparison
+            title="Alertas totales"
+            data={alertsData}
+            selectedCourses={selectedCourses}
+            onToggleCourse={handleToggleCourse}
+          />
+        </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }

@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
+import { AppLayout } from "@/components/layout/app-layout"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StudentHeader } from "@/components/student/student-header"
 import { StudentProfile } from "@/components/student/student-profile"
@@ -256,92 +255,68 @@ export default function StudentDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header toggleSidebar={() => {}} />
-          <main className="flex-1 overflow-y-auto pb-10">
-            <div className="container mx-auto px-6 py-8">
-              <div className="flex justify-center items-center h-64">
-                <p className="text-xl text-gray-500">Cargando información del alumno...</p>
-              </div>
-            </div>
-          </main>
+      <AppLayout>
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex justify-center items-center h-64">
+            <p className="text-xl text-gray-500">Cargando información del alumno...</p>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     )
   }
 
   if (!student) {
     return (
-      <div className="flex h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header toggleSidebar={() => {}} />
-          <main className="flex-1 overflow-y-auto pb-10">
-            <div className="container mx-auto px-6 py-8">
-              <div className="flex justify-center items-center h-64">
-                <p className="text-xl text-gray-500">No se encontró información del alumno</p>
-              </div>
-            </div>
-          </main>
+      <AppLayout>
+        <div className="container mx-auto px-6 py-8">
+          <div className="flex justify-center items-center h-64">
+            <p className="text-xl text-gray-500">No se encontró información del alumno</p>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     )
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header toggleSidebar={() => {}} />
-        <main className="flex-1 overflow-y-auto pb-10">
-          <div className="container mx-auto px-6 py-8">
-            {/* Información del estudiante */}
-            <StudentHeader student={student} />
+    <AppLayout>
+      <div className="container mx-auto px-6 py-8">
+        {/* Información del estudiante */}
+        <StudentHeader student={student} />
 
-            {/* Pestañas */}
-            <Tabs defaultValue="ficha" className="mb-6" onValueChange={setActiveTab}>
-              <TabsList className="bg-blue-100">
-                <TabsTrigger value="ficha" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-                  Ficha
-                </TabsTrigger>
-                <TabsTrigger value="alertas" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-                  Alertas
-                </TabsTrigger>
-                <TabsTrigger
-                  value="informes"
-                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-                >
-                  Informes
-                </TabsTrigger>
-                <TabsTrigger
-                  value="emociones"
-                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
-                >
-                  Emociones
-                </TabsTrigger>
-              </TabsList>
+        {/* Pestañas */}
+        <Tabs defaultValue="ficha" className="mb-6" onValueChange={setActiveTab}>
+          <TabsList className="bg-blue-100">
+            <TabsTrigger value="ficha" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+              Ficha
+            </TabsTrigger>
+            <TabsTrigger value="alertas" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+              Alertas
+            </TabsTrigger>
+            <TabsTrigger value="informes" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+              Informes
+            </TabsTrigger>
+            <TabsTrigger value="emociones" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+              Emociones
+            </TabsTrigger>
+          </TabsList>
 
-              <TabsContent value="ficha" className="mt-6">
-                <StudentProfile student={student} />
-              </TabsContent>
+          <TabsContent value="ficha" className="mt-6">
+            <StudentProfile student={student} />
+          </TabsContent>
 
-              <TabsContent value="alertas" className="mt-6">
-                <StudentAlerts alerts={student.alerts} />
-              </TabsContent>
+          <TabsContent value="alertas" className="mt-6">
+            <StudentAlerts alerts={student.alerts} />
+          </TabsContent>
 
-              <TabsContent value="informes" className="mt-6">
-                <StudentReports reports={student.reports} />
-              </TabsContent>
+          <TabsContent value="informes" className="mt-6">
+            <StudentReports reports={student.reports} />
+          </TabsContent>
 
-              <TabsContent value="emociones" className="mt-6">
-                <StudentEmotions emotionData={student.emotions.data} radarData={student.emotions.radarData} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </main>
+          <TabsContent value="emociones" className="mt-6">
+            <StudentEmotions emotionData={student.emotions.data} radarData={student.emotions.radarData} />
+          </TabsContent>
+        </Tabs>
       </div>
-    </div>
+    </AppLayout>
   )
 }

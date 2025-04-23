@@ -1,8 +1,7 @@
 "use client"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
+import { AppLayout } from "@/components/layout/app-layout"
 import { DataTable } from "@/components/data-table"
 import { Badge } from "@/components/ui/badge"
 import { AddQuestionModal } from "@/components/question/add-question-modal"
@@ -166,24 +165,18 @@ export default function QuestionsPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header toggleSidebar={() => {}} />
-        <main className="flex-1 overflow-y-auto pb-10">
-          <div className="container mx-auto px-6 py-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Historial de preguntas cargadas</h2>
-              <AddQuestionModal onAddQuestion={handleAddQuestion} />
-            </div>
+    <AppLayout>
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Historial de preguntas cargadas</h2>
+          <AddQuestionModal onAddQuestion={handleAddQuestion} />
+        </div>
 
-            {/* Tabla de preguntas */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <DataTable columns={columns} data={questionsData} renderCell={renderCell} />
-            </div>
-          </div>
-        </main>
+        {/* Tabla de preguntas */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <DataTable columns={columns} data={questionsData} renderCell={renderCell} />
+        </div>
       </div>
-    </div>
+    </AppLayout>
   )
 }

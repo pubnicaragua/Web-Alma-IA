@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import { Building2, Bell, Users } from "lucide-react"
+import { Header } from "@/components/header"
 
 interface School {
   id: string
@@ -16,6 +16,11 @@ interface School {
 export default function SelectSchoolPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen)
+  }
 
   useEffect(() => {
     // Comprobar si el usuario está autenticado
@@ -78,54 +83,16 @@ export default function SelectSchoolPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-blue-400 flex justify-center items-center">
-        <div className="text-white text-xl">Cargando...</div>
+      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
+        <div className="text-gray-700 text-xl">Cargando...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-blue-400 flex flex-col">
-      {/* Header */}
-      <div className="wave-bg w-full py-4 px-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <h1 className="text-4xl font-bold text-white">
-              Alma<span className="text-pink-400">IA</span>
-            </h1>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden">
-              <Image src="/chilean-flag-waving.png" alt="Bandera de Chile" width={32} height={32} />
-            </div>
-            <Bell className="text-white h-5 w-5" />
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden">
-                <Image
-                  src="/confident-businessman.png"
-                  alt="Perfil de usuario"
-                  width={40}
-                  height={40}
-                  className="object-cover"
-                />
-              </div>
-              <div className="text-white">
-                <p className="text-sm font-medium">Emilio Aguilera</p>
-                <p className="text-xs">Rector</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Onda decorativa */}
-      <div className="relative w-full h-32 overflow-hidden">
-        <div className="absolute bottom-0 w-full h-16 bg-white rounded-t-full transform scale-x-150"></div>
-      </div>
-
-      {/* Contenido */}
-      <div className="flex-1 bg-white px-6 py-8">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <Header toggleSidebar={toggleSidebar} />
+      <div className="flex-1 px-6 py-8">
         <div className="container mx-auto">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Seleccionar colegio</h2>
 

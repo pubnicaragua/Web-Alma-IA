@@ -3,8 +3,7 @@
 import { useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Header } from "@/components/header"
-import { Sidebar } from "@/components/sidebar"
+import { AppLayout } from "@/components/layout/app-layout"
 import { FilterDropdown } from "@/components/filter-dropdown"
 import { DataTable } from "@/components/data-table"
 import { Pagination } from "@/components/pagination"
@@ -232,41 +231,35 @@ export default function TeachersPage() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header toggleSidebar={() => {}} />
-        <main className="flex-1 overflow-y-auto pb-10">
-          <div className="container mx-auto px-6 py-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Docentes</h2>
-              <AddTeacherModal onAddTeacher={handleAddTeacher} />
-            </div>
+    <AppLayout>
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Docentes</h2>
+          <AddTeacherModal onAddTeacher={handleAddTeacher} />
+        </div>
 
-            {/* Filtros */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-              <FilterDropdown label="Nivel" options={levelOptions} value={levelFilter} onChange={setLevelFilter} />
-              <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
-              <FilterDropdown
-                label="Asignatura"
-                options={subjectOptions}
-                value={subjectFilter}
-                onChange={setSubjectFilter}
-              />
-              <FilterDropdown label="Tipo" options={typeOptions} value={typeFilter} onChange={setTypeFilter} />
-              <FilterDropdown label="Edad" options={ageOptions} value={ageFilter} onChange={setAgeFilter} />
-            </div>
+        {/* Filtros */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <FilterDropdown label="Nivel" options={levelOptions} value={levelFilter} onChange={setLevelFilter} />
+          <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
+          <FilterDropdown
+            label="Asignatura"
+            options={subjectOptions}
+            value={subjectFilter}
+            onChange={setSubjectFilter}
+          />
+          <FilterDropdown label="Tipo" options={typeOptions} value={typeFilter} onChange={setTypeFilter} />
+          <FilterDropdown label="Edad" options={ageOptions} value={ageFilter} onChange={setAgeFilter} />
+        </div>
 
-            {/* Tabla de docentes */}
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <DataTable columns={columns} data={paginatedTeachers} renderCell={renderCell} />
-            </div>
+        {/* Tabla de docentes */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <DataTable columns={columns} data={paginatedTeachers} renderCell={renderCell} />
+        </div>
 
-            {/* Paginación */}
-            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-          </div>
-        </main>
+        {/* Paginación */}
+        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
       </div>
-    </div>
+    </AppLayout>
   )
 }
