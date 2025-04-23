@@ -5,9 +5,9 @@ import type React from "react"
 import { useState } from "react"
 import { Header } from "@/components/header"
 import { MobileSidebar } from "@/components/mobile-sidebar"
-import { DesktopSidebar } from "@/components/desktop-sidebar"
 import { AndroidNavMenu } from "@/components/android-nav-menu"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { NavigationMenu } from "@/components/navigation-menu"
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -28,7 +28,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar para escritorio (siempre visible en md y superior) */}
-        <DesktopSidebar className="hidden md:block" />
+        <aside className="hidden md:block w-64 bg-white border-r border-gray-200">
+          <div className="h-16 border-b"></div>
+          <NavigationMenu />
+          {/* Eliminamos la información del usuario en la versión de escritorio */}
+        </aside>
 
         {/* Contenido principal */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>

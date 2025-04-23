@@ -28,12 +28,8 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
 
   return (
     <aside className={cn("w-64 bg-white border-r border-gray-200", className)}>
-      <div className="flex h-16 items-center px-4 border-b">
-        <Link href="/" className="flex items-center">
-          <School className="h-6 w-6 text-primary mr-2" />
-          <h2 className="text-xl font-bold text-primary">Alma IA</h2>
-        </Link>
-      </div>
+      {/* Eliminamos el header con el logo */}
+      <div className="h-16 border-b"></div>
 
       <nav className="flex-1 p-4">
         <ul className="space-y-1">

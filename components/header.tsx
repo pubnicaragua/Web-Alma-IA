@@ -2,7 +2,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Bell, Mail, LogOut, School, Menu } from "lucide-react"
+import { Bell, Mail, Menu } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
   DropdownMenu,
@@ -19,6 +19,17 @@ interface HeaderProps {
 export function Header({ toggleSidebar }: HeaderProps) {
   const router = useRouter()
 
+  // Función para navegar al perfil del usuario
+  const handleNavigateToProfile = () => {
+    router.push("/perfil")
+  }
+
+  // Función para navegar a la selección de colegio
+  const handleChangeSchool = () => {
+    router.push("/select-school")
+  }
+
+  // Función para cerrar sesión
   const handleLogout = () => {
     // Eliminar datos de autenticación
     localStorage.removeItem("isAuthenticated")
@@ -28,15 +39,15 @@ export function Header({ toggleSidebar }: HeaderProps) {
     router.push("/login")
   }
 
-  const handleChangeSchool = () => {
-    // Redirigir a la selección de colegio
-    router.push("/select-school")
-  }
-
   return (
-    <div className="w-full bg-primary">
+    <header className="w-full relative h-[158px]">
+      {/* Fondo SVG como imagen */}
+      <div className="absolute inset-0 w-full h-full overflow-hidden">
+        <Image src="/header.svg" alt="Header background" fill priority style={{ objectFit: "cover" }} />
+      </div>
+
       {/* Contenido del header */}
-      <div className="w-full py-4 px-6 flex items-center justify-between">
+      <div className="relative z-10 w-full h-full py-4 px-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           {/* Botón de hamburguesa para móviles */}
           {toggleSidebar && (
@@ -51,7 +62,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
           )}
 
           <Link href="/" className="flex items-center">
-            <h1 className="text-4xl font-bold">
+            <h1 className="text-3xl font-bold">
               <span className="text-white">Alma</span>
               <span className="text-pink-400">IA</span>
             </h1>
@@ -75,26 +86,17 @@ export function Header({ toggleSidebar }: HeaderProps) {
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <Input type="text" placeholder="Buscar" className="pl-10 bg-white/90 border-0 rounded-md" />
+          <Input type="text" placeholder="Buscar" className="pl-10 border bg-white/90 rounded-md" />
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full overflow-hidden bg-white/10">
-            <Image
-              src="/chilean-flag-waving.png"
-              alt="Bandera de Chile"
-              width={32}
-              height={32}
-              className="w-full h-full object-cover"
-            />
-          </div>
           <Bell className="text-white h-5 w-5 hidden sm:block" />
           <Mail className="text-white h-5 w-5 hidden sm:block" />
 
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center space-x-3 focus:outline-none">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10">
+                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/30">
                   <Image
                     src="/confident-businessman.png"
                     alt="Perfil de usuario"
@@ -105,27 +107,19 @@ export function Header({ toggleSidebar }: HeaderProps) {
                 </div>
                 <div className="text-white text-right hidden sm:block">
                   <p className="text-sm font-medium">Emilio Aguilera</p>
-                  <p className="text-xs">Rector</p>
+                  <p className="text-xs text-white/80">Rector</p>
                 </div>
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <Link href="/perfil">
-                <DropdownMenuItem>Mi perfil</DropdownMenuItem>
-              </Link>
-              <DropdownMenuItem onClick={handleChangeSchool}>
-                <School className="mr-2 h-4 w-4" />
-                <span>Cambiar colegio</span>
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleNavigateToProfile}>Mi perfil</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleChangeSchool}>Cambiar colegio</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Cerrar sesión</span>
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Cerrar sesión</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
-    </div>
+    </header>
   )
 }

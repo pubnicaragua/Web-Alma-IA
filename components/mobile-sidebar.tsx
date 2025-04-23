@@ -1,10 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { usePathname } from "next/navigation"
-import Link from "next/link"
-import { Home, Users, Bell, BarChart2, FileText, User, Settings, ChevronDown, School, X } from "lucide-react"
+import { X, School } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { NavigationMenu } from "./navigation-menu"
+import { UserInfo } from "./user-info"
 
 interface MobileSidebarProps {
   isOpen: boolean
@@ -12,15 +12,7 @@ interface MobileSidebarProps {
 }
 
 export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
-  const pathname = usePathname()
   const sidebarRef = React.useRef<HTMLDivElement>(null)
-
-  // Cerrar el sidebar cuando cambia la ruta
-  React.useEffect(() => {
-    if (isOpen && pathname) {
-      onClose()
-    }
-  }, [pathname, isOpen, onClose])
 
   // Cerrar el sidebar cuando se hace clic fuera de él
   React.useEffect(() => {
@@ -48,43 +40,34 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     }
   }, [isOpen])
 
-  const isActive = (path: string) => {
-    if (path === "/") return pathname === path
-    return pathname?.startsWith(path)
-  }
-
-  const menuItems = [
-    { name: "Dashboard", href: "/", icon: Home },
-    { name: "Alumnos", href: "/alumnos", icon: Users },
-    { name: "Alertas", href: "/alertas", icon: Bell },
-    { name: "Comparativo", href: "/comparativo", icon: BarChart2 },
-    { name: "Informes", href: "/informes", icon: FileText },
-    { name: "Perfil", href: "/perfil", icon: User },
-  ]
-
   return (
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={cn(
+          "fixed inset-0 bg-black/50 z-50 transition-opacity duration-300",
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
+        )}
         onClick={onClose}
+        aria-hidden="true"
       />
 
-      {/* Sidebar */}
+      {/* Drawer */}
       <div
         ref={sidebarRef}
-        className={`fixed inset-y-0 right-0 z-50 w-72 bg-white shadow-xl transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={cn(
+          "fixed inset-y-0 z-50 w-72 bg-white shadow-xl transition-transform duration-300 ease-in-out right-0",
+          isOpen ? "transform-none" : "translate-x-full",
+        )}
       >
-        {/* Header del sidebar */}
+        {/* Header del sidebar con logo y nombre */}
         <div className="flex items-center justify-between p-4 border-b">
-          <Link href="/" className="flex items-center">
+          <div className="flex items-center">
             <School className="h-6 w-6 text-primary mr-2" />
-            <h2 className="text-xl font-bold text-primary">Alma IA</h2>
-          </Link>
+            <h2 className="text-xl font-bold text-primary">
+              Alma<span className="text-pink-400">IA</span>
+            </h2>
+          </div>
           <button
             onClick={onClose}
             className="p-1 rounded-full hover:bg-gray-100 focus:outline-none"
@@ -95,114 +78,12 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
         </div>
 
         {/* Contenido del sidebar */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <nav>
-            <ul className="space-y-2">
-              {menuItems.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                      isActive(item.href) ? "bg-primary text-white" : "text-gray-700 hover:bg-gray-100",
-                    )}
-                    onClick={onClose}
-                  >
-                    <item.icon className="mr-3 h-5 w-5" />
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-
-              {/* Settings Submenu */}
-              <li>
-                <details className={cn(pathname?.startsWith("/configuracion") && "open")}>
-                  <summary
-                    className={cn(
-                      "flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors list-none",
-                      pathname?.startsWith("/configuracion")
-                        ? "bg-primary text-white"
-                        : "text-gray-700 hover:bg-gray-100",
-                    )}
-                  >
-                    <div className="flex items-center">
-                      <Settings className="mr-3 h-5 w-5" />
-                      Configuración
-                    </div>
-                    <ChevronDown className="h-4 w-4 transition-transform ui-open:rotate-180" />
-                  </summary>
-                  <ul className="mt-1 space-y-1 pl-10">
-                    <li>
-                      <Link
-                        href="/configuracion/preguntas"
-                        className={cn(
-                          "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                          isActive("/configuracion/preguntas")
-                            ? "bg-primary/80 text-white"
-                            : "text-gray-700 hover:bg-gray-100",
-                        )}
-                        onClick={onClose}
-                      >
-                        <FileText className="mr-3 h-4 w-4" />
-                        Preguntas
-                      </Link>
-                    </li>
-                  </ul>
-                </details>
-              </li>
-
-              {/* Administrative Submenu */}
-              <li>
-                <details className={cn(pathname?.startsWith("/administrativo") && "open")}>
-                  <summary
-                    className={cn(
-                      "flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors list-none",
-                      pathname?.startsWith("/administrativo")
-                        ? "bg-primary text-white"
-                        : "text-gray-700 hover:bg-gray-100",
-                    )}
-                  >
-                    <div className="flex items-center">
-                      <School className="mr-3 h-5 w-5" />
-                      Administrativo
-                    </div>
-                    <ChevronDown className="h-4 w-4 transition-transform ui-open:rotate-180" />
-                  </summary>
-                  <ul className="mt-1 space-y-1 pl-10">
-                    <li>
-                      <Link
-                        href="/administrativo/docentes"
-                        className={cn(
-                          "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                          isActive("/administrativo/docentes")
-                            ? "bg-primary/80 text-white"
-                            : "text-gray-700 hover:bg-gray-100",
-                        )}
-                        onClick={onClose}
-                      >
-                        <School className="mr-3 h-4 w-4" />
-                        Docentes
-                      </Link>
-                    </li>
-                  </ul>
-                </details>
-              </li>
-            </ul>
-          </nav>
+        <div className="flex-1 overflow-y-auto">
+          <NavigationMenu onItemClick={onClose} />
         </div>
 
-        {/* Footer del sidebar */}
-        <div className="border-t p-4">
-          <div className="flex items-center">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
-              <User className="h-5 w-5" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium">Emilio Aguilera</p>
-              <p className="text-xs text-gray-500">Rector</p>
-            </div>
-          </div>
-        </div>
+        {/* Footer del sidebar con información del usuario */}
+        <UserInfo />
       </div>
     </>
   )
