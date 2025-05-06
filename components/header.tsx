@@ -40,7 +40,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
   }
 
   return (
-    <header className="w-full relative h-[158px]">
+    <header className="w-full relative h-[120px]">
       {/* Fondo SVG como imagen */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <svg
@@ -66,7 +66,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
       </div>
 
       {/* Contenido del header */}
-      <div className="relative z-10 w-full h-full py-4 px-3 sm:px-6 flex items-center justify-between">
+      <div className="relative z-10 w-full h-full py-2 px-3 sm:px-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           {/* Botón de hamburguesa para móviles */}
           {toggleSidebar && (
@@ -81,10 +81,9 @@ export function Header({ toggleSidebar }: HeaderProps) {
           )}
 
           <Link href="/" className="flex items-center">
-            <h1 className="text-3xl font-bold">
-              <span className="text-white">Alma</span>
-              <span className="text-pink-400">IA</span>
-            </h1>
+            <div className="h-10 w-auto mr-2">
+              <Image src="/almaiaa.svg" alt="AlmaIA Logo" width={128} height={40} className="h-full w-auto" />
+            </div>
           </Link>
         </div>
 
@@ -115,18 +114,18 @@ export function Header({ toggleSidebar }: HeaderProps) {
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center space-x-3 focus:outline-none">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/30 flex-shrink-0">
+                <div className="w-9 h-9 rounded-full overflow-hidden border border-white/30 flex-shrink-0">
                   <Image
                     src="/confident-businessman.png"
                     alt="Perfil de usuario"
-                    width={40}
-                    height={40}
+                    width={45}
+                    height={45}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="text-white text-right hidden sm:block">
-                  <p className="text-sm font-medium">Emilio Aguilera</p>
-                  <p className="text-xs text-white/80">Rector</p>
+                  <p className="text-base font-medium">Emilio Aguilera</p>
+                  <p className="text-sm text-white/80">Rector</p>
                 </div>
               </div>
             </DropdownMenuTrigger>

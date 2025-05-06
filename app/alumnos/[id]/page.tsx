@@ -8,6 +8,7 @@ import { StudentAlerts } from "@/components/student/student-alerts"
 import { StudentReports } from "@/components/student/student-reports"
 import { StudentEmotions } from "@/components/student/student-emotions"
 import { User, Phone, Mail, Home, Users, FileText, Bell, Smile } from "lucide-react"
+import { StudentSkeleton } from "@/components/student/student-skeleton"
 
 interface Contact {
   tipo: string
@@ -256,9 +257,7 @@ export default function StudentDetailPage() {
     return (
       <AppLayout>
         <div className="container mx-auto px-3 sm:px-6 py-8">
-          <div className="flex justify-center items-center h-64">
-            <p className="text-xl text-gray-500">Cargando información del alumno...</p>
-          </div>
+          <StudentSkeleton />
         </div>
       </AppLayout>
     )

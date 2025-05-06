@@ -29,7 +29,7 @@ export function DesktopSidebar({ className }: DesktopSidebarProps) {
   return (
     <aside className={cn("w-64 bg-white border-r border-gray-200", className)}>
       {/* Eliminamos el header con el logo */}
-      <div className="h-16 border-b"></div>
+      <div className="h-12 border-b"></div>
 
       <nav className="flex-1 p-4">
         <ul className="space-y-1">

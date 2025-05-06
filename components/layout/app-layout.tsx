@@ -29,7 +29,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar para escritorio (siempre visible en md y superior) */}
         <aside className="hidden md:block w-64 bg-white border-r border-gray-200">
-          <div className="h-16 border-b"></div>
+          <div className="h-12 border-b"></div>
           <NavigationMenu />
           {/* Eliminamos la información del usuario en la versión de escritorio */}
         </aside>
