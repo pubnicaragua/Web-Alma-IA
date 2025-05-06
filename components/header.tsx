@@ -40,7 +40,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
   }
 
   return (
-    <header className="w-full relative h-[75px]">
+    <header className="w-full relative h-[100px]">
       {/* Fondo SVG como imagen */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <svg
@@ -65,34 +65,37 @@ export function Header({ toggleSidebar }: HeaderProps) {
         </svg>
       </div>
 
-      {/* Contenido del header */}
-      <div className="relative z-10 w-full h-full pt-0.5 pb-1.5 px-3 sm:px-6 flex items-center justify-between">
+      {/* Contenido del header - desplazado hacia arriba pero menos que antes */}
+      <div
+        className="relative z-10 w-full h-full flex items-center justify-between px-3 sm:px-6"
+        style={{ transform: "translateY(-10%)" }}
+      >
         <div className="flex items-center gap-4">
           {/* Botón de hamburguesa para móviles */}
           {toggleSidebar && (
             <button
               onClick={toggleSidebar}
-              className="text-white block md:hidden focus:outline-none p-1.5 ml-1"
+              className="text-white block md:hidden focus:outline-none p-2 ml-1"
               aria-label="Toggle navigation menu"
               type="button"
             >
-              <Menu size={24} />
+              <Menu size={28} />
             </button>
           )}
 
           <Link href="/" className="flex items-center">
-            <div className="h-8 w-auto mr-2">
-              <Image src="/almaiaa.svg" alt="AlmaIA Logo" width={100} height={32} className="h-full w-auto" />
+            <div className="h-10 w-auto mr-2">
+              <Image src="/almaiaa.svg" alt="AlmaIA Logo" width={128} height={40} className="h-full w-auto" />
             </div>
           </Link>
         </div>
 
-        <div className="relative w-72 hidden md:block">
+        <div className="relative w-80 hidden md:block">
           <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -104,28 +107,28 @@ export function Header({ toggleSidebar }: HeaderProps) {
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <Input type="text" placeholder="Buscar" className="pl-9 border bg-white/90 rounded-md h-8 text-sm" />
+          <Input type="text" placeholder="Buscar" className="pl-10 border bg-white/90 rounded-md" />
         </div>
 
-        <div className="flex items-center space-x-3">
-          <Bell className="text-white h-4 w-4 hidden sm:block" />
-          <Mail className="text-white h-4 w-4 hidden sm:block" />
+        <div className="flex items-center space-x-4">
+          <Bell className="text-white h-5 w-5 hidden sm:block" />
+          <Mail className="text-white h-5 w-5 hidden sm:block" />
 
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center space-x-2 focus:outline-none">
+            <DropdownMenuTrigger className="flex items-center space-x-3 focus:outline-none">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full overflow-hidden border border-white/30 flex-shrink-0">
+                <div className="w-9 h-9 rounded-full overflow-hidden border border-white/30 flex-shrink-0">
                   <Image
                     src="/confident-businessman.png"
                     alt="Perfil de usuario"
-                    width={40}
-                    height={40}
+                    width={45}
+                    height={45}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="text-white text-right hidden sm:block">
-                  <p className="text-sm font-medium">Emilio Aguilera</p>
-                  <p className="text-xs text-white/80">Rector</p>
+                  <p className="text-base font-medium">Emilio Aguilera</p>
+                  <p className="text-sm text-white/80">Rector</p>
                 </div>
               </div>
             </DropdownMenuTrigger>
