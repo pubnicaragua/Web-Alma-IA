@@ -5,7 +5,9 @@ import { AppLayout } from "@/components/layout/app-layout"
 import { FilterDropdown } from "@/components/filter-dropdown"
 import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
-import { Download, FileText } from "lucide-react"
+import { Download, FileText, Plus } from "lucide-react"
+import { GenerateReportModal, type ReportFormData } from "@/components/report/generate-report-modal"
+import { useToast } from "@/hooks/use-toast"
 
 interface Report {
   id: string
@@ -18,8 +20,9 @@ interface Report {
 }
 
 export default function ReportsPage() {
-  // Datos de ejemplo para los informes
-  const reportsData: Report[] = [
+  const { toast } = useToast()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [reports, setReports] = useState<Report[]>([
     {
       id: "1",
       title: "Informe mensual de rendimiento",
@@ -74,7 +77,7 @@ export default function ReportsPage() {
       status: "Completado",
       author: "Matías Ignacio Díaz",
     },
-  ]
+  ])
 
   // Estados para los filtros
   const [typeFilter, setTypeFilter] = useState<string>("Todos")
@@ -99,7 +102,7 @@ export default function ReportsPage() {
   ]
 
   // Filtrar los datos según los filtros seleccionados
-  const filteredReports = reportsData.filter((report) => {
+  const filteredReports = reports.filter((report) => {
     return (
       (typeFilter === "Todos" || report.type === typeFilter) &&
       (courseFilter === "Todos" || report.course === courseFilter) &&
@@ -124,7 +127,7 @@ export default function ReportsPage() {
   ]
 
   // Renderizar celdas de la tabla
-  const renderCell = (report: Report, column: { key: string; title: string }) => {
+  const renderCell = (report: Report, column: { key: string; title: string }, index: number) => {
     switch (column.key) {
       case "title":
         return (
@@ -149,7 +152,7 @@ export default function ReportsPage() {
         )
       case "actions":
         return (
-          <Button variant="outline" size="sm" className="flex items-center space-x-1">
+          <Button variant="outline" size="sm" className="flex items-center space-x-1 border border-gray-200">
             <Download className="h-4 w-4" />
             <span>Descargar</span>
           </Button>
@@ -160,9 +163,27 @@ export default function ReportsPage() {
   }
 
   // Función para generar un nuevo informe
-  const handleGenerateReport = () => {
-    alert("Funcionalidad para generar un nuevo informe")
-    // Aquí iría la lógica para abrir un modal o navegar a una página para generar un nuevo informe
+  const handleGenerateReport = (reportData: ReportFormData) => {
+    // Simulación de generación de informe
+    const newReport: Report = {
+      id: (reports.length + 1).toString(),
+      title: reportData.title,
+      type: reportData.type,
+      course: reportData.course,
+      date: new Date().toLocaleDateString("es-ES"),
+      status: "En proceso",
+      author: "Usuario Actual", // En un caso real, esto vendría del contexto de autenticación
+    }
+
+    // Añadir el nuevo informe a la lista
+    setReports([newReport, ...reports])
+
+    // Mostrar notificación de éxito
+    toast({
+      title: "Informe generado",
+      description: `El informe "${reportData.title}" se está generando y estará disponible en breve.`,
+      variant: "default",
+    })
   }
 
   return (
@@ -170,21 +191,8 @@ export default function ReportsPage() {
       <div className="container mx-auto px-3 sm:px-6 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Informes</h2>
-          <Button className="bg-blue-500 hover:bg-blue-600" onClick={handleGenerateReport}>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="md:mr-2"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+          <Button className="bg-blue-500 hover:bg-blue-600" onClick={() => setIsModalOpen(true)}>
+            <Plus className="h-4 w-4 md:mr-2" />
             <span className="hidden md:inline">Generar informe</span>
           </Button>
         </div>
@@ -199,9 +207,16 @@ export default function ReportsPage() {
         </div>
 
         {/* Tabla de informes */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <DataTable columns={columns} data={filteredReports} renderCell={renderCell} />
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-blue-200">
+          <DataTable columns={columns} data={filteredReports} renderCell={renderCell} alternateRows={true} />
         </div>
+
+        {/* Modal para generar informe */}
+        <GenerateReportModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onGenerate={handleGenerateReport}
+        />
       </div>
     </AppLayout>
   )
