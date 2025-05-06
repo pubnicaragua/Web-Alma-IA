@@ -7,6 +7,7 @@ import { AppLayout } from "@/components/layout/app-layout"
 import { Button } from "@/components/ui/button"
 import { Trash2, Mail, Phone, Calendar, BookOpen, School, Clock, Users } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
+import TeacherDetailSkeleton from "@/components/teacher/teacher-detail-skeleton"
 
 interface TeacherCourseInfo {
   curso: string
@@ -117,11 +118,7 @@ export default function TeacherDetailPage() {
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="container mx-auto px-6 py-8">
-          <div className="flex justify-center items-center h-64">
-            <p className="text-xl text-gray-500">Cargando información del docente...</p>
-          </div>
-        </div>
+        <TeacherDetailSkeleton />
       </AppLayout>
     )
   }

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation"
 import Image from "next/image"
 import { AppLayout } from "@/components/layout/app-layout"
 import { AddActionModal } from "@/components/alert/add-action-modal"
+import { AlertDetailSkeleton } from "@/components/alert/alert-detail-skeleton"
 import { Lock } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
@@ -143,11 +144,7 @@ export default function AlertDetailPage() {
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="container mx-auto px-6 py-8">
-          <div className="flex justify-center items-center h-64">
-            <p className="text-xl text-gray-500">Cargando información de la alerta...</p>
-          </div>
-        </div>
+        <AlertDetailSkeleton />
       </AppLayout>
     )
   }
