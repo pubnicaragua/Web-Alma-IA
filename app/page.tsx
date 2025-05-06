@@ -82,48 +82,44 @@ export default function Home() {
   const statCards = [
     {
       title: "Alumnos",
-      count: 14,
+      count: 637,
       stats: [
-        { label: "activos", value: "" },
-        { label: "Inactivos", value: "40" },
-        { label: "Frecuentes", value: "22" },
-        { label: "Totales", value: "2390" },
+        { label: "Inactivos", value: "19" },
+        { label: "Frecuentes", value: "510" },
+        { label: "Totales", value: "733" },
       ],
       className: "bg-gray-700", // Más intenso
       textColor: "text-white",
     },
     {
       title: "SOS Alma",
-      count: 14,
+      count: 5,
       stats: [
-        { label: "nuevos", value: "" },
-        { label: "Vencidos", value: "40" },
-        { label: "Por vencer", value: "22" },
-        { label: "Totales", value: "23" },
+        { label: "Vencidos", value: "0" },
+        { label: "Por vencer", value: "2" },
+        { label: "Totales", value: "13" },
       ],
       className: "bg-red-600", // Más intenso
       textColor: "text-white",
     },
     {
       title: "Denuncias",
-      count: 14,
+      count: 19,
       stats: [
-        { label: "nuevos", value: "" },
-        { label: "Vencidos", value: "40" },
-        { label: "Por vencer", value: "22" },
-        { label: "Totales", value: "23" },
+        { label: "Vencidos", value: "0" },
+        { label: "Por vencer", value: "3" },
+        { label: "Totales", value: "24" },
       ],
       className: "bg-purple-700", // Más intenso
       textColor: "text-white",
     },
     {
       title: "Alertas Alma",
-      count: 14,
+      count: 57,
       stats: [
-        { label: "nuevos", value: "" },
-        { label: "Vencidos", value: "40" },
-        { label: "Por vencer", value: "22" },
-        { label: "Totales", value: "23" },
+        { label: "Vencidos", value: "0" },
+        { label: "Por vencer", value: "6" },
+        { label: "Totales", value: "82" },
       ],
       className: "bg-yellow-500", // Más intenso
       textColor: "text-white",
