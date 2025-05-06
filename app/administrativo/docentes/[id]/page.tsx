@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { AppLayout } from "@/components/layout/app-layout"
 import { Button } from "@/components/ui/button"
-import { Trash2 } from "lucide-react"
+import { Trash2, Mail, Phone, Calendar, BookOpen, School, Clock, Users } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 interface TeacherCourseInfo {
@@ -141,119 +141,167 @@ export default function TeacherDetailPage() {
   return (
     <AppLayout>
       <div className="container mx-auto px-3 sm:px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-            <div className="relative w-24 h-24 rounded-full overflow-hidden mr-6 bg-gray-200 flex-shrink-0">
-              <Image
-                src={teacher.image || "/placeholder.svg"}
-                alt={teacher.name}
-                fill
-                sizes="96px"
-                className="object-cover"
-              />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">{teacher.name}</h1>
-              <p className="text-xl text-gray-600">
-                {teacher.subjects} - {teacher.currentCourses}
-              </p>
-            </div>
-          </div>
-          <Button onClick={handleDeleteTeacher} className="bg-red-500 hover:bg-red-600">
-            {isMobile ? (
-              <Trash2 className="h-5 w-5" />
-            ) : (
-              <>
-                <Trash2 className="h-5 w-5 mr-2" />
-                Borrar docente
-              </>
-            )}
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          {/* Datos personales */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Datos personales</h2>
-            <div className="space-y-3">
-              <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Nombre completo:</span>
-                <span className="text-gray-800">{teacher.fullName}</span>
+        {/* Zona 1: Información principal del docente */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
+          <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+              <div className="relative w-32 h-32 rounded-full overflow-hidden flex-shrink-0 border-4 border-blue-100">
+                <Image
+                  src={teacher.image || "/placeholder.svg"}
+                  alt={teacher.name}
+                  fill
+                  sizes="128px"
+                  className="object-cover"
+                />
               </div>
-              <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Edad:</span>
-                <span className="text-gray-800">{teacher.age} años</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm text-gray-500">RUT:</span>
-                <span className="text-gray-800">{teacher.rut}</span>
+              <div className="flex flex-col items-center md:items-start">
+                <h1 className="text-3xl font-bold text-gray-800">{teacher.name}</h1>
+                <p className="text-xl text-gray-600 mb-2">{teacher.position}</p>
+                <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                  {teacher.additionalRole}
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Información de contacto */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Información de contacto</h2>
-            <div className="space-y-3">
-              <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Correo institucional:</span>
-                <span className="text-gray-800">{teacher.email}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Teléfono:</span>
-                <span className="text-gray-800">{teacher.phone}</span>
-              </div>
-            </div>
+            <Button onClick={handleDeleteTeacher} className="bg-red-500 hover:bg-red-600 self-start">
+              {isMobile ? (
+                <Trash2 className="h-5 w-5" />
+              ) : (
+                <>
+                  <Trash2 className="h-5 w-5 mr-2" />
+                  Borrar docente
+                </>
+              )}
+            </Button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          {/* Datos académicos */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Datos académicos</h2>
-            <div className="space-y-3">
+          {/* Zona 2: Datos personales */}
+          <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+              <Users className="mr-2 h-5 w-5 text-blue-500" />
+              Datos personales
+            </h2>
+            <div className="space-y-4">
               <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Cargo:</span>
-                <span className="text-gray-800">{teacher.position}</span>
+                <span className="text-sm text-gray-500 mb-1">Nombre completo:</span>
+                <span className="text-gray-800 font-medium">{teacher.fullName}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Rol adicional:</span>
-                <span className="text-gray-800">{teacher.additionalRole}</span>
+                <span className="text-sm text-gray-500 mb-1">Edad:</span>
+                <span className="text-gray-800 font-medium">{teacher.age} años</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Años en el colegio:</span>
-                <span className="text-gray-800">{teacher.yearsInSchool} años</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Estado:</span>
-                <span className="text-gray-800">{teacher.status}</span>
+                <span className="text-sm text-gray-500 mb-1">RUT:</span>
+                <span className="text-gray-800 font-medium">{teacher.rut}</span>
               </div>
             </div>
           </div>
 
-          {/* Horario y cursos */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Horario y cursos</h2>
-            <div className="space-y-3">
-              <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Disponibilidad:</span>
-                <span className="text-gray-800">{teacher.availability}</span>
+          {/* Zona 3: Información de contacto */}
+          <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+              <Mail className="mr-2 h-5 w-5 text-blue-500" />
+              Información de contacto
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg">
+                <Mail className="h-5 w-5 text-blue-500 mr-3" />
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Correo institucional:</span>
+                  <span className="text-gray-800 font-medium">{teacher.email}</span>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Cursos actuales:</span>
-                <span className="text-gray-800">{teacher.currentCourses}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm text-gray-500">Asignaturas:</span>
-                <span className="text-gray-800">{teacher.subjects}</span>
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <Phone className="h-5 w-5 text-blue-500 mr-3" />
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Teléfono:</span>
+                  <span className="text-gray-800 font-medium">{teacher.phone}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Panel de resumen del curso */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Panel de resumen del curso</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          {/* Zona 4: Datos académicos */}
+          <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+              <BookOpen className="mr-2 h-5 w-5 text-blue-500" />
+              Datos académicos
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <School className="h-5 w-5 text-blue-500 mr-3" />
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Cargo:</span>
+                  <span className="text-gray-800 font-medium">{teacher.position}</span>
+                </div>
+              </div>
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <Users className="h-5 w-5 text-blue-500 mr-3" />
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Rol adicional:</span>
+                  <span className="text-gray-800 font-medium">{teacher.additionalRole}</span>
+                </div>
+              </div>
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <Calendar className="h-5 w-5 text-blue-500 mr-3" />
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Años en el colegio:</span>
+                  <span className="text-gray-800 font-medium">{teacher.yearsInSchool} años</span>
+                </div>
+              </div>
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="h-5 w-5 rounded-full bg-green-500 text-white flex items-center justify-center text-xs mr-3">
+                  A
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Estado:</span>
+                  <span className="text-gray-800 font-medium">{teacher.status}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Zona 5: Horario y cursos */}
+          <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+              <Clock className="mr-2 h-5 w-5 text-blue-500" />
+              Horario y cursos
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <Clock className="h-5 w-5 text-blue-500 mr-3" />
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Disponibilidad:</span>
+                  <span className="text-gray-800 font-medium">{teacher.availability}</span>
+                </div>
+              </div>
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <School className="h-5 w-5 text-blue-500 mr-3" />
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Cursos actuales:</span>
+                  <span className="text-gray-800 font-medium">{teacher.currentCourses}</span>
+                </div>
+              </div>
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <BookOpen className="h-5 w-5 text-blue-500 mr-3" />
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Asignaturas:</span>
+                  <span className="text-gray-800 font-medium">{teacher.subjects}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Zona 6: Panel de resumen del curso */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+            <Users className="mr-2 h-5 w-5 text-blue-500" />
+            Panel de resumen del curso
+          </h2>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -266,11 +314,27 @@ export default function TeacherDetailPage() {
               </thead>
               <tbody>
                 {teacher.coursesInfo.map((course, index) => (
-                  <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm">{course.curso}</td>
-                    <td className="px-4 py-3 text-sm">{course.numAlumnos}</td>
-                    <td className="px-4 py-3 text-sm">{course.alertasActivas}</td>
-                    <td className="px-4 py-3 text-sm">{course.ultimaAlerta}</td>
+                  <tr key={index} className="border-b-2 border-gray-100 hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm">
+                      <span className="font-medium text-blue-600">{course.curso}</span>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <div className="flex items-center">
+                        <Users className="h-4 w-4 text-gray-500 mr-2" />
+                        <span>{course.numAlumnos}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <div className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium inline-block">
+                        {course.alertasActivas}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 text-gray-500 mr-2" />
+                        <span>{course.ultimaAlerta}</span>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -278,26 +342,21 @@ export default function TeacherDetailPage() {
           </div>
         </div>
 
-        {/* Actividades recientes */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Actividades recientes</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-blue-300">
-                  <th className="px-4 py-3 text-left font-medium text-white">Fecha</th>
-                  <th className="px-4 py-3 text-left font-medium text-white">Acción realizada</th>
-                </tr>
-              </thead>
-              <tbody>
-                {teacher.recentActivities.map((activity, index) => (
-                  <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm">{activity.fecha}</td>
-                    <td className="px-4 py-3 text-sm">{activity.accionRealizada}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Zona 7: Actividades recientes */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+            <Clock className="mr-2 h-5 w-5 text-blue-500" />
+            Actividades recientes
+          </h2>
+          <div className="space-y-3">
+            {teacher.recentActivities.map((activity, index) => (
+              <div key={index} className="flex items-start p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-medium mr-3 whitespace-nowrap">
+                  {activity.fecha}
+                </div>
+                <span className="text-gray-800">{activity.accionRealizada}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

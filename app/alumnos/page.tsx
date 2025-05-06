@@ -133,7 +133,7 @@ export default function StudentsPage() {
   }
 
   // Renderizar celdas de la tabla
-  const renderCell = (student: Student, column: { key: string; title: string }) => {
+  const renderCell = (student: Student, column: { key: string; title: string }, index: number) => {
     switch (column.key) {
       case "name":
         return (

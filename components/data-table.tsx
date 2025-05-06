@@ -12,11 +12,12 @@ interface Column {
 interface DataTableProps<T> {
   columns: Column[]
   data: T[]
-  renderCell: (item: T, column: Column) => React.ReactNode
+  renderCell: (item: T, column: Column, index?: number) => React.ReactNode
   className?: string
+  alternateRows?: boolean
 }
 
-export function DataTable<T>({ columns, data, renderCell, className }: DataTableProps<T>) {
+export function DataTable<T>({ columns, data, renderCell, className, alternateRows = true }: DataTableProps<T>) {
   return (
     <div className={cn("w-full overflow-auto", className)}>
       <table className="w-full">
@@ -31,10 +32,16 @@ export function DataTable<T>({ columns, data, renderCell, className }: DataTable
         </thead>
         <tbody>
           {data.map((item, index) => (
-            <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+            <tr
+              key={index}
+              className={cn(
+                "border-b-2 border-gray-200 hover:bg-gray-50",
+                alternateRows && index % 2 === 1 ? "bg-gray-50" : "",
+              )}
+            >
               {columns.map((column) => (
-                <td key={`${index}-${column.key}`} className={cn("px-4 py-3 text-sm", column.className)}>
-                  {renderCell(item, column)}
+                <td key={`${index}-${column.key}`} className={cn("px-4 py-4 text-sm", column.className)}>
+                  {renderCell(item, column, index)}
                 </td>
               ))}
             </tr>

@@ -47,7 +47,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
         <AddAlertModal onAddAlert={handleAddAlert} />
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
+      <div className="bg-white rounded-lg shadow-sm overflow-x-auto border border-gray-100">
         <table className="w-full min-w-[640px]">
           <thead>
             <tr className="bg-blue-300">

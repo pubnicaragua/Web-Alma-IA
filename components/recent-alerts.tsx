@@ -14,7 +14,7 @@ interface RecentAlertsProps {
 
 export function RecentAlerts({ alerts }: RecentAlertsProps) {
   return (
-    <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm">
+    <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
       <h3 className="font-medium text-gray-800 mb-2">Alertas recientes</h3>
       <p className="text-sm text-gray-500 mb-6">5 nuevas alertas este último mes</p>
 

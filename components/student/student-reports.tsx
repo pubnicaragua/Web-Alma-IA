@@ -16,7 +16,7 @@ export function StudentReports({ reports }: StudentReportsProps) {
     <div>
       <h3 className="text-xl font-semibold text-gray-800 mb-6">Informes</h3>
 
-      <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
+      <div className="bg-white rounded-lg shadow-sm overflow-x-auto border border-gray-100">
         <table className="w-full min-w-[640px]">
           <thead>
             <tr className="bg-blue-300">
@@ -30,10 +30,14 @@ export function StudentReports({ reports }: StudentReportsProps) {
             {reports.map((report, index) => (
               <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm">{report.fecha}</td>
-                <td className="px-4 py-3 text-sm">{report.tipo}</td>
+                <td className="px-4 py-3 text-sm">
+                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                    {report.tipo}
+                  </span>
+                </td>
                 <td className="px-4 py-3 text-sm">{report.resumen}</td>
                 <td className="px-4 py-3 text-sm">
-                  <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  <Button variant="outline" size="sm" className="flex items-center gap-1 border border-gray-200">
                     <Download className="h-4 w-4" />
                     Descargar
                   </Button>

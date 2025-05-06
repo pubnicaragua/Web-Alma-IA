@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { themeColors } from "@/lib/theme-colors"
 
 interface EmotionData {
   name: string
@@ -21,14 +22,14 @@ interface StudentEmotionsProps {
 export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps) {
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>(emotionData.map((e) => e.name))
 
-  // Valores fijos para las barras, diferentes para cada emoción
+  // Valores fijos para las barras, diferentes para cada emoción con colores más vivos
   const chartData = [
-    { name: "Tristeza", value: 5, color: "#78b6ff" },
-    { name: "Felicidad", value: 18, color: "#ffd166" },
-    { name: "Estrés", value: 10, color: "#6c757d" },
-    { name: "Ansiedad", value: 20, color: "#f4a261" },
-    { name: "Enojo", value: 5, color: "#e63946" },
-    { name: "Otros", value: 15, color: "#6c757d" },
+    { name: "Tristeza", value: 5, color: themeColors.chart.blue },
+    { name: "Felicidad", value: 18, color: themeColors.chart.yellow },
+    { name: "Estrés", value: 10, color: themeColors.chart.gray },
+    { name: "Ansiedad", value: 20, color: themeColors.chart.orange },
+    { name: "Enojo", value: 5, color: themeColors.chart.red },
+    { name: "Otros", value: 15, color: themeColors.chart.purple },
   ]
 
   const toggleEmotion = (emotion: string) => {
@@ -44,7 +45,7 @@ export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps
       <h3 className="text-xl font-semibold text-gray-800 mb-6">Registro emocional del alumno</h3>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6">
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6 border border-blue-200">
           <div className="flex items-center mb-4">
             <span className="text-2xl mr-2">😊</span>
             <h4 className="text-lg font-medium">Emociones</h4>
@@ -67,7 +68,7 @@ export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps
             ))}
           </div>
 
-          <div className="h-64">
+          <div className="h-64 border border-gray-100 rounded-lg p-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={chartData.filter((emotion) => selectedEmotions.includes(emotion.name))}
@@ -89,12 +90,15 @@ export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6">
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-6 border border-blue-200">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-lg font-medium">Comparativa</h4>
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-blue-500 mr-1"></div>
+                <div
+                  className="w-3 h-3 rounded-full bg-blue-500 mr-1"
+                  style={{ backgroundColor: themeColors.chart.blue }}
+                ></div>
                 <span>Alumno</span>
               </div>
               <div className="flex items-center">
@@ -105,7 +109,7 @@ export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps
           </div>
 
           {/* Gráfico de radar */}
-          <div className="h-64 flex justify-center items-center">
+          <div className="h-64 flex justify-center items-center border border-gray-100 rounded-lg p-2">
             <svg viewBox="0 0 200 200" width="100%" height="100%">
               {/* Pentágono exterior */}
               <polygon points="100,10 190,75 160,180 40,180 10,75" fill="none" stroke="#e5e5e5" strokeWidth="1" />
@@ -117,8 +121,8 @@ export function StudentEmotions({ emotionData, radarData }: StudentEmotionsProps
               {/* Datos del alumno */}
               <polygon
                 points="100,20 170,75 150,150 50,150 30,75"
-                fill="rgba(66, 153, 255, 0.5)"
-                stroke="#4299ff"
+                fill={`${themeColors.chart.blue}80`}
+                stroke={themeColors.chart.blue}
                 strokeWidth="2"
               />
 

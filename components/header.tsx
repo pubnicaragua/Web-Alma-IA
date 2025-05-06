@@ -43,7 +43,26 @@ export function Header({ toggleSidebar }: HeaderProps) {
     <header className="w-full relative h-[158px]">
       {/* Fondo SVG como imagen */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
-        <Image src="/header.svg" alt="Header background" fill priority style={{ objectFit: "cover" }} />
+        <svg
+          width="100%"
+          height="100%"
+          viewBox="0 0 1440 158"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+        >
+          <g clipPath="url(#clip0_1640_1280)">
+            <path
+              d="M833.589 134.163C546.178 107.941 158.109 136.149 0 158V-62H1475V110.325C1380.95 129.196 1121 160.384 833.589 134.163Z"
+              fill="#89C2F8"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_1640_1280">
+              <rect width="1440" height="158" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
       </div>
 
       {/* Contenido del header */}

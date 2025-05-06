@@ -3,6 +3,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Badge } from "@/components/ui/badge"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { themeColors } from "@/lib/theme-colors"
 
 interface DataPoint {
   month: string
@@ -21,7 +22,7 @@ export function LineChartComparison({ title, data, selectedCourses, onToggleCour
   const isMobile = useIsMobile()
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm">
+    <div className="bg-white rounded-lg p-6 shadow-sm border border-blue-200">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-medium text-gray-800">{title}</h3>
         <div className="flex gap-2">
@@ -33,6 +34,9 @@ export function LineChartComparison({ title, data, selectedCourses, onToggleCour
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
             }`}
             onClick={() => onToggleCourse("courseA")}
+            style={{
+              backgroundColor: selectedCourses.includes("courseA") ? themeColors.chart.green : "",
+            }}
           >
             Curso A
           </Badge>
@@ -44,6 +48,9 @@ export function LineChartComparison({ title, data, selectedCourses, onToggleCour
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
             }`}
             onClick={() => onToggleCourse("courseB")}
+            style={{
+              backgroundColor: selectedCourses.includes("courseB") ? themeColors.chart.blue : "",
+            }}
           >
             Curso B
           </Badge>
@@ -64,7 +71,7 @@ export function LineChartComparison({ title, data, selectedCourses, onToggleCour
               <Line
                 type="monotone"
                 dataKey="courseA"
-                stroke="#4ade80"
+                stroke={themeColors.chart.green}
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}
@@ -74,7 +81,7 @@ export function LineChartComparison({ title, data, selectedCourses, onToggleCour
               <Line
                 type="monotone"
                 dataKey="courseB"
-                stroke="#60a5fa"
+                stroke={themeColors.chart.blue}
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}

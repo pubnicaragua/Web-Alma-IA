@@ -3,6 +3,7 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { Smile } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { themeColors } from "@/lib/theme-colors"
 
 interface EmotionData {
   name: string
@@ -20,16 +21,16 @@ interface BarChartComparisonProps {
 export function BarChartComparison({ title, data, selectedEmotions, onToggleEmotion }: BarChartComparisonProps) {
   // Valores fijos para las barras, diferentes para cada emoción
   const chartData = [
-    { name: "Tristeza", value: 1500, color: "#78b6ff" },
-    { name: "Felicidad", value: 3000, color: "#ffd166" },
-    { name: "Estrés", value: 1000, color: "#6c757d" },
-    { name: "Ansiedad", value: 2500, color: "#f4a261" },
-    { name: "Enojo", value: 800, color: "#e63946" },
-    { name: "Otros", value: 2000, color: "#6c757d" },
+    { name: "Tristeza", value: 1500, color: themeColors.chart.blue },
+    { name: "Felicidad", value: 3000, color: themeColors.chart.yellow },
+    { name: "Estrés", value: 1000, color: themeColors.chart.gray },
+    { name: "Ansiedad", value: 2500, color: themeColors.chart.orange },
+    { name: "Enojo", value: 800, color: themeColors.chart.red },
+    { name: "Otros", value: 2000, color: themeColors.chart.purple },
   ]
 
   return (
-    <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm">
+    <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
       <div className="flex items-center mb-4">
         <Smile className="mr-2 text-gray-700" />
         <h3 className="font-medium text-gray-800">{title}</h3>

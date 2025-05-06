@@ -8,7 +8,7 @@ import { BarChartComparison } from "@/components/bar-chart-comparison"
 import { DonutChart } from "@/components/donut-chart"
 import { ImportantDates } from "@/components/important-dates"
 import { RecentAlerts } from "@/components/recent-alerts"
-import { colors } from "@/lib/colors"
+import { themeColors } from "@/lib/theme-colors"
 
 export default function Home() {
   const router = useRouter()
@@ -89,7 +89,7 @@ export default function Home() {
         { label: "Frecuentes", value: "22" },
         { label: "Totales", value: "2390" },
       ],
-      className: "bg-gray-600",
+      className: "bg-gray-700", // Más intenso
       textColor: "text-white",
     },
     {
@@ -101,7 +101,7 @@ export default function Home() {
         { label: "Por vencer", value: "22" },
         { label: "Totales", value: "23" },
       ],
-      className: "bg-red-500",
+      className: "bg-red-600", // Más intenso
       textColor: "text-white",
     },
     {
@@ -113,7 +113,7 @@ export default function Home() {
         { label: "Por vencer", value: "22" },
         { label: "Totales", value: "23" },
       ],
-      className: "bg-purple-600",
+      className: "bg-purple-700", // Más intenso
       textColor: "text-white",
     },
     {
@@ -125,37 +125,37 @@ export default function Home() {
         { label: "Por vencer", value: "22" },
         { label: "Totales", value: "23" },
       ],
-      className: "bg-yellow-400",
+      className: "bg-yellow-500", // Más intenso
       textColor: "text-white",
     },
   ]
 
   // Datos para el gráfico de emociones con valores fijos diferentes
   const emotionData = [
-    { name: "Tristeza", value: 1500, color: colors.chart.blue },
-    { name: "Felicidad", value: 3000, color: colors.chart.yellow },
-    { name: "Estrés", value: 1000, color: colors.chart.gray },
-    { name: "Ansiedad", value: 2500, color: colors.chart.orange },
-    { name: "Enojo", value: 800, color: colors.chart.red },
-    { name: "Otros", value: 2000, color: colors.chart.gray },
+    { name: "Tristeza", value: 1500, color: themeColors.chart.blue },
+    { name: "Felicidad", value: 3000, color: themeColors.chart.yellow },
+    { name: "Estrés", value: 1000, color: themeColors.chart.gray },
+    { name: "Ansiedad", value: 2500, color: themeColors.chart.orange },
+    { name: "Enojo", value: 800, color: themeColors.chart.red },
+    { name: "Otros", value: 2000, color: themeColors.chart.purple },
   ]
 
   // Datos para el gráfico de emociones general (con valores ligeramente diferentes)
   const emotionDataGeneral = [
-    { name: "Tristeza", value: 2000, color: colors.chart.blue },
-    { name: "Felicidad", value: 4000, color: colors.chart.yellow },
-    { name: "Estrés", value: 1800, color: colors.chart.gray },
-    { name: "Ansiedad", value: 3200, color: colors.chart.orange },
-    { name: "Enojo", value: 1200, color: colors.chart.red },
-    { name: "Otros", value: 2800, color: colors.chart.gray },
+    { name: "Tristeza", value: 2000, color: themeColors.chart.blue },
+    { name: "Felicidad", value: 4000, color: themeColors.chart.yellow },
+    { name: "Estrés", value: 1800, color: themeColors.chart.gray },
+    { name: "Ansiedad", value: 3200, color: themeColors.chart.orange },
+    { name: "Enojo", value: 1200, color: themeColors.chart.red },
+    { name: "Otros", value: 2800, color: themeColors.chart.purple },
   ]
 
   // Datos para el gráfico circular
   const donutData = [
-    { label: "10 Pendientes", value: 10, percentage: "22.8%", color: colors.chart.yellow },
-    { label: "07 Nuevos", value: 7, percentage: "13.9%", color: colors.status.success },
-    { label: "39 Atendidos", value: 39, percentage: "52.1%", color: colors.primary.main },
-    { label: "05 Aplazados", value: 5, percentage: "11.2%", color: colors.chart.gray },
+    { label: "10 Pendientes", value: 10, percentage: "22.8%", color: themeColors.chart.yellow },
+    { label: "07 Nuevos", value: 7, percentage: "13.9%", color: themeColors.status.success },
+    { label: "39 Atendidos", value: 39, percentage: "52.1%", color: themeColors.primary.main },
+    { label: "05 Aplazados", value: 5, percentage: "11.2%", color: themeColors.chart.purple },
   ]
 
   // Datos para las fechas importantes

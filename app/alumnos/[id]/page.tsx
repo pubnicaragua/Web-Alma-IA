@@ -4,11 +4,10 @@ import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import { AppLayout } from "@/components/layout/app-layout"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { StudentHeader } from "@/components/student/student-header"
-import { StudentProfile } from "@/components/student/student-profile"
 import { StudentAlerts } from "@/components/student/student-alerts"
 import { StudentReports } from "@/components/student/student-reports"
 import { StudentEmotions } from "@/components/student/student-emotions"
+import { User, Phone, Mail, Home, Users, FileText, Bell, Smile } from "lucide-react"
 
 interface Contact {
   tipo: string
@@ -57,7 +56,6 @@ interface Student {
   contacts: {
     apoderados: Contact[]
     antecedentesClinicosContactos: Contact[]
-    entrevistaFamiliarContactos: Contact[]
     entrevistaFamiliarContactos: Contact[]
   }
   alerts: Alert[]
@@ -281,49 +279,234 @@ export default function StudentDetailPage() {
   return (
     <AppLayout>
       <div className="container mx-auto px-3 sm:px-6 py-8">
-        {/* Información del estudiante */}
-        <StudentHeader
-          student={{
-            name: student.name,
-            course: student.course,
-            status: student.status,
-            image: student.image,
-          }}
-        />
+        {/* Zona 1: Información principal del estudiante */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border border-blue-200">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+            <div className="relative w-32 h-32 rounded-full overflow-hidden flex-shrink-0 border-4 border-blue-100">
+              <img
+                src={student.image || "/placeholder.svg"}
+                alt={student.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="flex flex-col items-center md:items-start">
+              <h1 className="text-3xl font-bold text-gray-800">{student.name}</h1>
+              <p className="text-xl text-gray-600 mb-2">{student.course}</p>
+              <div className="flex gap-4">
+                <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                  {student.age} años
+                </div>
+                <div className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                  Estado: {student.status}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        {/* Pestañas */}
-        <Tabs defaultValue="ficha" className="mb-6" onValueChange={setActiveTab}>
-          <TabsList className="bg-blue-100">
-            <TabsTrigger value="ficha" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-              Ficha
-            </TabsTrigger>
-            <TabsTrigger value="alertas" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-              Alertas
-            </TabsTrigger>
-            <TabsTrigger value="informes" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-              Informes
-            </TabsTrigger>
-            <TabsTrigger value="emociones" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-              Emociones
-            </TabsTrigger>
-          </TabsList>
+        {/* Zona 2: Pestañas de navegación */}
+        <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-blue-200">
+          <Tabs defaultValue="ficha" className="w-full" onValueChange={setActiveTab}>
+            <TabsList className="bg-blue-100 w-full justify-start">
+              <TabsTrigger
+                value="ficha"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Ficha
+              </TabsTrigger>
+              <TabsTrigger
+                value="alertas"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center"
+              >
+                <Bell className="h-4 w-4 mr-2" />
+                Alertas
+              </TabsTrigger>
+              <TabsTrigger
+                value="informes"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Informes
+              </TabsTrigger>
+              <TabsTrigger
+                value="emociones"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center"
+              >
+                <Smile className="h-4 w-4 mr-2" />
+                Emociones
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="ficha" className="mt-6">
-            <StudentProfile student={student} />
-          </TabsContent>
+            {/* Zona 3: Contenido de las pestañas */}
+            <div className="mt-6 bg-white rounded-lg p-4 border border-blue-100">
+              <TabsContent value="ficha">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                  {/* Datos personales */}
+                  <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+                      <User className="mr-2 h-5 w-5 text-blue-500" />
+                      Datos personales
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex flex-col">
+                        <span className="text-sm text-gray-500">Número de documento:</span>
+                        <span className="text-gray-800 font-medium">{student.documentNumber}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm text-gray-500">Fecha de nacimiento:</span>
+                        <span className="text-gray-800 font-medium">{student.birthDate}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm text-gray-500">Género:</span>
+                        <span className="text-gray-800 font-medium">{student.gender}</span>
+                      </div>
+                    </div>
+                  </div>
 
-          <TabsContent value="alertas" className="mt-6">
-            <StudentAlerts alerts={student.alerts} />
-          </TabsContent>
+                  {/* Información de contacto */}
+                  <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+                      <Mail className="mr-2 h-5 w-5 text-blue-500" />
+                      Información de contacto
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <Phone className="h-5 w-5 text-blue-500 mr-3" />
+                        <div className="flex flex-col">
+                          <span className="text-sm text-gray-500">Celular:</span>
+                          <span className="text-gray-800 font-medium">{student.cellphone}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <Mail className="h-5 w-5 text-blue-500 mr-3" />
+                        <div className="flex flex-col">
+                          <span className="text-sm text-gray-500">Correo:</span>
+                          <span className="text-gray-800 font-medium">{student.email}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <Users className="h-5 w-5 text-blue-500 mr-3" />
+                        <div className="flex flex-col">
+                          <span className="text-sm text-gray-500">Idioma:</span>
+                          <span className="text-gray-800 font-medium">{student.languages}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <Home className="h-5 w-5 text-blue-500 mr-3" />
+                        <div className="flex flex-col">
+                          <span className="text-sm text-gray-500">Dirección:</span>
+                          <span className="text-gray-800 font-medium">{student.address}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-          <TabsContent value="informes" className="mt-6">
-            <StudentReports reports={student.reports} />
-          </TabsContent>
+                {/* Apoderados */}
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+                    <Users className="mr-2 h-5 w-5 text-blue-500" />
+                    Apoderados
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[640px]">
+                      <thead>
+                        <tr className="bg-blue-300">
+                          <th className="px-4 py-3 text-left font-medium text-white">Tipo</th>
+                          <th className="px-4 py-3 text-left font-medium text-white">Nombre</th>
+                          <th className="px-4 py-3 text-left font-medium text-white">Parentesco</th>
+                          <th className="px-4 py-3 text-left font-medium text-white">Teléfono</th>
+                          <th className="px-4 py-3 text-left font-medium text-white">RUT/DNI</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {student.contacts.apoderados.map((contact, index) => (
+                          <tr key={index} className="border-b-2 border-gray-100 hover:bg-gray-50">
+                            <td className="px-4 py-3 text-sm">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  contact.tipo === "Principal"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-blue-100 text-blue-800"
+                                }`}
+                              >
+                                {contact.tipo}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm font-medium">{contact.nombre}</td>
+                            <td className="px-4 py-3 text-sm">{contact.parentesco}</td>
+                            <td className="px-4 py-3 text-sm">{contact.telefono}</td>
+                            <td className="px-4 py-3 text-sm">{contact.rut}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
 
-          <TabsContent value="emociones" className="mt-6">
-            <StudentEmotions emotionData={student.emotions.data} radarData={student.emotions.radarData} />
-          </TabsContent>
-        </Tabs>
+                {/* Antecedentes clínicos */}
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                    Antecedentes clínicos
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[640px]">
+                      <thead>
+                        <tr className="bg-blue-300">
+                          <th className="px-4 py-3 text-left font-medium text-white">Tipo</th>
+                          <th className="px-4 py-3 text-left font-medium text-white">Nombre</th>
+                          <th className="px-4 py-3 text-left font-medium text-white">Parentesco</th>
+                          <th className="px-4 py-3 text-left font-medium text-white">Teléfono</th>
+                          <th className="px-4 py-3 text-left font-medium text-white">RUT/DNI</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {student.contacts.antecedentesClinicosContactos.map((contact, index) => (
+                          <tr key={index} className="border-b-2 border-gray-100 hover:bg-gray-50">
+                            <td className="px-4 py-3 text-sm">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  contact.tipo === "Principal"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-blue-100 text-blue-800"
+                                }`}
+                              >
+                                {contact.tipo}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm font-medium">{contact.nombre}</td>
+                            <td className="px-4 py-3 text-sm">{contact.parentesco}</td>
+                            <td className="px-4 py-3 text-sm">{contact.telefono}</td>
+                            <td className="px-4 py-3 text-sm">{contact.rut}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="alertas">
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
+                  <StudentAlerts alerts={student.alerts} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="informes">
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
+                  <StudentReports reports={student.reports} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="emociones">
+                <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
+                  <StudentEmotions emotionData={student.emotions.data} radarData={student.emotions.radarData} />
+                </div>
+              </TabsContent>
+            </div>
+          </Tabs>
+        </div>
       </div>
     </AppLayout>
   )
