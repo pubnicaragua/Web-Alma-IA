@@ -25,7 +25,7 @@ export function DonutChart({ data }: DonutChartProps) {
       <h3 className="font-medium text-gray-800 mb-6">Alertas totales</h3>
 
       <div className="flex items-center justify-center mb-6">
-        <div className="relative w-40 h-40">
+        <div className="relative w-56 h-56">
           <svg viewBox="0 0 100 100" className="w-full h-full">
             {enhancedData.map((segment, i) => {
               // Calculate the segment positions
@@ -57,18 +57,68 @@ export function DonutChart({ data }: DonutChartProps) {
               return <path key={i} d={d} fill={segment.color} />
             })}
             <circle cx="50" cy="50" r="25" fill="white" />
+
+            {/* Texto central */}
+            <text
+              x="50"
+              y="50"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="text-xl font-bold fill-gray-800"
+            >
+              {enhancedData.reduce((sum, item) => sum + item.value, 0)}
+            </text>
+            <text x="50" y="60" textAnchor="middle" dominantBaseline="middle" className="text-xs fill-gray-500">
+              Total
+            </text>
+
+            {/* Textos en cada segmento */}
+            {enhancedData.map((segment, i) => {
+              // Calculate position for text
+              const total = enhancedData.reduce((sum, item) => sum + Number.parseFloat(item.percentage), 0)
+              const segmentAngle = (Number.parseFloat(segment.percentage) / total) * 360
+              const midAngle =
+                (((i > 0
+                  ? (enhancedData.slice(0, i).reduce((sum, item) => sum + Number.parseFloat(item.percentage), 0) /
+                      total) *
+                    360
+                  : 0) +
+                  segmentAngle / 2 -
+                  90) *
+                  Math.PI) /
+                180
+
+              // Position text in the middle of each segment
+              const textRadius = 32.5 // Halfway between inner and outer radius
+              const textX = 50 + textRadius * Math.cos(midAngle)
+              const textY = 50 + textRadius * Math.sin(midAngle)
+
+              // Only show percentage for segments large enough to fit text
+              if (segmentAngle < 30) return null
+
+              return (
+                <text
+                  key={`text-${i}`}
+                  x={textX}
+                  y={textY}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="text-xs font-medium fill-white"
+                  style={{ textShadow: "0px 0px 2px rgba(0,0,0,0.5)" }}
+                >
+                  {segment.percentage}
+                </text>
+              )
+            })}
           </svg>
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-2">
         {enhancedData.map((item, index) => (
-          <div key={index} className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }} />
-              <span className="text-sm text-gray-700">{item.label}</span>
-            </div>
-            <span className="text-sm font-medium">{item.percentage}</span>
+          <div key={index} className="flex items-center">
+            <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }} />
+            <span className="text-sm text-gray-700 truncate">{item.label}</span>
           </div>
         ))}
       </div>
