@@ -256,7 +256,7 @@ export default function StudentDetailPage() {
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="container mx-auto px-3 sm:px-6 py-8">
+        <div className="container mx-auto px-2 sm:px-6 py-4 sm:py-8">
           <StudentSkeleton />
         </div>
       </AppLayout>
@@ -266,7 +266,7 @@ export default function StudentDetailPage() {
   if (!student) {
     return (
       <AppLayout>
-        <div className="container mx-auto px-3 sm:px-6 py-8">
+        <div className="container mx-auto px-2 sm:px-6 py-4 sm:py-8">
           <div className="flex justify-center items-center h-64">
             <p className="text-xl text-gray-500">No se encontró información del alumno</p>
           </div>
@@ -277,7 +277,7 @@ export default function StudentDetailPage() {
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-3 sm:px-6 py-8">
+      <div className="container mx-auto px-2 sm:px-6 py-4 sm:py-8">
         {/* Zona 1: Información principal del estudiante */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6 border border-blue-200">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
@@ -306,31 +306,31 @@ export default function StudentDetailPage() {
         {/* Zona 2: Pestañas de navegación */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-blue-200">
           <Tabs defaultValue="ficha" className="w-full" onValueChange={setActiveTab}>
-            <TabsList className="bg-blue-100 w-full justify-start">
+            <TabsList className="bg-blue-100 w-full justify-start overflow-x-auto flex-nowrap whitespace-nowrap">
               <TabsTrigger
                 value="ficha"
-                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center text-xs sm:text-sm px-2 sm:px-4"
               >
                 <User className="h-4 w-4 mr-2" />
                 Ficha
               </TabsTrigger>
               <TabsTrigger
                 value="alertas"
-                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center text-xs sm:text-sm px-2 sm:px-4"
               >
                 <Bell className="h-4 w-4 mr-2" />
                 Alertas
               </TabsTrigger>
               <TabsTrigger
                 value="informes"
-                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center text-xs sm:text-sm px-2 sm:px-4"
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Informes
               </TabsTrigger>
               <TabsTrigger
                 value="emociones"
-                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center"
+                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center text-xs sm:text-sm px-2 sm:px-4"
               >
                 <Smile className="h-4 w-4 mr-2" />
                 Emociones

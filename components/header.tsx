@@ -72,11 +72,11 @@ export function Header({ toggleSidebar }: HeaderProps) {
           {toggleSidebar && (
             <button
               onClick={toggleSidebar}
-              className="text-white block md:hidden focus:outline-none"
+              className="text-white block md:hidden focus:outline-none p-2 ml-1"
               aria-label="Toggle navigation menu"
               type="button"
             >
-              <Menu size={24} />
+              <Menu size={28} />
             </button>
           )}
 
@@ -104,7 +104,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <Input type="text" placeholder="Buscar" className="pl-10 border bg-white/90 rounded-md" />
+          <Input type="text" placeholder="Buscar" className="pl-10 border bg-white/90 rounded-md -ml-28" />
         </div>
 
         <div className="flex items-center space-x-4">
