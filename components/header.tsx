@@ -104,7 +104,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <Input type="text" placeholder="Buscar" className="pl-10 border bg-white/90 rounded-md -ml-28" />
+          <Input type="text" placeholder="Buscar" className="pl-10 border bg-white/90 rounded-md " />
         </div>
 
         <div className="flex items-center space-x-4">

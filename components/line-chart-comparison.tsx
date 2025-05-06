@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Badge } from "@/components/ui/badge"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { themeColors } from "@/lib/theme-colors"
+import { memo } from "react"
 
 interface DataPoint {
   month: string
@@ -18,7 +19,13 @@ interface LineChartComparisonProps {
   onToggleCourse: (course: string) => void
 }
 
-export function LineChartComparison({ title, data, selectedCourses, onToggleCourse }: LineChartComparisonProps) {
+// Usar memo para evitar re-renderizados innecesarios
+export const LineChartComparison = memo(function LineChartComparison({
+  title,
+  data,
+  selectedCourses,
+  onToggleCourse,
+}: LineChartComparisonProps) {
   const isMobile = useIsMobile()
 
   return (
@@ -57,8 +64,9 @@ export function LineChartComparison({ title, data, selectedCourses, onToggleCour
         </div>
       </div>
 
-      <div className={`h-64 ${isMobile ? "w-[calc(100vw-3rem)]" : ""} overflow-x-auto`}>
-        <ResponsiveContainer width={isMobile ? 600 : "100%"} height="100%">
+      <div className="h-64 w-full">
+        {/* Eliminar el ancho fijo para móviles y usar un enfoque más adaptable */}
+        <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="month" />
@@ -93,4 +101,4 @@ export function LineChartComparison({ title, data, selectedCourses, onToggleCour
       </div>
     </div>
   )
-}
+})

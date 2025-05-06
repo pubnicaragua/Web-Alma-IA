@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { AppLayout } from "@/components/layout/app-layout"
 import { FilterDropdown } from "@/components/filter-dropdown"
 import { BarChartComparison } from "@/components/bar-chart-comparison"
@@ -36,35 +36,44 @@ export default function ComparativePage() {
     "Diciembre",
   ]
 
-  // Datos para los gráficos de barras
-  const emotionsDataCourseA = [
-    { name: "Tristeza", value: 1500, color: colors.chart.blue },
-    { name: "Felicidad", value: 3000, color: colors.chart.yellow },
-    { name: "Estrés", value: 1000, color: colors.chart.gray },
-    { name: "Ansiedad", value: 2500, color: colors.chart.orange },
-    { name: "Enojo", value: 800, color: colors.chart.red },
-    { name: "Otros", value: 2000, color: colors.chart.gray },
-  ]
+  // Usar useMemo para evitar recálculos innecesarios de los datos
+  const emotionsDataCourseA = useMemo(
+    () => [
+      { name: "Tristeza", value: 1500, color: colors.chart.blue },
+      { name: "Felicidad", value: 3000, color: colors.chart.yellow },
+      { name: "Estrés", value: 1000, color: colors.chart.gray },
+      { name: "Ansiedad", value: 2500, color: colors.chart.orange },
+      { name: "Enojo", value: 800, color: colors.chart.red },
+      { name: "Otros", value: 2000, color: colors.chart.gray },
+    ],
+    [],
+  )
 
-  const emotionsDataCourseB = [
-    { name: "Tristeza", value: 1200, color: colors.chart.blue },
-    { name: "Felicidad", value: 2800, color: colors.chart.yellow },
-    { name: "Estrés", value: 1200, color: colors.chart.gray },
-    { name: "Ansiedad", value: 2700, color: colors.chart.orange },
-    { name: "Enojo", value: 1500, color: colors.chart.red },
-    { name: "Otros", value: 1800, color: colors.chart.gray },
-  ]
+  const emotionsDataCourseB = useMemo(
+    () => [
+      { name: "Tristeza", value: 1200, color: colors.chart.blue },
+      { name: "Felicidad", value: 2800, color: colors.chart.yellow },
+      { name: "Estrés", value: 1200, color: colors.chart.gray },
+      { name: "Ansiedad", value: 2700, color: colors.chart.orange },
+      { name: "Enojo", value: 1500, color: colors.chart.red },
+      { name: "Otros", value: 1800, color: colors.chart.gray },
+    ],
+    [],
+  )
 
   // Datos para el gráfico de líneas
-  const alertsData = [
-    { month: "Ene", courseA: 1200, courseB: 1500 },
-    { month: "Feb", courseA: 900, courseB: 1200 },
-    { month: "Mar", courseA: 1500, courseB: 1000 },
-    { month: "Abr", courseA: 2000, courseB: 1800 },
-    { month: "May", courseA: 3000, courseB: 2500 },
-    { month: "Jun", courseA: 2500, courseB: 2800 },
-    { month: "Jul", courseA: 2800, courseB: 3200 },
-  ]
+  const alertsData = useMemo(
+    () => [
+      { month: "Ene", courseA: 1200, courseB: 1500 },
+      { month: "Feb", courseA: 900, courseB: 1200 },
+      { month: "Mar", courseA: 1500, courseB: 1000 },
+      { month: "Abr", courseA: 2000, courseB: 1800 },
+      { month: "May", courseA: 3000, courseB: 2500 },
+      { month: "Jun", courseA: 2500, courseB: 2800 },
+      { month: "Jul", courseA: 2800, courseB: 3200 },
+    ],
+    [],
+  )
 
   // Estados para las emociones seleccionadas
   const [selectedEmotionsCourseA, setSelectedEmotionsCourseA] = useState<string[]>([

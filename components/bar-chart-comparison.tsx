@@ -3,7 +3,7 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { Smile } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { themeColors } from "@/lib/theme-colors"
+import { memo } from "react"
 
 interface EmotionData {
   name: string
@@ -18,16 +18,15 @@ interface BarChartComparisonProps {
   onToggleEmotion: (emotion: string) => void
 }
 
-export function BarChartComparison({ title, data, selectedEmotions, onToggleEmotion }: BarChartComparisonProps) {
-  // Valores fijos para las barras, diferentes para cada emoción
-  const chartData = [
-    { name: "Tristeza", value: 1500, color: themeColors.chart.blue },
-    { name: "Felicidad", value: 3000, color: themeColors.chart.yellow },
-    { name: "Estrés", value: 1000, color: themeColors.chart.gray },
-    { name: "Ansiedad", value: 2500, color: themeColors.chart.orange },
-    { name: "Enojo", value: 800, color: themeColors.chart.red },
-    { name: "Otros", value: 2000, color: themeColors.chart.purple },
-  ]
+// Usar memo para evitar re-renderizados innecesarios
+export const BarChartComparison = memo(function BarChartComparison({
+  title,
+  data,
+  selectedEmotions,
+  onToggleEmotion,
+}: BarChartComparisonProps) {
+  // Filtrar los datos una sola vez
+  const filteredData = data.filter((emotion) => selectedEmotions.includes(emotion.name))
 
   return (
     <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
@@ -37,7 +36,7 @@ export function BarChartComparison({ title, data, selectedEmotions, onToggleEmot
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        {chartData.map((emotion) => (
+        {data.map((emotion) => (
           <Badge
             key={emotion.name}
             variant={selectedEmotions.includes(emotion.name) ? "default" : "outline"}
@@ -58,13 +57,9 @@ export function BarChartComparison({ title, data, selectedEmotions, onToggleEmot
         ))}
       </div>
 
-      <div className="h-64 w-full overflow-x-auto">
-        <ResponsiveContainer width="100%" height="100%" minWidth={320}>
-          <BarChart
-            data={chartData.filter((emotion) => selectedEmotions.includes(emotion.name))}
-            margin={{ top: 5, right: 5, left: 0, bottom: 20 }}
-            maxBarSize={50}
-          >
+      <div className="h-64 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={filteredData} margin={{ top: 5, right: 5, left: 0, bottom: 20 }} maxBarSize={50}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="name"
@@ -78,15 +73,13 @@ export function BarChartComparison({ title, data, selectedEmotions, onToggleEmot
               contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
             />
             <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-              {chartData
-                .filter((emotion) => selectedEmotions.includes(emotion.name))
-                .map((entry) => (
-                  <Cell key={`cell-${entry.name}`} fill={entry.color} />
-                ))}
+              {filteredData.map((entry) => (
+                <Cell key={`cell-${entry.name}`} fill={entry.color} />
+              ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
   )
-}
+})

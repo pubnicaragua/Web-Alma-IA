@@ -51,37 +51,39 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
         <table className="w-full min-w-[640px]">
           <thead>
             <tr className="bg-blue-300">
-              <th className="px-4 py-3 text-left font-medium text-white">Fecha</th>
-              <th className="px-4 py-3 text-left font-medium text-white">Hora</th>
-              <th className="px-4 py-3 text-left font-medium text-white">Tipo de alerta</th>
-              <th className="px-4 py-3 text-left font-medium text-white">Estado</th>
-              <th className="px-4 py-3 text-left font-medium text-white">Nivel de prioridad</th>
-              <th className="px-4 py-3 text-left font-medium text-white">Responsable actual</th>
+              <th className="px-4 py-3 text-center font-medium text-white">Fecha</th>
+              <th className="px-4 py-3 text-center font-medium text-white">Hora</th>
+              <th className="px-4 py-3 text-center font-medium text-white">Tipo de alerta</th>
+              <th className="px-4 py-3 text-center font-medium text-white">Estado</th>
+              <th className="px-4 py-3 text-center font-medium text-white">Nivel de prioridad</th>
+              <th className="px-4 py-3 text-center font-medium text-white">Responsable actual</th>
             </tr>
           </thead>
           <tbody>
             {alerts.map((alert, index) => (
               <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm">{alert.fecha}</td>
-                <td className="px-4 py-3 text-sm">{alert.hora}</td>
-                <td className="px-4 py-3 text-sm">
-                  <Badge
-                    className={
-                      alert.tipo === "SOS Alma"
-                        ? "bg-red-500"
-                        : alert.tipo === "Alerta amarilla"
-                          ? "bg-yellow-400"
-                          : alert.tipo === "Alerta Naranja"
-                            ? "bg-orange-500"
-                            : alert.tipo === "Denuncia"
-                              ? "bg-purple-600"
-                              : ""
-                    }
-                  >
-                    {alert.tipo}
-                  </Badge>
+                <td className="px-4 py-3 text-sm text-center">{alert.fecha}</td>
+                <td className="px-4 py-3 text-sm text-center">{alert.hora}</td>
+                <td className="px-4 py-3 text-sm text-center">
+                  <div className="flex justify-center">
+                    <Badge
+                      className={
+                        alert.tipo === "SOS Alma"
+                          ? "bg-red-500"
+                          : alert.tipo === "Alerta amarilla"
+                            ? "bg-yellow-400"
+                            : alert.tipo === "Alerta Naranja"
+                              ? "bg-orange-500"
+                              : alert.tipo === "Denuncia"
+                                ? "bg-purple-600"
+                                : ""
+                      }
+                    >
+                      {alert.tipo}
+                    </Badge>
+                  </div>
                 </td>
-                <td className="px-4 py-3 text-sm">
+                <td className="px-4 py-3 text-sm text-center">
                   <Badge
                     variant="outline"
                     className={
@@ -95,7 +97,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
                     {alert.estado}
                   </Badge>
                 </td>
-                <td className="px-4 py-3 text-sm">
+                <td className="px-4 py-3 text-sm text-center">
                   <Badge
                     variant="outline"
                     className={
@@ -109,7 +111,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
                     {alert.prioridad}
                   </Badge>
                 </td>
-                <td className="px-4 py-3 text-sm">{alert.responsable}</td>
+                <td className="px-4 py-3 text-sm text-center">{alert.responsable}</td>
               </tr>
             ))}
           </tbody>
