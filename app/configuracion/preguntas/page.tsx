@@ -4,7 +4,10 @@ import { useRouter } from "next/navigation"
 import { AppLayout } from "@/components/layout/app-layout"
 import { DataTable } from "@/components/data-table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { AddQuestionModal } from "@/components/question/add-question-modal"
+import { Download } from "lucide-react"
+import * as XLSX from "xlsx"
 
 interface Question {
   id: string
@@ -14,6 +17,7 @@ interface Question {
   responses: string
   priority: number
   time: string
+  course: string // Nueva propiedad para la columna Curso
 }
 
 export default function QuestionsPage() {
@@ -29,6 +33,7 @@ export default function QuestionsPage() {
       responses: "Muy bien - Bien - Mal - Muy mal",
       priority: 1,
       time: "AM",
+      course: "1° Básico",
     },
     {
       id: "2",
@@ -38,6 +43,7 @@ export default function QuestionsPage() {
       responses: "Sí - No",
       priority: 2,
       time: "AM",
+      course: "2° Básico",
     },
     {
       id: "3",
@@ -47,6 +53,7 @@ export default function QuestionsPage() {
       responses: "Sí - No",
       priority: 2,
       time: "AM",
+      course: "3° Básico",
     },
     {
       id: "4",
@@ -56,6 +63,7 @@ export default function QuestionsPage() {
       responses: "Sí - No",
       priority: 2,
       time: "AM",
+      course: "4° Básico",
     },
     {
       id: "5",
@@ -65,6 +73,7 @@ export default function QuestionsPage() {
       responses: "Sí - No",
       priority: 2,
       time: "AM",
+      course: "5° Básico",
     },
     {
       id: "6",
@@ -74,6 +83,7 @@ export default function QuestionsPage() {
       responses: "Siempre - A veces - Nunca",
       priority: 3,
       time: "PM",
+      course: "6° Básico",
     },
     {
       id: "7",
@@ -83,6 +93,7 @@ export default function QuestionsPage() {
       responses: "Sí - No - A veces",
       priority: 2,
       time: "PM",
+      course: "7° Básico",
     },
     {
       id: "8",
@@ -92,6 +103,7 @@ export default function QuestionsPage() {
       responses: "Siempre - A veces - Nunca",
       priority: 1,
       time: "AM",
+      course: "8° Básico",
     },
   ])
 
@@ -114,6 +126,7 @@ export default function QuestionsPage() {
       responses: questionData.opciones.join(" - "),
       priority: Number.parseInt(questionData.prioridad) || 2,
       time: "AM",
+      course: "General", // Valor por defecto para nuevas preguntas
     }
 
     // Agregar la nueva pregunta a la lista
@@ -125,6 +138,40 @@ export default function QuestionsPage() {
     router.push(`/configuracion/preguntas/${question.id}`)
   }
 
+  // Función para exportar datos a Excel
+  const exportToExcel = () => {
+    // Preparar los datos para Excel
+    const dataForExcel = questionsData.map((q) => ({
+      ID: q.id,
+      Diagnóstico: q.diagnostic,
+      Pregunta: q.question,
+      "Tipo de respuesta": q.responseType,
+      Respuestas: q.responses,
+      Prioridad: q.priority,
+      Horario: q.time,
+      Curso: q.course,
+    }))
+
+    // Crear una hoja de trabajo
+    const worksheet = XLSX.utils.json_to_sheet(dataForExcel)
+
+    // Crear un libro de trabajo
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Preguntas")
+
+    // Generar el archivo Excel
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" })
+
+    // Crear un Blob y descargar
+    const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `Preguntas_${new Date().toISOString().split("T")[0]}.xlsx`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   // Columnas para la tabla
   const columns = [
     { key: "diagnostic", title: "Diagnóstico" },
@@ -133,6 +180,7 @@ export default function QuestionsPage() {
     { key: "responses", title: "Respuestas" },
     { key: "priority", title: "Prioridad de preguntas" },
     { key: "time", title: "Horario" },
+    { key: "course", title: "Curso" }, // Nueva columna
   ]
 
   // Renderizar celdas de la tabla
@@ -169,7 +217,11 @@ export default function QuestionsPage() {
       <div className="container mx-auto px-3 sm:px-6 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Historial de preguntas cargadas</h2>
-          <div className="flex justify-end">
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" className="flex items-center gap-2" onClick={exportToExcel}>
+              <Download size={16} />
+              Exportar Excel
+            </Button>
             <AddQuestionModal onAddQuestion={handleAddQuestion} isMobile={true} />
           </div>
         </div>

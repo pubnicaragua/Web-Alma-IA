@@ -191,54 +191,60 @@ export default function AlertsPage() {
         )
       case "type":
         return (
-          <Badge
-            className={
-              alert.type === "SOS Alma"
-                ? "bg-red-500"
-                : alert.type === "Amarilla"
-                  ? "bg-yellow-400"
-                  : alert.type === "Naranja"
-                    ? "bg-orange-500"
-                    : alert.type === "Denuncia"
-                      ? "bg-purple-600"
-                      : ""
-            }
-          >
-            {alert.type}
-          </Badge>
+          <div className="flex justify-center w-full">
+            <Badge
+              className={`whitespace-nowrap px-3 py-1 text-center ${
+                alert.type === "SOS Alma"
+                  ? "bg-red-500"
+                  : alert.type === "Amarilla"
+                    ? "bg-yellow-400"
+                    : alert.type === "Naranja"
+                      ? "bg-orange-500"
+                      : alert.type === "Denuncia"
+                        ? "bg-purple-600"
+                        : ""
+              }`}
+            >
+              {alert.type}
+            </Badge>
+          </div>
         )
       case "priority":
         return (
-          <Badge
-            variant="outline"
-            className={
-              alert.priority === "Alta"
-                ? "border-red-500 text-red-500"
-                : alert.priority === "Med."
-                  ? "border-yellow-500 text-yellow-500"
-                  : "border-green-500 text-green-500"
-            }
-          >
-            {alert.priority}
-          </Badge>
+          <div className="flex justify-center w-full">
+            <Badge
+              variant="outline"
+              className={`whitespace-nowrap px-3 py-1 text-center ${
+                alert.priority === "Alta"
+                  ? "border-red-500 text-red-500"
+                  : alert.priority === "Med."
+                    ? "border-yellow-500 text-yellow-500"
+                    : "border-green-500 text-green-500"
+              }`}
+            >
+              {alert.priority}
+            </Badge>
+          </div>
         )
       case "status":
         return (
-          <Badge
-            variant="outline"
-            className={
-              alert.status === "Pendiente"
-                ? "border-red-500 text-red-500"
-                : alert.status === "En curso"
-                  ? "border-blue-500 text-blue-500"
-                  : "border-green-500 text-green-500"
-            }
-          >
-            {alert.status}
-          </Badge>
+          <div className="flex justify-center w-full">
+            <Badge
+              variant="outline"
+              className={`whitespace-nowrap px-3 py-1 text-center ${
+                alert.status === "Pendiente"
+                  ? "border-red-500 text-red-500"
+                  : alert.status === "En curso"
+                    ? "border-blue-500 text-blue-500"
+                    : "border-green-500 text-green-500"
+              }`}
+            >
+              {alert.status}
+            </Badge>
+          </div>
         )
       default:
-        return alert[column.key as keyof Alert]
+        return <div className="text-center">{alert[column.key as keyof Alert]}</div>
     }
   }
 

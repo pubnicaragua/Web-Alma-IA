@@ -90,12 +90,13 @@ export function Header({ toggleSidebar }: HeaderProps) {
           </Link>
         </div>
 
-        <div className="relative w-80 hidden md:block">
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+        {/* Barra de búsqueda - ahora visible en móvil */}
+        <div className="relative w-40 sm:w-60 md:w-80">
+          <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="14"
+              height="14"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -107,7 +108,11 @@ export function Header({ toggleSidebar }: HeaderProps) {
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <Input type="text" placeholder="Buscar" className="pl-10 border bg-white/90 rounded-md" />
+          <Input
+            type="text"
+            placeholder="Buscar"
+            className="pl-8 border bg-white/90 rounded-md h-7 md:h-8 text-xs md:text-sm"
+          />
         </div>
 
         <div className="flex items-center space-x-4">

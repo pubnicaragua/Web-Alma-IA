@@ -3,12 +3,13 @@
 import type React from "react"
 
 import { useState } from "react"
-import { X, ChevronDown, Clock } from "lucide-react"
+import { X, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { useModal } from "@/lib/modal-utils"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface AddQuestionModalProps {
   onAddQuestion: (question: {
@@ -19,6 +20,7 @@ interface AddQuestionModalProps {
     prioridad: string
     sintomas: string
     palabrasClave: string
+    curso: string
   }) => void
   isMobile?: boolean
 }
@@ -29,9 +31,10 @@ export function AddQuestionModal({ onAddQuestion, isMobile = false }: AddQuestio
   const [tipoRespuesta, setTipoRespuesta] = useState("opcion_multiple")
   const [opciones, setOpciones] = useState<string[]>([""])
   const [tipoDiagnostico, setTipoDiagnostico] = useState("")
-  const [prioridad, setPrioridad] = useState("")
+  const [prioridad, setPrioridad] = useState("normal")
   const [sintomas, setSintomas] = useState("")
   const [palabrasClave, setPalabrasClave] = useState("")
+  const [curso, setCurso] = useState("")
 
   const handleAddOption = () => {
     setOpciones([...opciones, ""])
@@ -69,6 +72,7 @@ export function AddQuestionModal({ onAddQuestion, isMobile = false }: AddQuestio
       prioridad,
       sintomas,
       palabrasClave,
+      curso,
     })
 
     // Limpiar formulario y cerrar modal
@@ -76,9 +80,10 @@ export function AddQuestionModal({ onAddQuestion, isMobile = false }: AddQuestio
     setTipoRespuesta("opcion_multiple")
     setOpciones([""])
     setTipoDiagnostico("")
-    setPrioridad("")
+    setPrioridad("normal")
     setSintomas("")
     setPalabrasClave("")
+    setCurso("")
     onClose()
   }
 
@@ -103,11 +108,11 @@ export function AddQuestionModal({ onAddQuestion, isMobile = false }: AddQuestio
       </Button>
 
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
-          <DialogHeader className="px-6 pt-6 pb-0">
+        <DialogContent className="sm:max-w-lg p-0 max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="px-6 pt-6 pb-0 sticky top-0 bg-white z-10">
             <div className="flex justify-between items-center w-full">
               <DialogTitle className="text-xl font-semibold">Agregar pregunta</DialogTitle>
-              <DialogClose className="h-6 w-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+              <DialogClose className="flex items-center justify-center h-6 w-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
                 <X className="h-4 w-4" />
                 <span className="sr-only">Cerrar</span>
               </DialogClose>
@@ -129,13 +134,19 @@ export function AddQuestionModal({ onAddQuestion, isMobile = false }: AddQuestio
                 />
               </div>
               <div className="w-48">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="tipoRespuesta" className="text-gray-700">
-                    Opción múltiple
-                  </Label>
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
-                </div>
-                <div className="border-b border-gray-300 mt-1"></div>
+                <Label htmlFor="tipoRespuesta" className="text-gray-700">
+                  Tipo de respuesta
+                </Label>
+                <Select value={tipoRespuesta} onValueChange={setTipoRespuesta}>
+                  <SelectTrigger className="w-full mt-1">
+                    <SelectValue placeholder="Seleccionar tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="opcion_multiple">Opción múltiple</SelectItem>
+                    <SelectItem value="texto_libre">Texto libre</SelectItem>
+                    <SelectItem value="si_no">Sí/No</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -169,6 +180,20 @@ export function AddQuestionModal({ onAddQuestion, isMobile = false }: AddQuestio
               </button>
             </div>
 
+            {/* Nuevo campo para Curso */}
+            <div>
+              <Label htmlFor="curso" className="text-gray-700">
+                Curso
+              </Label>
+              <Input
+                id="curso"
+                value={curso}
+                onChange={(e) => setCurso(e.target.value)}
+                placeholder="Ingresa el curso"
+                className="border-gray-300 mt-1"
+              />
+            </div>
+
             <div className="flex justify-between items-start gap-4">
               <div className="flex-1">
                 <Label htmlFor="tipoDiagnostico" className="text-gray-700">
@@ -184,14 +209,21 @@ export function AddQuestionModal({ onAddQuestion, isMobile = false }: AddQuestio
                 />
               </div>
               <div className="w-48">
-                <div className="flex items-center justify-between">
-                  <Label className="text-gray-700 flex items-center">
-                    <Clock className="h-4 w-4 mr-1" />
-                    Prioridad de pregunta y horario
-                  </Label>
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
-                </div>
-                <div className="border-b border-gray-300 mt-1"></div>
+                <Label htmlFor="prioridad" className="text-gray-700 flex items-center">
+                  <Clock className="h-4 w-4 mr-1" />
+                  Prioridad
+                </Label>
+                <Select value={prioridad} onValueChange={setPrioridad}>
+                  <SelectTrigger className="w-full mt-1">
+                    <SelectValue placeholder="Seleccionar prioridad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="baja">Baja</SelectItem>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="alta">Alta</SelectItem>
+                    <SelectItem value="urgente">Urgente</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { X, School } from "lucide-react"
+import { X } from "lucide-react"
+import Image from "next/image"
 import { NavigationMenu } from "./navigation-menu"
 import { UserInfo } from "./user-info"
 
@@ -57,14 +58,12 @@ export function AndroidNavMenu({ isOpen, onClose }: AndroidNavMenuProps) {
           animation: isOpen ? "scaleIn 0.2s ease-out forwards" : "none",
         }}
       >
-        {/* Header del menú con logo y nombre */}
+        {/* Header del menú con logo */}
         <div className="flex items-center justify-between p-4 border-b bg-primary">
           <div className="flex items-center">
-            <School className="h-6 w-6 text-white mr-2" />
-            <h2 className="text-xl font-bold">
-              <span className="text-white">Alma</span>
-              <span className="text-pink-200">IA</span>
-            </h2>
+            <div className="h-8 w-auto">
+              <Image src="/almaiaa.svg" alt="AlmaIA Logo" width={100} height={32} className="h-full w-auto" />
+            </div>
           </div>
           <button
             onClick={onClose}

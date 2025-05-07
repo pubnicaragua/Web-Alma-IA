@@ -23,7 +23,7 @@ export function StudentReports({ reports }: StudentReportsProps) {
               <th className="px-4 py-3 text-left font-medium text-white">Fecha Generación</th>
               <th className="px-4 py-3 text-left font-medium text-white">Tipo Informe</th>
               <th className="px-4 py-3 text-left font-medium text-white">Resumen Informe</th>
-              <th className="px-4 py-3 text-left font-medium text-white">Estado</th>
+              <th className="px-4 py-3 text-left font-medium text-white">Acción</th>
             </tr>
           </thead>
           <tbody>

@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { AppLayout } from "@/components/layout/app-layout"
 import { Button } from "@/components/ui/button"
-import { Trash2, Mail, Phone, Calendar, BookOpen, School, Clock, Users } from "lucide-react"
+import { Mail, Phone, Calendar, BookOpen, School, Clock, Users, ToggleLeft, ToggleRight } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import TeacherDetailSkeleton from "@/components/teacher/teacher-detail-skeleton"
 
@@ -39,6 +39,7 @@ interface Teacher {
   image: string
   coursesInfo: TeacherCourseInfo[]
   recentActivities: TeacherActivity[]
+  isActive: boolean
 }
 
 export default function TeacherDetailPage() {
@@ -71,6 +72,7 @@ export default function TeacherDetailPage() {
         currentCourses: "1°A - 2°A",
         subjects: "Matemáticas - Taller de Lógica",
         image: "/smiling-woman-garden.png",
+        isActive: true,
         coursesInfo: [
           {
             curso: "4°A",
@@ -108,10 +110,17 @@ export default function TeacherDetailPage() {
     fetchTeacher()
   }, [id])
 
-  const handleDeleteTeacher = () => {
-    if (confirm("¿Estás seguro de que deseas eliminar a este docente?")) {
-      // En un caso real, aquí se haría una petición a la API para eliminar al docente
-      router.push("/administrativo/docentes")
+  const handleToggleTeacherStatus = () => {
+    if (!teacher) return
+
+    const action = teacher.isActive ? "desactivar" : "activar"
+    if (confirm(`¿Estás seguro de que deseas ${action} a este docente?`)) {
+      // En un caso real, aquí se haría una petición a la API para cambiar el estado del docente
+      setTeacher({
+        ...teacher,
+        isActive: !teacher.isActive,
+        status: teacher.isActive ? "Inactiva" : "Activa",
+      })
     }
   }
 
@@ -159,13 +168,24 @@ export default function TeacherDetailPage() {
                 </div>
               </div>
             </div>
-            <Button onClick={handleDeleteTeacher} className="bg-red-500 hover:bg-red-600 self-start">
+            <Button
+              onClick={handleToggleTeacherStatus}
+              className={`${teacher.isActive ? "bg-amber-500 hover:bg-amber-600" : "bg-green-500 hover:bg-green-600"} self-start`}
+            >
               {isMobile ? (
-                <Trash2 className="h-5 w-5" />
+                teacher.isActive ? (
+                  <ToggleRight className="h-5 w-5" />
+                ) : (
+                  <ToggleLeft className="h-5 w-5" />
+                )
               ) : (
                 <>
-                  <Trash2 className="h-5 w-5 mr-2" />
-                  Borrar docente
+                  {teacher.isActive ? (
+                    <ToggleRight className="h-5 w-5 mr-2" />
+                  ) : (
+                    <ToggleLeft className="h-5 w-5 mr-2" />
+                  )}
+                  {teacher.isActive ? "Desactivar docente" : "Activar docente"}
                 </>
               )}
             </Button>
@@ -250,8 +270,10 @@ export default function TeacherDetailPage() {
                 </div>
               </div>
               <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <div className="h-5 w-5 rounded-full bg-green-500 text-white flex items-center justify-center text-xs mr-3">
-                  A
+                <div
+                  className={`h-5 w-5 rounded-full ${teacher.isActive ? "bg-green-500" : "bg-amber-500"} text-white flex items-center justify-center text-xs mr-3`}
+                >
+                  {teacher.isActive ? "A" : "I"}
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Estado:</span>

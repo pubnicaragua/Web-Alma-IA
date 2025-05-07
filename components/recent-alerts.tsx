@@ -18,11 +18,14 @@ export function RecentAlerts({ alerts }: RecentAlertsProps) {
       <h3 className="font-medium text-gray-800 mb-2">Alertas recientes</h3>
       <p className="text-sm text-gray-500 mb-6">5 nuevas alertas este último mes</p>
 
-      <div className="space-y-6">
+      <div className="space-y-3">
         {alerts.map((alert, index) => (
-          <div key={index} className="flex items-center justify-between">
+          <div
+            key={index}
+            className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors shadow-sm"
+          >
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-200">
                 <Image
                   src={alert.student.image || "/placeholder.svg"}
                   alt={alert.student.name}
@@ -36,14 +39,14 @@ export function RecentAlerts({ alerts }: RecentAlertsProps) {
 
             <span
               className={cn(
-                "text-sm mx-2",
+                "text-sm font-semibold px-2.5 py-1 rounded-full",
                 alert.alertType === "SOS Alma"
-                  ? "text-red-500"
+                  ? "bg-red-100 text-red-700"
                   : alert.alertType === "Denuncias"
-                    ? "text-purple-500"
+                    ? "bg-purple-100 text-purple-700"
                     : alert.alertType === "IA"
-                      ? "text-blue-500"
-                      : "",
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-gray-100 text-gray-700",
               )}
             >
               {alert.alertType}

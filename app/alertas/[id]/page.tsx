@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { AppLayout } from "@/components/layout/app-layout"
 import { AddActionModal } from "@/components/alert/add-action-modal"
 import { AlertDetailSkeleton } from "@/components/alert/alert-detail-skeleton"
-import { Lock } from "lucide-react"
+import { Lock, ArrowLeft } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface Action {
   fecha: string
@@ -39,6 +41,7 @@ interface Alert {
 
 export default function AlertDetailPage() {
   const { id } = useParams()
+  const router = useRouter()
   const [alert, setAlert] = useState<Alert | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const isMobile = useIsMobile()
@@ -141,6 +144,10 @@ export default function AlertDetailPage() {
     })
   }
 
+  const handleGoBack = () => {
+    router.back()
+  }
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -164,95 +171,117 @@ export default function AlertDetailPage() {
   return (
     <AppLayout>
       <div className="container mx-auto px-3 sm:px-6 py-8">
-        {/* Información del alumno */}
-        {alert.student && (
-          <div className="flex items-center mb-6">
-            <div className="relative w-24 h-24 rounded-full overflow-hidden mr-6 flex-shrink-0">
-              <Image
-                src={alert.student.image || "/placeholder.svg"}
-                alt={alert.student.name}
-                fill
-                sizes="96px"
-                className="object-cover"
-              />
-            </div>
+        {/* Botón Volver */}
+        <div className="mb-6">
+          <Button variant="outline" size="sm" onClick={handleGoBack} className="flex items-center gap-1">
+            <ArrowLeft className="h-4 w-4" />
+            Volver
+          </Button>
+        </div>
+
+        {/* Card de información del alumno */}
+        <Card className="mb-6">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">Información del Alumno</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {alert.student && (
+              <div className="flex items-center">
+                <div className="relative w-24 h-24 rounded-full overflow-hidden mr-6 flex-shrink-0">
+                  <Image
+                    src={alert.student.image || "/placeholder.svg"}
+                    alt={alert.student.name}
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800">{alert.student.name}</h1>
+                  <p className="text-xl text-gray-600">{alert.student.course}</p>
+                  <p className="text-sm text-gray-500">
+                    Fecha de generación: {alert.generationDate} - {alert.generationTime}
+                  </p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Card de detalles de la alerta */}
+        <Card className="mb-6">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">Detalles de la Alerta</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Responsable actual */}
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">{alert.student.name}</h1>
-              <p className="text-xl text-gray-600">{alert.student.course}</p>
-              <p className="text-sm text-gray-500">
-                Fecha de generación: {alert.generationDate} - {alert.generationTime}
-              </p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Responsable Actual:</h3>
+              <div className="flex items-center">
+                <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
+                  <Image
+                    src={alert.responsible.image || "/placeholder.svg"}
+                    alt={alert.responsible.name}
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                  />
+                </div>
+                <span className="text-gray-700">
+                  {alert.responsible.role} - {alert.responsible.name}
+                </span>
+              </div>
+              {!alert.isAnonymous && (
+                <div className="flex items-center mt-2 text-gray-600">
+                  <Lock className="h-4 w-4 mr-1" />
+                  <span className="text-sm">No es anónimo</span>
+                </div>
+              )}
             </div>
-          </div>
-        )}
 
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Alerta del alumno</h2>
-
-        {/* Responsable actual */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Responsable Actual:</h3>
-          <div className="flex items-center">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
-              <Image
-                src={alert.responsible.image || "/placeholder.svg"}
-                alt={alert.responsible.name}
-                fill
-                sizes="40px"
-                className="object-cover"
-              />
+            {/* Descripción de la alerta */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">Descripción de la alerta</h3>
+              <p className="text-gray-700 bg-gray-50 p-3 rounded-md">{alert.description}</p>
             </div>
-            <span className="text-gray-700">
-              {alert.responsible.role} - {alert.responsible.name}
-            </span>
-          </div>
-          {!alert.isAnonymous && (
-            <div className="flex items-center mt-2 text-gray-600">
-              <Lock className="h-4 w-4 mr-1" />
-              <span className="text-sm">No es anónimo</span>
-            </div>
-          )}
-        </div>
-
-        {/* Descripción de la alerta */}
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-3">Descripción de la alerta</h3>
-          <p className="text-gray-700">{alert.description}</p>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Bitácora de acciones */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg font-semibold text-gray-800">Bitácora de acciones</h3>
+        <Card className="mb-6">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-xl">Bitácora de acciones</CardTitle>
             <AddActionModal onAddAction={handleAddAction} isMobile={isMobile} />
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
-            <table className="w-full min-w-[640px]">
-              <thead>
-                <tr className="bg-blue-300">
-                  <th className="px-4 py-3 text-left font-medium text-white">Fecha</th>
-                  <th className="px-4 py-3 text-left font-medium text-white">Hora</th>
-                  <th className="px-4 py-3 text-left font-medium text-white">Usuario Responsable</th>
-                  <th className="px-4 py-3 text-left font-medium text-white">Acción Realizada</th>
-                  <th className="px-4 py-3 text-left font-medium text-white">Fecha de Compromiso</th>
-                  <th className="px-4 py-3 text-left font-medium text-white">Observaciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {alert.actions.map((action, index) => (
-                  <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm">{action.fecha}</td>
-                    <td className="px-4 py-3 text-sm">{action.hora}</td>
-                    <td className="px-4 py-3 text-sm">{action.usuarioResponsable}</td>
-                    <td className="px-4 py-3 text-sm">{action.accionRealizada}</td>
-                    <td className="px-4 py-3 text-sm">{action.fechaCompromiso}</td>
-                    <td className="px-4 py-3 text-sm">{action.observaciones}</td>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
+              <table className="w-full min-w-[640px]">
+                <thead>
+                  <tr className="bg-blue-300">
+                    <th className="px-4 py-3 text-left font-medium text-white">Fecha</th>
+                    <th className="px-4 py-3 text-left font-medium text-white">Hora</th>
+                    <th className="px-4 py-3 text-left font-medium text-white">Usuario Responsable</th>
+                    <th className="px-4 py-3 text-left font-medium text-white">Acción Realizada</th>
+                    <th className="px-4 py-3 text-left font-medium text-white">Fecha de Compromiso</th>
+                    <th className="px-4 py-3 text-left font-medium text-white">Observaciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                </thead>
+                <tbody>
+                  {alert.actions.map((action, index) => (
+                    <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm">{action.fecha}</td>
+                      <td className="px-4 py-3 text-sm">{action.hora}</td>
+                      <td className="px-4 py-3 text-sm">{action.usuarioResponsable}</td>
+                      <td className="px-4 py-3 text-sm">{action.accionRealizada}</td>
+                      <td className="px-4 py-3 text-sm">{action.fechaCompromiso}</td>
+                      <td className="px-4 py-3 text-sm">{action.observaciones}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   )
