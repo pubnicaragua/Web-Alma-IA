@@ -123,7 +123,7 @@ export default function ReportsPage() {
     { key: "date", title: "Fecha" },
     { key: "status", title: "Estado" },
     { key: "author", title: "Autor" },
-    { key: "actions", title: "Acciones" },
+    { key: "actions", title: "Acción" },
   ]
 
   // Renderizar celdas de la tabla

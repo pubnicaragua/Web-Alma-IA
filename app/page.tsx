@@ -63,15 +63,15 @@ export default function Home() {
       // Si está autenticado y ha seleccionado un colegio, mostrar el dashboard
       // Aquí podríamos cargar el nombre del colegio según el ID seleccionado
       if (selectedSchool === "1") {
-        setSchoolName("Colegio San Pedrito (Azul)")
+        setSchoolName("Colegio San Pedro")
       } else if (selectedSchool === "2") {
-        setSchoolName("Colegio San Pedrito (Verde)")
+        setSchoolName("Colegio San Luis")
       } else if (selectedSchool === "3") {
-        setSchoolName("Colegio San Pedrito (Naranja)")
+        setSchoolName("Colegio San Ignacio")
       } else if (selectedSchool === "4") {
-        setSchoolName("Colegio San Pedrito (Rosa)")
+        setSchoolName("Colegio San Rafael")
       } else if (selectedSchool === "5") {
-        setSchoolName("Colegio San Pedrito (Celeste)")
+        setSchoolName("Colegio San Carlos")
       }
 
       setIsLoading(false)

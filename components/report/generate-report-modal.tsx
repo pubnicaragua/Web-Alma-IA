@@ -54,8 +54,8 @@ export function GenerateReportModal({ isOpen, onClose, onGenerate }: GenerateRep
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px] border border-blue-200 rounded-lg">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[550px] border border-blue-200 rounded-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="sticky top-0 bg-white z-10">
           <DialogTitle className="flex items-center gap-2 text-xl">
             <FileText className="h-5 w-5 text-blue-500" />
             Generar nuevo informe

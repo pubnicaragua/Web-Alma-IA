@@ -53,9 +53,8 @@ export default function ProfilePage() {
             </div>
             <div className="flex flex-col items-center md:items-start">
               <h1 className="text-3xl font-bold text-gray-800">{userData.name}</h1>
-              <p className="text-xl text-gray-600 mb-2">{userData.position}</p>
               <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                {userData.role}
+                {userData.position}
               </div>
             </div>
           </div>
