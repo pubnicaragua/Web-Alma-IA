@@ -1,11 +1,5 @@
-// API base URL from environment variable - asegurando que no haya barras duplicadas
-const getBaseUrl = () => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api-almaia.onrender.com/api/v1"
-  // Eliminar la barra final si existe para evitar dobles barras
-  return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl
-}
-
-export const API_BASE_URL = getBaseUrl()
+// API base URL para el proxy local
+export const API_BASE_URL = "/api/proxy"
 
 // Function to get the auth token
 export const getAuthToken = (): string | null => {
@@ -34,27 +28,7 @@ export const isAuthenticated = (): boolean => {
   return !!getAuthToken()
 }
 
-// Helper function to log API requests and responses
-const logApiCall = (endpoint: string, method: string, requestData?: any, responseData?: any, error?: any) => {
-  console.group(`🌐 API Call: ${method} ${endpoint}`)
-  console.log(`📤 Request: ${method} ${API_BASE_URL}${endpoint}`)
-
-  if (requestData) {
-    console.log("📦 Request Data:", requestData)
-  }
-
-  if (responseData) {
-    console.log("📥 Response:", responseData)
-  }
-
-  if (error) {
-    console.error("❌ Error:", error)
-  }
-
-  console.groupEnd()
-}
-
-// Helper function to make authenticated API requests with logging
+// Helper function to make authenticated API requests
 export const fetchWithAuth = async (endpoint: string, options: RequestInit = {}): Promise<Response> => {
   const token = getAuthToken()
   const method = options.method || "GET"
@@ -68,15 +42,12 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
   // Asegurar que el endpoint comience con /
   const normalizedEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`
 
-  // Log the request
-  let requestBody
-  try {
-    requestBody = options.body ? JSON.parse(String(options.body)) : undefined
-  } catch (e) {
-    requestBody = options.body
-  }
-
-  logApiCall(normalizedEndpoint, method, requestBody)
+  console.log(`Enviando solicitud ${method} a ${API_BASE_URL}${normalizedEndpoint}`, {
+    headers: {
+      ...headers,
+      Authorization: token ? `Bearer ${token.substring(0, 10)}...` : "No token",
+    },
+  })
 
   try {
     const response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
@@ -85,30 +56,14 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
       headers,
     })
 
-    // Clone the response to read it twice (once for logging, once for the caller)
-    const responseClone = response.clone()
-
-    try {
-      // Try to parse as JSON for logging
-      const responseData = await responseClone.json()
-      logApiCall(normalizedEndpoint, method, requestBody, responseData)
-    } catch (e) {
-      // If not JSON, log the status
-      logApiCall(normalizedEndpoint, method, requestBody, {
-        status: response.status,
-        statusText: response.statusText,
-      })
-    }
-
     return response
   } catch (error) {
-    // Log any network errors
-    logApiCall(normalizedEndpoint, method, requestBody, undefined, error)
+    console.error("API request error:", error)
     throw error
   }
 }
 
-// Simple fetch without auth but with logging
+// Simple fetch without auth
 export const fetchApi = async (endpoint: string, options: RequestInit = {}): Promise<Response> => {
   const method = options.method || "GET"
 
@@ -120,16 +75,6 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}): Pro
   // Asegurar que el endpoint comience con /
   const normalizedEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`
 
-  // Log the request
-  let requestBody
-  try {
-    requestBody = options.body ? JSON.parse(String(options.body)) : undefined
-  } catch (e) {
-    requestBody = options.body
-  }
-
-  logApiCall(normalizedEndpoint, method, requestBody)
-
   try {
     const response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
       ...options,
@@ -137,25 +82,9 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}): Pro
       headers,
     })
 
-    // Clone the response to read it twice
-    const responseClone = response.clone()
-
-    try {
-      // Try to parse as JSON for logging
-      const responseData = await responseClone.json()
-      logApiCall(normalizedEndpoint, method, requestBody, responseData)
-    } catch (e) {
-      // If not JSON, log the status
-      logApiCall(normalizedEndpoint, method, requestBody, {
-        status: response.status,
-        statusText: response.statusText,
-      })
-    }
-
     return response
   } catch (error) {
-    // Log any network errors
-    logApiCall(normalizedEndpoint, method, requestBody, undefined, error)
+    console.error("API request error:", error)
     throw error
   }
 }

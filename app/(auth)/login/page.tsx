@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { API_BASE_URL, setAuthToken } from "@/lib/api-config"
+import { setAuthToken } from "@/lib/api-config"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -22,13 +22,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [apiUrl, setApiUrl] = useState("")
-
-  // Mostrar la URL de la API para depuración
-  useEffect(() => {
-    setApiUrl(API_BASE_URL)
-    console.log("API Base URL:", API_BASE_URL)
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,30 +35,24 @@ export default function LoginPage() {
     try {
       setIsLoading(true)
 
-      // Construir la URL completa para el endpoint de login
-      const loginUrl = `${API_BASE_URL}/auth/login`
-      console.log("URL completa de login:", loginUrl)
+      // Datos para el login
+      const loginData = {
+        email: email,
+        password: password,
+      }
 
-      // Preparar los datos de la solicitud
-      const loginData = { email, password }
-      console.log("Datos de login:", loginData)
+      console.log("Intentando login con:", loginData)
 
-      // Make API request to login endpoint - Usando fetch directamente para mayor control
-      const response = await fetch(loginUrl, {
+      // Usar la ruta proxy local en lugar de la API directamente
+      const response = await fetch("/api/proxy/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Añadir modo no-cors para pruebas
-          // "Access-Control-Allow-Origin": "*"
         },
-        // mode: "no-cors", // Intentar con no-cors para depuración
         body: JSON.stringify(loginData),
-      }).catch((fetchError) => {
-        console.error("Error de fetch:", fetchError)
-        throw new Error(`Error de red: ${fetchError.message}`)
       })
 
-      console.log("Respuesta recibida:", response.status, response.statusText)
+      console.log("Respuesta del servidor:", response.status, response.statusText)
 
       // Intentar obtener el cuerpo de la respuesta
       let data
@@ -78,26 +65,30 @@ export default function LoginPage() {
       }
 
       if (!response.ok) {
-        // Handle API error
-        throw new Error(data?.message || "Error al iniciar sesión")
+        throw new Error(data?.error || data?.message || `Error ${response.status}: ${response.statusText}`)
       }
 
-      // Store the token
+      // Verificar que tenemos un token
+      if (!data.token) {
+        throw new Error("La respuesta del servidor no incluye un token de autenticación")
+      }
+
+      // Guardar el token
       setAuthToken(data.token)
 
-      // Set authenticated flag
+      // Marcar como autenticado
       if (typeof window !== "undefined") {
         localStorage.setItem("isAuthenticated", "true")
       }
 
-      // Show success toast
+      // Mostrar mensaje de éxito
       toast({
         title: "Inicio de sesión exitoso",
         description: "Bienvenido al sistema",
         variant: "default",
       })
 
-      // Redirect to school selection
+      // Redirigir a la selección de escuela
       router.push("/select-school")
     } catch (err) {
       console.error("Error en el proceso de login:", err)
@@ -105,7 +96,6 @@ export default function LoginPage() {
 
       setError(errorMessage)
 
-      // Show error toast
       toast({
         title: "Error de inicio de sesión",
         description: errorMessage,
@@ -116,25 +106,10 @@ export default function LoginPage() {
     }
   }
 
-  // Función para probar la conectividad con la API
-  const testApiConnection = async () => {
-    try {
-      console.log("Probando conectividad con:", API_BASE_URL)
-      const response = await fetch(API_BASE_URL, { method: "GET" })
-      console.log("Respuesta de prueba:", response.status, response.statusText)
-      toast({
-        title: "Prueba de API",
-        description: `Conexión exitosa: ${response.status} ${response.statusText}`,
-        variant: "default",
-      })
-    } catch (err) {
-      console.error("Error de conectividad:", err)
-      toast({
-        title: "Error de conectividad",
-        description: err instanceof Error ? err.message : "Error desconocido",
-        variant: "destructive",
-      })
-    }
+  // Función para usar credenciales de demostración
+  const useDemoCredentials = () => {
+    setEmail("demo@example.com")
+    setPassword("password123")
   }
 
   return (
@@ -142,14 +117,6 @@ export default function LoginPage() {
       <h1 className="text-2xl font-bold text-center mb-6">Inicia sesión</h1>
 
       {error && <div className="bg-red-50 text-red-500 p-3 rounded-md mb-4 text-sm">{error}</div>}
-
-      {/* Información de depuración */}
-      <div className="mb-4 text-xs text-gray-500">
-        <p>API URL: {apiUrl}</p>
-        <button onClick={testApiConnection} className="text-blue-500 underline mt-1" type="button">
-          Probar conectividad
-        </button>
-      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
@@ -211,6 +178,12 @@ export default function LoginPage() {
         <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600" disabled={isLoading}>
           {isLoading ? "Iniciando sesión..." : "Ingresar"}
         </Button>
+
+        <div className="text-center mt-4">
+          <button type="button" onClick={useDemoCredentials} className="text-sm text-blue-500 hover:underline">
+            Usar credenciales de demostración
+          </button>
+        </div>
       </form>
     </div>
   )

@@ -1,32 +1,95 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
-import { Smile } from "lucide-react"
+import { Smile, RefreshCw, AlertCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { memo } from "react"
-
-interface EmotionData {
-  name: string
-  value: number
-  color: string
-}
+import { fetchEmotions, type Emotion } from "@/services/home-service"
 
 interface BarChartComparisonProps {
   title: string
-  data: EmotionData[]
   selectedEmotions: string[]
   onToggleEmotion: (emotion: string) => void
+  initialData?: Emotion[]
 }
 
-// Usar memo para evitar re-renderizados innecesarios
-export const BarChartComparison = memo(function BarChartComparison({
-  title,
-  data,
-  selectedEmotions,
-  onToggleEmotion,
-}: BarChartComparisonProps) {
-  // Filtrar los datos una sola vez
-  const filteredData = data.filter((emotion) => selectedEmotions.includes(emotion.name))
+export function BarChartComparison({ title, selectedEmotions, onToggleEmotion, initialData }: BarChartComparisonProps) {
+  const [data, setData] = useState<Emotion[]>(initialData || [])
+  const [isLoading, setIsLoading] = useState(!initialData)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!initialData) {
+      loadData()
+    }
+  }, [initialData])
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const emotionsData = await fetchEmotions()
+      setData(emotionsData)
+    } catch (err) {
+      console.error("Error al cargar las emociones:", err)
+      setError("No se pudieron cargar los datos de emociones. Intente nuevamente.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Filtrar los datos solo si hay datos disponibles
+  const filteredData = data && data.length > 0 ? data.filter((emotion) => selectedEmotions.includes(emotion.name)) : []
+
+  // Renderizar esqueleto durante la carga
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200 animate-pulse">
+        <div className="flex items-center mb-4">
+          <div className="w-5 h-5 bg-gray-200 rounded-full mr-2"></div>
+          <div className="h-5 bg-gray-200 rounded w-1/3"></div>
+        </div>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-6 bg-gray-200 rounded w-16"></div>
+          ))}
+        </div>
+        <div className="h-64 w-full bg-gray-100 rounded"></div>
+      </div>
+    )
+  }
+
+  // Renderizar mensaje de error
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-red-200">
+        <div className="flex items-center mb-4">
+          <AlertCircle className="mr-2 text-red-500" />
+          <h3 className="font-medium text-gray-800">{title}</h3>
+        </div>
+        <div className="text-red-500 mb-4">{error}</div>
+        <button
+          onClick={loadData}
+          className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        >
+          <RefreshCw className="w-4 h-4 mr-2" /> Reintentar
+        </button>
+      </div>
+    )
+  }
+
+  // Renderizar mensaje si no hay datos
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
+        <div className="flex items-center mb-4">
+          <Smile className="mr-2 text-gray-700" />
+          <h3 className="font-medium text-gray-800">{title}</h3>
+        </div>
+        <div className="text-gray-500 text-center py-10">No hay datos de emociones disponibles.</div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
@@ -82,4 +145,4 @@ export const BarChartComparison = memo(function BarChartComparison({
       </div>
     </div>
   )
-})
+}

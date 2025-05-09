@@ -8,7 +8,6 @@ import { BarChartComparison } from "@/components/bar-chart-comparison"
 import { DonutChart } from "@/components/donut-chart"
 import { ImportantDates } from "@/components/important-dates"
 import { RecentAlerts } from "@/components/recent-alerts"
-import { themeColors } from "@/lib/theme-colors"
 
 export default function Home() {
   const router = useRouter()
@@ -126,81 +125,6 @@ export default function Home() {
     },
   ]
 
-  // Datos para el gráfico de emociones con valores fijos diferentes
-  const emotionData = [
-    { name: "Tristeza", value: 1500, color: themeColors.chart.blue },
-    { name: "Felicidad", value: 3000, color: themeColors.chart.yellow },
-    { name: "Estrés", value: 1000, color: themeColors.chart.gray },
-    { name: "Ansiedad", value: 2500, color: themeColors.chart.orange },
-    { name: "Enojo", value: 800, color: themeColors.chart.red },
-    { name: "Otros", value: 2000, color: themeColors.chart.purple },
-  ]
-
-  // Datos para el gráfico de emociones general (con valores ligeramente diferentes)
-  const emotionDataGeneral = [
-    { name: "Tristeza", value: 2000, color: themeColors.chart.blue },
-    { name: "Felicidad", value: 4000, color: themeColors.chart.yellow },
-    { name: "Estrés", value: 1800, color: themeColors.chart.gray },
-    { name: "Ansiedad", value: 3200, color: themeColors.chart.orange },
-    { name: "Enojo", value: 1200, color: themeColors.chart.red },
-    { name: "Otros", value: 2800, color: themeColors.chart.purple },
-  ]
-
-  // Datos para el gráfico circular
-  const donutData = [
-    { label: "10 Pendientes", value: 10, percentage: "22.8%", color: themeColors.chart.yellow },
-    { label: "07 Nuevos", value: 7, percentage: "13.9%", color: themeColors.status.success },
-    { label: "39 Atendidos", value: 39, percentage: "52.1%", color: themeColors.primary.main },
-    { label: "05 Aplazados", value: 5, percentage: "11.2%", color: themeColors.chart.purple },
-  ]
-
-  // Datos para las fechas importantes
-  const importantDates = [
-    { event: "Pruebas Parciales", dateRange: "Abr 02 - Abr 07" },
-    { event: "Reunión de Apoderados", dateRange: "Abr 02 - Abr 07" },
-    { event: "Matrícula 2025", dateRange: "Abr 02 - Abr 07" },
-    { event: "Semana santa", dateRange: "Abr 02 - Abr 07" },
-    { event: "Pruebas Parciales", dateRange: "Abr 02 - Abr 07" },
-    { event: "Pruebas Parciales", dateRange: "Abr 02 - Abr 07" },
-    { event: "Pruebas Parciales", dateRange: "Abr 02 - Abr 07" },
-  ]
-
-  // Datos para las alertas recientes
-  const recentAlerts = [
-    {
-      student: {
-        name: "Carolina Espina",
-        image: "/smiling-woman-garden.png",
-      },
-      alertType: "SOS Alma",
-      date: "Abr 02 - 2024",
-    },
-    {
-      student: {
-        name: "Jaime Brito",
-        image: "/young-man-city.png",
-      },
-      alertType: "Denuncias",
-      date: "Mar 29 - 2024",
-    },
-    {
-      student: {
-        name: "Teresa Ulloa",
-        image: "/smiling-woman-garden.png",
-      },
-      alertType: "IA",
-      date: "Mar 27 - 2024",
-    },
-    {
-      student: {
-        name: "Carlos Araneda",
-        image: "/young-man-city.png",
-      },
-      alertType: "SOS Alma",
-      date: "Mar 26 - 2024",
-    },
-  ]
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-blue-400 flex justify-center items-center">
@@ -232,7 +156,6 @@ export default function Home() {
         <div className="mb-8">
           <BarChartComparison
             title="Media emocional General"
-            data={emotionDataGeneral}
             selectedEmotions={selectedEmotionsGeneral}
             onToggleEmotion={handleToggleEmotionGeneral}
           />
@@ -242,17 +165,16 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <BarChartComparison
             title="Emociones"
-            data={emotionData}
             selectedEmotions={selectedEmotions}
             onToggleEmotion={handleToggleEmotion}
           />
-          <DonutChart data={donutData} />
+          <DonutChart />
         </div>
 
         {/* Fechas importantes y alertas recientes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ImportantDates dates={importantDates} />
-          <RecentAlerts alerts={recentAlerts} />
+          <ImportantDates />
+          <RecentAlerts />
         </div>
       </div>
     </AppLayout>
