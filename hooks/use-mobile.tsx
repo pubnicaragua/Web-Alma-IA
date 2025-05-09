@@ -6,19 +6,21 @@ export function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    // Función para verificar si la pantalla es de tamaño móvil
-    const checkIsMobile = () => {
+    // Function to check if the screen is mobile
+    const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
 
-    // Verificar inicialmente
-    checkIsMobile()
+    // Check on load
+    checkMobile()
 
-    // Agregar listener para cambios de tamaño de ventana
-    window.addEventListener("resize", checkIsMobile)
+    // Add listener for resize events
+    window.addEventListener("resize", checkMobile)
 
-    // Limpiar listener
-    return () => window.removeEventListener("resize", checkIsMobile)
+    // Clean up listener on unmount
+    return () => {
+      window.removeEventListener("resize", checkMobile)
+    }
   }, [])
 
   return isMobile

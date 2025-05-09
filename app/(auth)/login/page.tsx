@@ -3,116 +3,90 @@
 import type React from "react"
 
 import { useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
+import Link from "next/link"
 
 export default function LoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [rememberMe, setRememberMe] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
     setError("")
 
-    if (!email || !password) {
-      setError("Por favor, completa todos los campos")
-      return
-    }
-
-    try {
-      setIsLoading(true)
-
-      // Verificar credenciales de prueba
+    // Simulación de login
+    setTimeout(() => {
       if (email === "user" && password === "user") {
-        // Simular un pequeño retraso
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        // Guardar estado de autenticación
-        localStorage.setItem("isAuthenticated", "true")
-
-        // Redirigir a la selección de colegio
-        router.push("/select-school")
+        router.push("/")
       } else {
-        setError("Credenciales incorrectas. Usa user/user para iniciar sesión.")
+        setError("Credenciales inválidas. Intente nuevamente.")
+        setLoading(false)
       }
-    } catch (err) {
-      setError("Ocurrió un error. Por favor, inténtalo de nuevo.")
-    } finally {
-      setIsLoading(false)
-    }
+    }, 1000)
   }
 
   return (
-    <div className="bg-white rounded-lg p-8 shadow-md">
-      <h1 className="text-2xl font-bold text-center mb-6">Inicia sesión</h1>
+    <div className="bg-white rounded-lg shadow-md p-8">
+      <h1 className="text-2xl font-bold text-center mb-6">Iniciar Sesión</h1>
 
-      {error && <div className="bg-red-50 text-red-500 p-3 rounded-md mb-4 text-sm">{error}</div>}
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Input type="text" placeholder="Usuario" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </div>
-
-        <div className="space-y-2 relative">
-          <Input
-            type={showPassword ? "text" : "password"}
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
+            Usuario
+          </label>
+          <input
+            type="text"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
-          <button
-            type="button"
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </button>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="remember"
-              checked={rememberMe}
-              onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-            />
-            <Label htmlFor="remember" className="text-sm">
-              Recuérdame
-            </Label>
-          </div>
-
-          <Link href="/forgot-password" className="text-sm text-blue-500 hover:underline">
-            ¿Olvidaste tu contraseña?
-          </Link>
+        <div className="mb-6">
+          <label htmlFor="password" className="block text-gray-700 font-medium mb-2">
+            Contraseña
+          </label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
         </div>
 
-        <div className="border rounded-md p-3 flex items-center space-x-3">
-          <Checkbox id="captcha" />
-          <Label htmlFor="captcha">No soy un robot</Label>
-          <div className="ml-auto">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="24" height="24" rx="4" fill="#F0F0F0" />
-              <path d="M12 6V18" stroke="#A0A0A0" strokeWidth="2" strokeLinecap="round" />
-              <path d="M6 12H18" stroke="#A0A0A0" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
-        </div>
-
-        <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600" disabled={isLoading}>
-          {isLoading ? "Iniciando sesión..." : "Ingresar"}
-        </Button>
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+          disabled={loading}
+        >
+          {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+        </button>
       </form>
+
+      <div className="mt-4 text-center">
+        <Link href="/forgot-password" className="text-blue-500 hover:text-blue-700">
+          ¿Olvidó su contraseña?
+        </Link>
+      </div>
+
+      <div className="mt-6 text-center">
+        <p className="text-gray-600">
+          ¿No tiene una cuenta?{" "}
+          <Link href="/register" className="text-blue-500 hover:text-blue-700">
+            Regístrese
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }

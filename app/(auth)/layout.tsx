@@ -6,8 +6,16 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     <div className="min-h-screen bg-blue-400 flex flex-col">
       {/* Logo */}
       <div className="flex justify-center mt-12 mb-8">
-        <Link href="/" className="text-5xl font-bold text-white">
-          Alma<span className="text-pink-400">IA</span>
+        <Link href="/" className="flex items-center">
+          <div className="h-16 w-auto">
+            {/* Usando img estándar en lugar de Image para evitar errores */}
+            <img
+              src="/almaiaa.svg"
+              alt="AlmaIA Logo"
+              className="h-full w-auto"
+              style={{ filter: "drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))" }}
+            />
+          </div>
         </Link>
       </div>
 
