@@ -11,6 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { removeAuthToken } from "@/lib/api-config"
+import { useToast } from "@/hooks/use-toast"
 
 interface HeaderProps {
   toggleSidebar?: () => void
@@ -18,6 +20,7 @@ interface HeaderProps {
 
 export function Header({ toggleSidebar }: HeaderProps) {
   const router = useRouter()
+  const { toast } = useToast()
 
   // Función para navegar al perfil del usuario
   const handleNavigateToProfile = () => {
@@ -36,6 +39,16 @@ export function Header({ toggleSidebar }: HeaderProps) {
       localStorage.removeItem("isAuthenticated")
       localStorage.removeItem("selectedSchool")
     }
+
+    // Remove auth token
+    removeAuthToken()
+
+    // Show logout toast
+    toast({
+      title: "Sesión cerrada",
+      description: "Has cerrado sesión correctamente",
+      variant: "default",
+    })
 
     // Redirigir al login
     router.push("/login")
