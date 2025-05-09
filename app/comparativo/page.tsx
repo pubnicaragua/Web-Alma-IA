@@ -18,7 +18,7 @@ export default function ComparativePage() {
   const [monthFilter, setMonthFilter] = useState<string>("Abril")
 
   // Opciones para los filtros
-  const levelOptions = ["Todos", "Básico", "Medio"]
+  const levelOptions = ["Todos", "5° Básicos", "6° Básicos", "7° Básicos", "8° Básicos", "9° Básicos"]
   const courseOptions = ["Todos", "3°B", "4°A", "5°A", "6°C", "1°A", "2°B"]
   const yearOptions = ["2023", "2024", "2025"]
   const monthOptions = [
