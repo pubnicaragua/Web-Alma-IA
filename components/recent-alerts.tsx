@@ -50,6 +50,22 @@ export function RecentAlerts() {
             alertType: "Denuncia",
             date: "Mar 30 - 2024",
           },
+          {
+            student: {
+              name: "Pedro Gómez",
+              image: "/young-man-city.png",
+            },
+            alertType: "Alerta Académica",
+            date: "Mar 28 - 2024",
+          },
+          {
+            student: {
+              name: "Ana Martínez",
+              image: "/smiling-woman-garden.png",
+            },
+            alertType: "SOS Alma",
+            date: "Mar 25 - 2024",
+          },
         ])
       } finally {
         setIsLoading(false)
@@ -63,28 +79,34 @@ export function RecentAlerts() {
     return <RecentAlertsSkeleton />
   }
 
+  // Limitar a mostrar solo los 5 elementos más recientes
+  const limitedAlerts = alerts.slice(0, 5)
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Alertas recientes</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {alerts.map((alert, index) => (
-            <div key={index} className="flex items-center gap-4">
-              <div className="relative h-10 w-10 overflow-hidden rounded-full">
-                <Image
-                  src={alert.student.image || "/placeholder.svg"}
-                  alt={alert.student.name}
-                  fill
-                  className="object-cover"
-                />
+        <div className="space-y-0">
+          {limitedAlerts.map((alert, index) => (
+            <div key={index}>
+              <div className="flex items-center gap-4 py-3">
+                <div className="relative h-10 w-10 overflow-hidden rounded-full">
+                  <Image
+                    src={alert.student.image || "/placeholder.svg"}
+                    alt={alert.student.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-medium">{alert.student.name}</h4>
+                  <p className="text-xs text-gray-500">{alert.alertType}</p>
+                </div>
+                <div className="text-xs text-gray-500">{alert.date}</div>
               </div>
-              <div className="flex-1">
-                <h4 className="text-sm font-medium">{alert.student.name}</h4>
-                <p className="text-xs text-gray-500">{alert.alertType}</p>
-              </div>
-              <div className="text-xs text-gray-500">{alert.date}</div>
+              {index < limitedAlerts.length - 1 && <div className="border-t border-gray-100"></div>}
             </div>
           ))}
         </div>

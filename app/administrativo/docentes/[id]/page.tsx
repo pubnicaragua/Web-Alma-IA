@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Mail, Phone, Calendar, BookOpen, School, Clock, Users, ToggleLeft, ToggleRight } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import TeacherDetailSkeleton from "@/components/teacher/teacher-detail-skeleton"
+import { type Teacher, getTeacherById } from "@/services/teachers-service"
 
 interface TeacherCourseInfo {
   curso: string
@@ -21,90 +22,96 @@ interface TeacherActivity {
   accionRealizada: string
 }
 
-interface Teacher {
-  id: string
-  name: string
-  fullName: string
-  age: number
-  rut: string
-  email: string
-  phone: string
-  position: string
-  additionalRole: string
-  yearsInSchool: number
-  status: string
-  availability: string
-  currentCourses: string
-  subjects: string
-  image: string
-  coursesInfo: TeacherCourseInfo[]
-  recentActivities: TeacherActivity[]
-  isActive: boolean
+interface TeacherDetail extends Teacher {
+  fullName?: string
+  phone?: string
+  position?: string
+  additionalRole?: string
+  yearsInSchool?: number
+  availability?: string
+  currentCourses?: string
+  subjects?: string
+  coursesInfo?: TeacherCourseInfo[]
+  recentActivities?: TeacherActivity[]
+  isActive?: boolean
 }
 
 export default function TeacherDetailPage() {
   const { id } = useParams()
   const router = useRouter()
-  const [teacher, setTeacher] = useState<Teacher | null>(null)
+  const [teacher, setTeacher] = useState<TeacherDetail | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const isMobile = useIsMobile()
 
   useEffect(() => {
-    // Simulación de carga de datos del docente
     const fetchTeacher = async () => {
-      // En un caso real, aquí se haría una petición a la API
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      try {
+        setIsLoading(true)
+        setError(null)
 
-      // Datos de ejemplo
-      const mockTeacher: Teacher = {
-        id: id as string,
-        name: "Palomina Gutierrez",
-        fullName: "Palomina Alejandra Gutiérrez Martínez",
-        age: 28,
-        rut: "19.345.876-2",
-        email: "pgutierrez@colegiohorizonte.cl",
-        phone: "+56 9 8765 4321",
-        position: "Docente de Matemáticas",
-        additionalRole: "Profesora Tutora del 1°A - 2°A",
-        yearsInSchool: 3,
-        status: "Activa",
-        availability: "Lunes a viernes, 08:00-16:30",
-        currentCourses: "1°A - 2°A",
-        subjects: "Matemáticas - Taller de Lógica",
-        image: "/smiling-woman-garden.png",
-        isActive: true,
-        coursesInfo: [
-          {
-            curso: "4°A",
-            numAlumnos: 32,
-            alertasActivas: 5,
-            ultimaAlerta: "12/04/2025",
-          },
-          {
-            curso: "2°A",
-            numAlumnos: 32,
-            alertasActivas: 5,
-            ultimaAlerta: "12/04/2025",
-          },
-        ],
-        recentActivities: [
-          {
-            fecha: "12/04/2025",
-            accionRealizada: "Ingresó a vista de alertas activas",
-          },
-          {
-            fecha: "11/04/2025",
-            accionRealizada: "Exportó el informe mensual del 1°A",
-          },
-          {
-            fecha: "09/04/2025",
-            accionRealizada: "Revisó las alertas del 1°A",
-          },
-        ],
+        if (!id) {
+          throw new Error("ID de docente no proporcionado")
+        }
+
+        const teacherData = await getTeacherById(id as string)
+
+        if (!teacherData) {
+          throw new Error("No se encontró el docente")
+        }
+
+        // Enriquecer los datos del docente con información adicional para la vista detallada
+        const enhancedTeacher: TeacherDetail = {
+          ...teacherData,
+          fullName: teacherData.name,
+          phone: "+56 9 8765 4321", // Datos de ejemplo
+          position: `Docente de ${teacherData.subject}`,
+          additionalRole: "Profesora Tutora del 1°A - 2°A",
+          yearsInSchool: 3,
+          availability: "Lunes a viernes, 08:00-16:30",
+          currentCourses: "1°A - 2°A",
+          subjects: teacherData.subject,
+          isActive: teacherData.status === "Activo",
+          coursesInfo: [
+            {
+              curso: "4°A",
+              numAlumnos: 32,
+              alertasActivas: 5,
+              ultimaAlerta: "12/04/2025",
+            },
+            {
+              curso: "2°A",
+              numAlumnos: 32,
+              alertasActivas: 5,
+              ultimaAlerta: "12/04/2025",
+            },
+          ],
+          recentActivities: [
+            {
+              fecha: "12/04/2025",
+              accionRealizada: "Ingresó a vista de alertas activas",
+            },
+            {
+              fecha: "11/04/2025",
+              accionRealizada: "Exportó el informe mensual del 1°A",
+            },
+            {
+              fecha: "09/04/2025",
+              accionRealizada: "Revisó las alertas del 1°A",
+            },
+          ],
+        }
+
+        setTeacher(enhancedTeacher)
+      } catch (err) {
+        console.error("Error al cargar docente:", err)
+        setError(
+          `No se pudo cargar la información del docente: ${err instanceof Error ? err.message : "Error desconocido"}`,
+        )
+        setTeacher(null)
+      } finally {
+        setIsLoading(false)
       }
-
-      setTeacher(mockTeacher)
-      setIsLoading(false)
     }
 
     fetchTeacher()
@@ -119,7 +126,7 @@ export default function TeacherDetailPage() {
       setTeacher({
         ...teacher,
         isActive: !teacher.isActive,
-        status: teacher.isActive ? "Inactiva" : "Activa",
+        status: teacher.isActive ? "Inactivo" : "Activo",
       })
     }
   }
@@ -128,6 +135,24 @@ export default function TeacherDetailPage() {
     return (
       <AppLayout>
         <TeacherDetailSkeleton />
+      </AppLayout>
+    )
+  }
+
+  if (error) {
+    return (
+      <AppLayout>
+        <div className="container mx-auto px-6 py-8">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+            <div className="mt-4">
+              <Button onClick={() => router.push("/administrativo/docentes")} variant="outline">
+                Volver a la lista de docentes
+              </Button>
+            </div>
+          </div>
+        </div>
       </AppLayout>
     )
   }
@@ -206,11 +231,15 @@ export default function TeacherDetailPage() {
               </div>
               <div className="flex flex-col">
                 <span className="text-sm text-gray-500 mb-1">Edad:</span>
-                <span className="text-gray-800 font-medium">{teacher.age} años</span>
+                <span className="text-gray-800 font-medium">
+                  {teacher.age ? `${teacher.age} años` : "No disponible"}
+                </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-sm text-gray-500 mb-1">RUT:</span>
-                <span className="text-gray-800 font-medium">{teacher.rut}</span>
+                <span className="text-sm text-gray-500 mb-1">Documento:</span>
+                <span className="text-gray-800 font-medium">
+                  {teacher.documentType}: {teacher.document}
+                </span>
               </div>
             </div>
           </div>
@@ -226,14 +255,14 @@ export default function TeacherDetailPage() {
                 <Mail className="h-5 w-5 text-blue-500 mr-3" />
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Correo institucional:</span>
-                  <span className="text-gray-800 font-medium">{teacher.email}</span>
+                  <span className="text-gray-800 font-medium">{teacher.email || "No disponible"}</span>
                 </div>
               </div>
               <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                 <Phone className="h-5 w-5 text-blue-500 mr-3" />
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Teléfono:</span>
-                  <span className="text-gray-800 font-medium">{teacher.phone}</span>
+                  <span className="text-gray-800 font-medium">{teacher.phone || "No disponible"}</span>
                 </div>
               </div>
             </div>
@@ -307,8 +336,17 @@ export default function TeacherDetailPage() {
               <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                 <BookOpen className="h-5 w-5 text-blue-500 mr-3" />
                 <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Asignaturas:</span>
-                  <span className="text-gray-800 font-medium">{teacher.subjects}</span>
+                  <span className="text-sm text-gray-500">Especialidad:</span>
+                  <span className="text-gray-800 font-medium">{teacher.subject}</span>
+                </div>
+              </div>
+              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+                <School className="h-5 w-5 text-blue-500 mr-3" />
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Colegio:</span>
+                  <span className="text-gray-800 font-medium">
+                    {teacher.school} ({teacher.schoolType})
+                  </span>
                 </div>
               </div>
             </div>
@@ -316,68 +354,72 @@ export default function TeacherDetailPage() {
         </div>
 
         {/* Zona 6: Panel de resumen del curso */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
-            <Users className="mr-2 h-5 w-5 text-blue-500" />
-            Panel de resumen del curso
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-blue-300">
-                  <th className="px-4 py-3 text-left font-medium text-white">Curso</th>
-                  <th className="px-4 py-3 text-left font-medium text-white">N° de alumnos</th>
-                  <th className="px-4 py-3 text-left font-medium text-white">N° de alertas activas</th>
-                  <th className="px-4 py-3 text-left font-medium text-white">Última alerta ingresada</th>
-                </tr>
-              </thead>
-              <tbody>
-                {teacher.coursesInfo.map((course, index) => (
-                  <tr key={index} className="border-b-2 border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm">
-                      <span className="font-medium text-blue-600">{course.curso}</span>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 text-gray-500 mr-2" />
-                        <span>{course.numAlumnos}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <div className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium inline-block">
-                        {course.alertasActivas}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 text-gray-500 mr-2" />
-                        <span>{course.ultimaAlerta}</span>
-                      </div>
-                    </td>
+        {teacher.coursesInfo && teacher.coursesInfo.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+              <Users className="mr-2 h-5 w-5 text-blue-500" />
+              Panel de resumen del curso
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-blue-300">
+                    <th className="px-4 py-3 text-left font-medium text-white">Curso</th>
+                    <th className="px-4 py-3 text-left font-medium text-white">N° de alumnos</th>
+                    <th className="px-4 py-3 text-left font-medium text-white">N° de alertas activas</th>
+                    <th className="px-4 py-3 text-left font-medium text-white">Última alerta ingresada</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {teacher.coursesInfo.map((course, index) => (
+                    <tr key={index} className="border-b-2 border-gray-100 hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm">
+                        <span className="font-medium text-blue-600">{course.curso}</span>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="flex items-center">
+                          <Users className="h-4 w-4 text-gray-500 mr-2" />
+                          <span>{course.numAlumnos}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium inline-block">
+                          {course.alertasActivas}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 text-gray-500 mr-2" />
+                          <span>{course.ultimaAlerta}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Zona 7: Actividades recientes */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
-            <Clock className="mr-2 h-5 w-5 text-blue-500" />
-            Actividades recientes
-          </h2>
-          <div className="space-y-3">
-            {teacher.recentActivities.map((activity, index) => (
-              <div key={index} className="flex items-start p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-medium mr-3 whitespace-nowrap">
-                  {activity.fecha}
+        {teacher.recentActivities && teacher.recentActivities.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+              <Clock className="mr-2 h-5 w-5 text-blue-500" />
+              Actividades recientes
+            </h2>
+            <div className="space-y-3">
+              {teacher.recentActivities.map((activity, index) => (
+                <div key={index} className="flex items-start p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-medium mr-3 whitespace-nowrap">
+                    {activity.fecha}
+                  </div>
+                  <span className="text-gray-800">{activity.accionRealizada}</span>
                 </div>
-                <span className="text-gray-800">{activity.accionRealizada}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </AppLayout>
   )

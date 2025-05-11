@@ -120,18 +120,6 @@ export default function LoginPage() {
     }
   }
 
-  // Función para usar credenciales de demostración
-  const useDemoCredentials = () => {
-    setEmail("demo@example.com")
-    setPassword("password123")
-
-    // Mostrar notificación
-    toast({
-      title: "Credenciales de demostración",
-      description: "Se han aplicado las credenciales de demostración",
-    })
-  }
-
   return (
     <div className="bg-white rounded-lg p-8 shadow-md">
       <h1 className="text-2xl font-bold text-center mb-6">Inicia sesión</h1>
@@ -203,12 +191,6 @@ export default function LoginPage() {
         <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600" disabled={isLoading}>
           {isLoading ? "Iniciando sesión..." : "Ingresar"}
         </Button>
-
-        <div className="text-center mt-4">
-          <button type="button" onClick={useDemoCredentials} className="text-sm text-blue-500 hover:underline">
-            Usar credenciales de demostración
-          </button>
-        </div>
       </form>
     </div>
   )

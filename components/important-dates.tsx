@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { AlertCircle, RefreshCw } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { fetchImportantDates, type ImportantDate } from "@/services/home-service"
 import { useToast } from "@/hooks/use-toast"
 import { ImportantDatesSkeleton } from "./important-dates-skeleton"
@@ -24,14 +25,26 @@ const FALLBACK_DATA: ImportantDate[] = [
     event: "Vacaciones de Invierno",
     dateRange: "Jul 10 - Jul 25, 2024",
   },
+  {
+    event: "Día del Profesor",
+    dateRange: "Oct 16 - 2024",
+  },
+  {
+    event: "Fiestas Patrias",
+    dateRange: "Sep 18 - Sep 19, 2024",
+  },
+  {
+    event: "Ceremonia de Graduación",
+    dateRange: "Dic 15 - 2024",
+  },
 ]
 
 interface ImportantDatesProps {
-  title: string
+  title?: string
   initialData?: ImportantDate[]
 }
 
-export function ImportantDates({ title, initialData }: ImportantDatesProps) {
+export function ImportantDates({ title = "Fechas importantes", initialData }: ImportantDatesProps) {
   const [dates, setDates] = useState<ImportantDate[]>(initialData || [])
   const [isLoading, setIsLoading] = useState(!initialData)
   const [error, setError] = useState<string | null>(null)
@@ -92,48 +105,61 @@ export function ImportantDates({ title, initialData }: ImportantDatesProps) {
   // Renderizar mensaje de error
   if (error) {
     return (
-      <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-red-200">
-        <div className="flex items-center mb-4">
-          <AlertCircle className="mr-2 text-red-500" />
-          <h3 className="font-medium text-gray-800">{title}</h3>
-        </div>
-        <div className="text-red-500 mb-4">{error}</div>
-        <button
-          onClick={loadDates}
-          className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" /> Reintentar
-        </button>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-6">
+            <AlertCircle className="h-10 w-10 text-red-500 mb-2" />
+            <p className="text-red-500 mb-4">{error}</p>
+            <button
+              onClick={loadDates}
+              className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" /> Reintentar
+            </button>
+          </div>
+        </CardContent>
+      </Card>
     )
   }
 
   // Renderizar mensaje si no hay fechas
   if (!dates || dates.length === 0) {
     return (
-      <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
-        <h3 className="font-medium text-gray-800 mb-4">{title}</h3>
-        <div className="text-gray-500 text-center py-10">No hay fechas importantes disponibles.</div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-gray-500 text-center py-10">No hay fechas importantes disponibles.</div>
+        </CardContent>
+      </Card>
     )
   }
 
+  // Limitar a mostrar solo los 7 elementos más recientes
+  const limitedDates = dates.slice(0, 7)
+
   return (
-    <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-medium text-gray-800">{title}</h3>
-        {useFallback && (
-          <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full">Datos de ejemplo</span>
-        )}
-      </div>
-      <div className="space-y-4">
-        {dates.map((date, index) => (
-          <div key={index} className="flex justify-between">
-            <span className="font-medium text-gray-800">{date.event}</span>
-            <span className="text-sm text-gray-500">{date.dateRange}</span>
-          </div>
-        ))}
-      </div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-0">
+          {limitedDates.map((date, index) => (
+            <div key={index}>
+              <div className="flex justify-between py-3">
+                <span className="font-medium text-gray-800">{date.event}</span>
+                <span className="text-sm text-gray-500">{date.dateRange}</span>
+              </div>
+              {index < limitedDates.length - 1 && <div className="border-t border-gray-100"></div>}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   )
 }

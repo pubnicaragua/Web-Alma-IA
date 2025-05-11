@@ -1,178 +1,209 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ChevronLeft } from "lucide-react"
 import { AppLayout } from "@/components/layout/app-layout"
 import { Button } from "@/components/ui/button"
-
-interface QuestionDetail {
-  id: string
-  question: string
-  options: string[]
-  responseType: string
-  diagnostic: string
-  priority: string
-  timeOfDay: string
-  symptoms: string
-  keywords: string
-}
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { ArrowLeft, Edit, Trash2, AlertCircle } from "lucide-react"
+import { fetchQuestionById, type Question } from "@/services/questions-service"
+import { useToast } from "@/hooks/use-toast"
 
 export default function QuestionDetailPage() {
-  const { id } = useParams()
+  const params = useParams()
   const router = useRouter()
-  const [question, setQuestion] = useState<QuestionDetail | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { toast } = useToast()
+  const [question, setQuestion] = useState<Question | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
+  // Obtener el ID de la pregunta de los parámetros de la URL
+  const questionId = params.id as string
+
+  // Cargar los datos de la pregunta
   useEffect(() => {
-    // Simulación de carga de datos de la pregunta
-    const fetchQuestion = async () => {
-      // En un caso real, aquí se haría una petición a la API
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Datos de ejemplo basados en la imagen proporcionada
-      const mockQuestion: QuestionDetail = {
-        id: id as string,
-        question: "¿Cómo te sientes hoy?",
-        options: ["Muy bien", "Bien", "Normal", "Mal", "Muy mal"],
-        responseType: "Opción múltiple",
-        diagnostic: "Salud Mental",
-        priority: "1",
-        timeOfDay: "AM",
-        symptoms:
-          "Cambios en el estado de ánimo, ansiedad excesiva, tristeza o apatía prolongada, pensamientos inusuales, rumiación constante, ambivalencia, confusión de identidad, desorientación frecuente, pensamiento suicida o violento, dificultad para identificar y gestionar emociones, sufrimiento emocional persistente, aplanamiento o volatilidad emocional.",
-        keywords:
-          "Salud mental, ansiedad, baja autoestima, preocupación, nerviosismo, insomnio, tristeza, frustración, agotamiento extremo, episodios de llanto, desesperación, angustia, soledad, aislamiento, desinterés, bajo rendimiento, mala comunicación, misoginia, misandria, trastornos alimenticios, peso, dietas, excesos.",
+    const loadQuestion = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const data = await fetchQuestionById(questionId)
+        if (data) {
+          setQuestion(data)
+        } else {
+          setError("No se encontró la pregunta solicitada.")
+          toast({
+            title: "Error",
+            description: "No se encontró la pregunta solicitada.",
+            variant: "destructive",
+          })
+        }
+      } catch (err) {
+        console.error("Error al cargar la pregunta:", err)
+        setError("No se pudo cargar la pregunta. Por favor, intenta de nuevo.")
+        toast({
+          title: "Error",
+          description: "No se pudo cargar la pregunta. Por favor, intenta de nuevo.",
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
       }
-
-      setQuestion(mockQuestion)
-      setIsLoading(false)
     }
 
-    fetchQuestion()
-  }, [id])
+    if (questionId) {
+      loadQuestion()
+    }
+  }, [questionId, toast])
 
-  const handleGoBack = () => {
+  // Función para volver a la lista de preguntas
+  const handleBack = () => {
     router.push("/configuracion/preguntas")
   }
 
-  const handleEditQuestion = () => {
-    // En un caso real, aquí se abriría un modal de edición o se navegaría a una página de edición
-    alert("Funcionalidad para editar la pregunta")
+  // Función para editar la pregunta (placeholder)
+  const handleEdit = () => {
+    toast({
+      title: "Editar pregunta",
+      description: "Funcionalidad de edición no implementada aún.",
+      variant: "default",
+    })
   }
 
-  if (isLoading) {
-    return (
-      <AppLayout>
-        <div className="container mx-auto px-3 sm:px-6 py-8">
-          <div className="flex justify-center items-center h-64">
-            <p className="text-xl text-gray-500">Cargando información de la pregunta...</p>
-          </div>
-        </div>
-      </AppLayout>
-    )
-  }
-
-  if (!question) {
-    return (
-      <AppLayout>
-        <div className="container mx-auto px-3 sm:px-6 py-8">
-          <div className="flex justify-center items-center h-64">
-            <p className="text-xl text-gray-500">No se encontró información de la pregunta</p>
-          </div>
-        </div>
-      </AppLayout>
-    )
+  // Función para eliminar la pregunta (placeholder)
+  const handleDelete = () => {
+    toast({
+      title: "Eliminar pregunta",
+      description: "Funcionalidad de eliminación no implementada aún.",
+      variant: "default",
+    })
   }
 
   return (
     <AppLayout>
       <div className="container mx-auto px-3 sm:px-6 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <button
-            onClick={handleGoBack}
-            className="flex items-center text-gray-600 hover:text-blue-500 transition-colors"
-          >
-            <ChevronLeft className="h-5 w-5 mr-1" />
-            <span className="text-xl font-semibold">{question.question}</span>
-          </button>
-          <Button onClick={handleEditQuestion} className="bg-blue-500 hover:bg-blue-600">
-            Editar pregunta
-          </Button>
-        </div>
+        <Button variant="ghost" onClick={handleBack} className="mb-6">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Volver a la lista
+        </Button>
 
-        <div className="mb-8">
-          <div className="flex justify-end mb-4">
-            <div className="flex items-center">
-              <div className="w-5 h-5 rounded-full border-2 border-gray-300 mr-2"></div>
-              <span className="text-gray-700">{question.responseType}</span>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6 flex items-start">
+            <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium">Error</p>
+              <p className="text-sm">{error}</p>
+              <Button variant="link" className="text-red-700 p-0 h-auto text-sm mt-1" onClick={handleBack}>
+                Volver a la lista de preguntas
+              </Button>
             </div>
           </div>
+        )}
 
-          {/* Opciones de respuesta */}
+        {loading ? (
           <div className="space-y-4">
-            {question.options.map((option, index) => (
-              <div key={index} className="flex items-center">
-                <div className="w-5 h-5 rounded-full border-2 border-gray-300 mr-2"></div>
-                <span className="text-gray-800">{option}</span>
+            <div className="h-8 w-64 bg-gray-200 animate-pulse rounded"></div>
+            <Card>
+              <CardHeader>
+                <div className="h-6 w-full bg-gray-200 animate-pulse rounded"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="h-4 w-full bg-gray-200 animate-pulse rounded"></div>
+                  <div className="h-4 w-3/4 bg-gray-200 animate-pulse rounded"></div>
+                  <div className="h-4 w-1/2 bg-gray-200 animate-pulse rounded"></div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : question ? (
+          <>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Detalle de la pregunta</h2>
+              <div className="flex space-x-2">
+                <Button variant="outline" onClick={handleEdit}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar
+                </Button>
+                <Button variant="outline" className="text-red-500" onClick={handleDelete}>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Eliminar
+                </Button>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          {/* Diagnóstico */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Diagnóstico</h3>
-            <p className="text-gray-700">{question.diagnostic}</p>
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>Información de la pregunta</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-medium">Pregunta</h3>
+                      <p className="mt-1">{question.questionText}</p>
+                    </div>
 
-          {/* Prioridad de preguntas y horario */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Prioridad de preguntas y horario</h3>
-            <p className="text-gray-700">
-              {question.priority} - {question.timeOfDay}
-            </p>
-          </div>
-        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Tipo de pregunta</h3>
+                        <p>{question.questionType}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Nivel educativo</h3>
+                        <p>{question.educationLevel}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Grupo de preguntas</h3>
+                        <p>{question.questionGroup}</p>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-500">Horario</h3>
+                        <p>{question.time}</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Síntomas */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Síntomas</h3>
-            <p className="text-gray-700">{question.symptoms}</p>
-          </div>
-
-          {/* Palabras clave */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Palabras clave</h3>
-            <p className="text-gray-700">{question.keywords}</p>
-          </div>
-        </div>
-
-        {/* Navegación entre preguntas */}
-        <div className="flex justify-center mt-8">
-          <div className="flex space-x-2">
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-600">
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </button>
-          </div>
-        </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Diagnóstico</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">Diagnóstico</h3>
+                      <p>{question.diagnostic}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">Síntomas</h3>
+                      <p>{question.symptoms}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">Palabra clave</h3>
+                      <p>{question.keyword}</p>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-500">Prioridad</h3>
+                      <Badge
+                        variant="outline"
+                        className={
+                          question.priority === 1
+                            ? "border-red-500 text-red-500"
+                            : question.priority === 2
+                              ? "border-yellow-500 text-yellow-500"
+                              : "border-green-500 text-green-500"
+                        }
+                      >
+                        {question.priority === 1 ? "Alta" : question.priority === 2 ? "Media" : "Baja"}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        ) : null}
       </div>
     </AppLayout>
   )

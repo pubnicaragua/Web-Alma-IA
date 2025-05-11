@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { AppLayout } from "@/components/layout/app-layout"
@@ -8,123 +8,56 @@ import { FilterDropdown } from "@/components/filter-dropdown"
 import { DataTable } from "@/components/data-table"
 import { Pagination } from "@/components/pagination"
 import { AddTeacherModal } from "@/components/teacher/add-teacher-modal"
-
-interface Teacher {
-  id: string
-  name: string
-  level: string
-  course: string
-  subject: string
-  type: string
-  age: number
-  image?: string
-}
+import { type Teacher, getAllTeachers } from "@/services/teachers-service"
+import TeacherDetailSkeleton from "@/components/teacher/teacher-detail-skeleton"
 
 export default function TeachersPage() {
   const router = useRouter()
 
-  // Datos de ejemplo para los docentes
-  const [teachersData, setTeachersData] = useState<Teacher[]>([
-    {
-      id: "1",
-      name: "Palomina Gutierrez",
-      level: "Cuartos básicos",
-      course: "A",
-      subject: "Matemáticas",
-      type: "Principal",
-      age: 28,
-      image: "/smiling-woman-garden.png",
-    },
-    {
-      id: "2",
-      name: "Matías Ignacio Díaz",
-      level: "Cuartos básicos",
-      course: "B",
-      subject: "Comunicación",
-      type: "No asignado",
-      age: 28,
-      image: "/young-man-city.png",
-    },
-    {
-      id: "3",
-      name: "Carolina Espina",
-      level: "Cuartos básicos",
-      course: "C",
-      subject: "Comunicación",
-      type: "No asignado",
-      age: 28,
-      image: "/smiling-woman-garden.png",
-    },
-    {
-      id: "4",
-      name: "Carolina Espina",
-      level: "Cuartos básicos",
-      course: "D",
-      subject: "Comunicación",
-      type: "No asignado",
-      age: 28,
-      image: "/smiling-woman-garden.png",
-    },
-    {
-      id: "5",
-      name: "Jorge Mendez",
-      level: "Quintos básicos",
-      course: "A",
-      subject: "Ciencias",
-      type: "Principal",
-      age: 35,
-      image: "/young-man-city.png",
-    },
-    {
-      id: "6",
-      name: "Ana María López",
-      level: "Quintos básicos",
-      course: "B",
-      subject: "Historia",
-      type: "Principal",
-      age: 42,
-      image: "/smiling-woman-garden.png",
-    },
-    {
-      id: "7",
-      name: "Roberto Sánchez",
-      level: "Sextos básicos",
-      course: "A",
-      subject: "Educación Física",
-      type: "No asignado",
-      age: 31,
-      image: "/young-man-city.png",
-    },
-    {
-      id: "8",
-      name: "Claudia Morales",
-      level: "Sextos básicos",
-      course: "B",
-      subject: "Artes",
-      type: "No asignado",
-      age: 29,
-      image: "/smiling-woman-garden.png",
-    },
-  ])
+  // Estados para los datos y la carga
+  const [teachersData, setTeachersData] = useState<Teacher[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Estados para los filtros
   const [levelFilter, setLevelFilter] = useState<string>("Todos")
   const [courseFilter, setCourseFilter] = useState<string>("Todos")
   const [subjectFilter, setSubjectFilter] = useState<string>("Todos")
   const [typeFilter, setTypeFilter] = useState<string>("Todos")
-  const [ageFilter, setAgeFilter] = useState<string>("Todos")
+  const [statusFilter, setStatusFilter] = useState<string>("Todos")
 
   // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 4
-  const totalPages = Math.ceil(teachersData.length / itemsPerPage)
+
+  // Cargar datos de docentes
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const data = await getAllTeachers()
+        setTeachersData(data || [])
+      } catch (err) {
+        console.error("Error al cargar docentes:", err)
+        setError("No se pudieron cargar los datos de docentes. Por favor, intenta de nuevo más tarde.")
+        setTeachersData([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchTeachers()
+  }, [])
 
   // Opciones para los filtros
   const levelOptions = ["Todos", "Cuartos básicos", "Quintos básicos", "Sextos básicos"]
   const courseOptions = ["Todos", "A", "B", "C", "D"]
-  const subjectOptions = ["Todos", "Matemáticas", "Comunicación", "Ciencias", "Historia", "Educación Física", "Artes"]
+
+  // Generar opciones de filtro dinámicamente basadas en los datos
+  const subjectOptions = ["Todos", ...Array.from(new Set(teachersData.map((teacher) => teacher.subject)))]
   const typeOptions = ["Todos", "Principal", "No asignado"]
-  const ageOptions = ["Todos", "28", "29", "31", "35", "42"]
+  const statusOptions = ["Todos", ...Array.from(new Set(teachersData.map((teacher) => teacher.status)))]
 
   // Filtrar los datos según los filtros seleccionados
   const filteredTeachers = teachersData.filter((teacher) => {
@@ -133,9 +66,12 @@ export default function TeachersPage() {
       (courseFilter === "Todos" || teacher.course === courseFilter) &&
       (subjectFilter === "Todos" || teacher.subject === subjectFilter) &&
       (typeFilter === "Todos" || teacher.type === typeFilter) &&
-      (ageFilter === "Todos" || teacher.age.toString() === ageFilter)
+      (statusFilter === "Todos" || teacher.status === statusFilter)
     )
   })
+
+  // Calcular el total de páginas
+  const totalPages = Math.ceil(filteredTeachers.length / itemsPerPage)
 
   // Paginar los datos
   const paginatedTeachers = filteredTeachers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
@@ -143,11 +79,10 @@ export default function TeachersPage() {
   // Columnas para la tabla
   const columns = [
     { key: "name", title: "Docente" },
-    { key: "level", title: "Nivel" },
-    { key: "course", title: "Curso" },
-    { key: "subject", title: "Asignatura" },
-    { key: "type", title: "Tipo" },
-    { key: "age", title: "Edad" },
+    { key: "subject", title: "Especialidad" },
+    { key: "school", title: "Colegio" },
+    { key: "status", title: "Estado" },
+    { key: "document", title: "Documento" },
   ]
 
   // Función para navegar a la vista detallada del docente
@@ -176,10 +111,20 @@ export default function TeachersPage() {
             <span>{teacher.name}</span>
           </div>
         )
-      case "age":
-        return `${teacher.age} años`
+      case "status":
+        return (
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium ${
+              teacher.status === "Activo" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+            }`}
+          >
+            {teacher.status}
+          </span>
+        )
+      case "document":
+        return `${teacher.documentType}: ${teacher.document}`
       default:
-        return teacher[column.key as keyof Teacher]
+        return teacher[column.key as keyof Teacher] || "-"
     }
   }
 
@@ -203,12 +148,18 @@ export default function TeachersPage() {
     const newTeacher: Teacher = {
       id: (teachersData.length + 1).toString(),
       name: teacherData.name,
+      subject: teacherData.subject,
+      status: "Activo",
+      document: teacherData.rut,
+      documentType: "RUT",
+      school: "Colegio Horizonte",
+      schoolType: "Privado",
       level: "Cuartos básicos", // Valor por defecto
       course: teacherData.tutorCourse || "A", // Usar el curso que tutoriza o un valor por defecto
-      subject: teacherData.subject,
       type: teacherData.type || "No asignado",
       age: calculateAge(teacherData.birthDate) || 30, // Calcular edad o usar valor por defecto
       image: "/young-man-city.png", // Imagen por defecto
+      email: teacherData.email,
     }
 
     setTeachersData([...teachersData, newTeacher])
@@ -230,6 +181,37 @@ export default function TeachersPage() {
     return age
   }
 
+  // Mostrar skeleton mientras se cargan los datos
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="container mx-auto px-3 sm:px-6 py-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Docentes</h2>
+          </div>
+          <TeacherDetailSkeleton />
+        </div>
+      </AppLayout>
+    )
+  }
+
+  // Mostrar mensaje de error si hay algún problema
+  if (error) {
+    return (
+      <AppLayout>
+        <div className="container mx-auto px-3 sm:px-6 py-8">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Docentes</h2>
+          </div>
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+          </div>
+        </div>
+      </AppLayout>
+    )
+  }
+
   return (
     <AppLayout>
       <div className="container mx-auto px-3 sm:px-6 py-8">
@@ -245,22 +227,33 @@ export default function TeachersPage() {
           <FilterDropdown label="Nivel" options={levelOptions} value={levelFilter} onChange={setLevelFilter} />
           <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
           <FilterDropdown
-            label="Asignatura"
+            label="Especialidad"
             options={subjectOptions}
             value={subjectFilter}
             onChange={setSubjectFilter}
           />
           <FilterDropdown label="Tipo" options={typeOptions} value={typeFilter} onChange={setTypeFilter} />
-          <FilterDropdown label="Edad" options={ageOptions} value={ageFilter} onChange={setAgeFilter} />
+          <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
         </div>
+
+        {/* Mensaje si no hay docentes */}
+        {filteredTeachers.length === 0 && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded mb-6">
+            No se encontraron docentes con los filtros seleccionados.
+          </div>
+        )}
 
         {/* Tabla de docentes */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <DataTable columns={columns} data={paginatedTeachers} renderCell={renderCell} />
-        </div>
+        {filteredTeachers.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+            <DataTable columns={columns} data={paginatedTeachers} renderCell={renderCell} />
+          </div>
+        )}
 
         {/* Paginación */}
-        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        {filteredTeachers.length > 0 && (
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        )}
       </div>
     </AppLayout>
   )

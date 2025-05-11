@@ -1,222 +1,79 @@
 "use client"
 
-import { useState } from "react"
-import { AppLayout } from "@/components/layout/app-layout"
-import { FilterDropdown } from "@/components/filter-dropdown"
-import { DataTable } from "@/components/data-table"
+import { useState, useEffect } from "react"
+import { fetchReports, type Report } from "@/services/reports-service"
+import { ReportsList } from "@/components/report/reports-list"
+import { ReportsSkeleton } from "@/components/report/reports-skeleton"
 import { Button } from "@/components/ui/button"
-import { Download, FileText, Plus } from "lucide-react"
-import { GenerateReportModal, type ReportFormData } from "@/components/report/generate-report-modal"
+import { PlusCircle, RefreshCw, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-
-interface Report {
-  id: string
-  title: string
-  type: string
-  course: string
-  date: string
-  status: string
-  author: string
-}
+import { AppLayout } from "@/components/layout/app-layout"
 
 export default function ReportsPage() {
+  const [reports, setReports] = useState<Report[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [reports, setReports] = useState<Report[]>([
-    {
-      id: "1",
-      title: "Informe mensual de rendimiento",
-      type: "Rendimiento",
-      course: "4°A",
-      date: "12/04/2025",
-      status: "Completado",
-      author: "Palomina Gutierrez",
-    },
-    {
-      id: "2",
-      title: "Informe de alertas activas",
-      type: "Alertas",
-      course: "2°A",
-      date: "10/04/2025",
-      status: "Completado",
-      author: "Jorge Mendez",
-    },
-    {
-      id: "3",
-      title: "Informe de bienestar emocional",
-      type: "Emocional",
-      course: "5°C",
-      date: "08/04/2025",
-      status: "Completado",
-      author: "Ana María López",
-    },
-    {
-      id: "4",
-      title: "Informe de asistencia trimestral",
-      type: "Asistencia",
-      course: "3°B",
-      date: "05/04/2025",
-      status: "Completado",
-      author: "Roberto Sánchez",
-    },
-    {
-      id: "5",
-      title: "Informe de comportamiento",
-      type: "Comportamiento",
-      course: "1°A",
-      date: "01/04/2025",
-      status: "Completado",
-      author: "Claudia Morales",
-    },
-    {
-      id: "6",
-      title: "Informe de evaluaciones",
-      type: "Evaluaciones",
-      course: "6°B",
-      date: "28/03/2025",
-      status: "Completado",
-      author: "Matías Ignacio Díaz",
-    },
-  ])
 
-  // Estados para los filtros
-  const [typeFilter, setTypeFilter] = useState<string>("Todos")
-  const [courseFilter, setCourseFilter] = useState<string>("Todos")
-  const [dateFilter, setDateFilter] = useState<string>("Todos")
-  const [statusFilter, setStatusFilter] = useState<string>("Todos")
-  const [authorFilter, setAuthorFilter] = useState<string>("Todos")
-
-  // Opciones para los filtros
-  const typeOptions = ["Todos", "Rendimiento", "Alertas", "Emocional", "Asistencia", "Comportamiento", "Evaluaciones"]
-  const courseOptions = ["Todos", "1°A", "2°A", "3°B", "4°A", "5°C", "6°B"]
-  const dateOptions = ["Todos", "Última semana", "Último mes", "Último trimestre"]
-  const statusOptions = ["Todos", "Completado", "En proceso", "Pendiente"]
-  const authorOptions = [
-    "Todos",
-    "Palomina Gutierrez",
-    "Jorge Mendez",
-    "Ana María López",
-    "Roberto Sánchez",
-    "Claudia Morales",
-    "Matías Ignacio Díaz",
-  ]
-
-  // Filtrar los datos según los filtros seleccionados
-  const filteredReports = reports.filter((report) => {
-    return (
-      (typeFilter === "Todos" || report.type === typeFilter) &&
-      (courseFilter === "Todos" || report.course === courseFilter) &&
-      (statusFilter === "Todos" || report.status === statusFilter) &&
-      (authorFilter === "Todos" || report.author === authorFilter) &&
-      (dateFilter === "Todos" ||
-        (dateFilter === "Última semana" && new Date(report.date) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) ||
-        (dateFilter === "Último mes" && new Date(report.date) >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)) ||
-        (dateFilter === "Último trimestre" && new Date(report.date) >= new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)))
-    )
-  })
-
-  // Columnas para la tabla
-  const columns = [
-    { key: "title", title: "Título del informe" },
-    { key: "type", title: "Tipo" },
-    { key: "course", title: "Curso" },
-    { key: "date", title: "Fecha" },
-    { key: "status", title: "Estado" },
-    { key: "author", title: "Autor" },
-    { key: "actions", title: "Acción" },
-  ]
-
-  // Renderizar celdas de la tabla
-  const renderCell = (report: Report, column: { key: string; title: string }, index: number) => {
-    switch (column.key) {
-      case "title":
-        return (
-          <div className="flex items-center space-x-2">
-            <FileText className="h-4 w-4 text-blue-500" />
-            <span>{report.title}</span>
-          </div>
-        )
-      case "status":
-        return (
-          <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${
-              report.status === "Completado"
-                ? "bg-green-100 text-green-800"
-                : report.status === "En proceso"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-gray-100 text-gray-800"
-            }`}
-          >
-            {report.status}
-          </span>
-        )
-      case "actions":
-        return (
-          <Button variant="outline" size="sm" className="flex items-center space-x-1 border border-gray-200">
-            <Download className="h-4 w-4" />
-            <span>Descargar</span>
-          </Button>
-        )
-      default:
-        return report[column.key as keyof Report]
+  const loadReports = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchReports()
+      setReports(data || []) // Asegurarnos de que siempre sea un array
+    } catch (err) {
+      console.error("Error al cargar informes:", err)
+      setError("No se pudieron cargar los informes. Por favor, intenta de nuevo.")
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los informes. Se están mostrando datos de ejemplo.",
+        variant: "destructive",
+      })
+      // Asegurarnos de que reports sea un array vacío en caso de error
+      setReports([])
+    } finally {
+      setLoading(false)
     }
   }
 
-  // Función para generar un nuevo informe
-  const handleGenerateReport = (reportData: ReportFormData) => {
-    // Simulación de generación de informe
-    const newReport: Report = {
-      id: (reports.length + 1).toString(),
-      title: reportData.title,
-      type: reportData.type,
-      course: reportData.course,
-      date: new Date().toLocaleDateString("es-ES"),
-      status: "En proceso",
-      author: "Usuario Actual", // En un caso real, esto vendría del contexto de autenticación
-    }
-
-    // Añadir el nuevo informe a la lista
-    setReports([newReport, ...reports])
-
-    // Mostrar notificación de éxito
-    toast({
-      title: "Informe generado",
-      description: `El informe "${reportData.title}" se está generando y estará disponible en breve.`,
-      variant: "default",
-    })
-  }
+  useEffect(() => {
+    loadReports()
+  }, [])
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-3 sm:px-6 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Informes</h2>
-          <Button className="bg-blue-500 hover:bg-blue-600" onClick={() => setIsModalOpen(true)}>
-            <Plus className="h-4 w-4 md:mr-2" />
-            <span className="hidden md:inline">Generar informe</span>
-          </Button>
+      <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">Informes</h1>
+            <p className="text-gray-500 mt-1">Gestiona y visualiza los informes de los alumnos</p>
+          </div>
+          <div className="flex gap-2 mt-4 sm:mt-0">
+            <Button variant="outline" size="sm" onClick={loadReports} disabled={loading}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+              Actualizar
+            </Button>
+            <Button size="sm">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Nuevo informe
+            </Button>
+          </div>
         </div>
 
-        {/* Filtros */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          <FilterDropdown label="Tipo" options={typeOptions} value={typeFilter} onChange={setTypeFilter} />
-          <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
-          <FilterDropdown label="Fecha" options={dateOptions} value={dateFilter} onChange={setDateFilter} />
-          <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
-          <FilterDropdown label="Autor" options={authorOptions} value={authorFilter} onChange={setAuthorFilter} />
-        </div>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6 flex items-start">
+            <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium">Error al cargar los informes</p>
+              <p className="text-sm">{error}</p>
+              <Button variant="link" className="text-red-700 p-0 h-auto text-sm mt-1" onClick={loadReports}>
+                Intentar de nuevo
+              </Button>
+            </div>
+          </div>
+        )}
 
-        {/* Tabla de informes */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-blue-200">
-          <DataTable columns={columns} data={filteredReports} renderCell={renderCell} alternateRows={true} />
-        </div>
-
-        {/* Modal para generar informe */}
-        <GenerateReportModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onGenerate={handleGenerateReport}
-        />
+        {loading ? <ReportsSkeleton /> : <ReportsList reports={reports} />}
       </div>
     </AppLayout>
   )

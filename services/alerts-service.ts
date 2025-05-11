@@ -42,97 +42,62 @@ export interface ApiAlert {
 // Interfaces para la UI
 export interface Alert {
   id: string
-  student: {
+  title: string
+  description: string
+  date: string
+  status: string
+  priority: string
+  type: string
+  student?: {
     id: string
     name: string
-    image?: string
-    email?: string
+    avatar?: string
   }
-  type: string
-  priority: string
-  priorityColor: string
-  classroom: string
-  status: string
-  responsible: string
-  date: string
-  time: string
-  severity?: string
-  severityIcon?: string
-  description?: string
-  actionTaken?: string
-  isRead: boolean
-  evidence?: {
-    type: string
-    url: string
-    date: string
-  }[]
 }
 
 // Datos de ejemplo para cuando la API no está disponible
 export const FALLBACK_ALERTS: Alert[] = [
   {
     id: "1",
+    title: "SOS Alma",
+    description: "Alerta generada por bajo rendimiento académico",
+    date: "08/04/2025",
+    status: "Pendiente",
+    priority: "Alta",
+    type: "SOS Alma",
     student: {
       id: "101",
       name: "Carolina Espina",
-      image: "/smiling-woman-garden.png",
-      email: "carolina.espina@colegio.com",
+      avatar: "/smiling-woman-garden.png",
     },
-    type: "SOS Alma",
-    priority: "Alta",
-    priorityColor: "#FF0000",
-    classroom: "3°C",
-    status: "Pendiente",
-    responsible: "Enc. Convivencia",
-    date: "08/04/2025",
-    time: "8:02 AM",
-    severity: "Media",
-    severityIcon: "warning",
-    description: "Alerta generada por bajo rendimiento académico",
-    isRead: false,
   },
   {
     id: "2",
+    title: "Amarilla",
+    description: "Alerta generada por inasistencias",
+    date: "08/04/2025",
+    status: "En curso",
+    priority: "Media",
+    type: "Amarilla",
     student: {
       id: "102",
       name: "Jorge Mendez",
-      image: "/young-man-city.png",
-      email: "jorge.mendez@colegio.com",
+      avatar: "/young-man-city.png",
     },
-    type: "Amarilla",
-    priority: "Media",
-    priorityColor: "#FFA500",
-    classroom: "7°A",
-    status: "En curso",
-    responsible: "Psic. Escolar",
-    date: "08/04/2025",
-    time: "8:10 AM",
-    severity: "Baja",
-    severityIcon: "info",
-    description: "Alerta generada por inasistencias",
-    isRead: true,
   },
   {
     id: "3",
+    title: "Denuncia",
+    description: "Alerta generada por comportamiento",
+    date: "07/04/2025",
+    status: "Resuelta",
+    priority: "Alta",
+    type: "Denuncia",
     student: {
       id: "103",
       name: "Bruno Garay",
-      image: "/young-man-city.png",
-      email: "bruno.garay@colegio.com",
+      avatar: "/young-man-city.png",
     },
-    type: "Denuncia",
-    priority: "Alta",
-    priorityColor: "#FF0000",
-    classroom: "5°C",
-    status: "Resuelta",
-    responsible: "Dir. Académico",
-    date: "07/04/2025",
-    time: "9:15 AM",
-    severity: "Alta",
-    severityIcon: "alert-triangle",
-    description: "Alerta generada por comportamiento",
-    actionTaken: "Se contactó al apoderado",
-    isRead: true,
   },
 ]
 
@@ -225,43 +190,34 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
 
       return {
         id: apiAlert.alumno_alerta_id.toString(),
+        title: alertType,
+        description: apiAlert.tipo_alerta, // Using tipo_alerta as description
+        date: formattedDate,
+        status: status,
+        priority: priority,
+        type: alertType,
         student: {
           id: studentId,
           name: studentName,
-          image: studentImage,
-          email: studentEmail,
+          avatar: studentImage,
         },
-        type: alertType,
-        priority,
-        priorityColor,
-        classroom,
-        status,
-        responsible,
-        date: formattedDate,
-        time: formattedTime,
-        isRead: true, // Asumimos que todas las alertas están leídas por defecto
-        evidence,
       }
     } catch (error) {
       console.error("Error mapping alert:", error)
       // Devolver un objeto de alerta por defecto en caso de error
       return {
         id: (apiAlert?.alumno_alerta_id || Math.floor(Math.random() * 1000)).toString(),
+        title: "Error",
+        description: "Error en datos",
+        date: new Date().toLocaleDateString("es-ES"),
+        status: "Error",
+        priority: "Media",
+        type: "Error",
         student: {
           id: "0",
           name: "Error en datos",
-          image: "/placeholder.svg",
-          email: "error@ejemplo.com",
+          avatar: "/placeholder.svg",
         },
-        type: "Error",
-        priority: "Media",
-        priorityColor: "#FFA500",
-        classroom: "N/A",
-        status: "Error",
-        responsible: "Sistema",
-        date: new Date().toLocaleDateString("es-ES"),
-        time: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
-        isRead: true,
       }
     }
   })
@@ -336,5 +292,25 @@ export async function fetchAlertById(id: string): Promise<Alert | null> {
   } catch (error) {
     console.error(`Error al obtener alerta con ID ${id}:`, error)
     return null
+  }
+}
+
+export async function fetchRecentAlerts(): Promise<Alert[]> {
+  try {
+    console.log("Fetching recent alerts from API...")
+    const response = await fetchWithAuth("/alertas/recientes", {
+      method: "GET",
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error fetching recent alerts: ${response.status} ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    console.log("Recent alerts data:", data)
+    return data
+  } catch (error) {
+    console.error("Error in fetchRecentAlerts:", error)
+    throw error
   }
 }

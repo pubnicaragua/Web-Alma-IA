@@ -9,10 +9,15 @@ import { DonutChart } from "@/components/donut-chart"
 import { ImportantDates } from "@/components/important-dates"
 import { RecentAlerts } from "@/components/recent-alerts"
 import { isAuthenticated } from "@/lib/api-config"
+import { type CardData, fetchCardData } from "@/services/home-service"
+import { useToast } from "@/hooks/use-toast"
 
 export default function Home() {
   const router = useRouter()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
+  const [cardData, setCardData] = useState<CardData | null>(null)
+  const [cardError, setCardError] = useState<string | null>(null)
   const [schoolName, setSchoolName] = useState("Colegio Santiago Apostol")
   const [selectedEmotionsGeneral, setSelectedEmotionsGeneral] = useState<string[]>([
     "Tristeza",
@@ -77,67 +82,95 @@ export default function Home() {
       setSchoolName("Colegio San Carlos")
     }
 
-    // Finalizar la carga
-    setIsLoading(false)
+    // Cargar datos de las tarjetas
+    const loadCardData = async () => {
+      try {
+        setCardError(null)
+        const data = await fetchCardData()
+        setCardData(data)
+      } catch (error) {
+        console.error("Error al cargar datos de tarjetas:", error)
+        setCardError("No se pudieron cargar los datos de las tarjetas")
+        toast({
+          title: "Error al cargar datos",
+          description: "No se pudieron cargar los datos de las tarjetas. Por favor, intente de nuevo.",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadCardData()
 
     console.log("Home: Página principal inicializada correctamente")
-  }, [router]) // Solo depende de router
+  }, [router, toast]) // Dependencias: router y toast
 
   // Datos para las tarjetas de estadísticas
-  const statCards = [
-    {
-      title: "Alumnos",
-      count: 637,
-      stats: [
-        { label: "Inactivos", value: "19" },
-        { label: "Frecuentes", value: "510" },
-        { label: "Totales", value: "733" },
-      ],
-      className: "bg-gray-700", // Más intenso
-      textColor: "text-white",
-    },
-    {
-      title: "SOS Alma",
-      count: 5,
-      stats: [
-        { label: "Vencidos", value: "0" },
-        { label: "Por vencer", value: "2" },
-        { label: "Totales", value: "13" },
-      ],
-      className: "bg-red-600", // Más intenso
-      textColor: "text-white",
-    },
-    {
-      title: "Denuncias",
-      count: 19,
-      stats: [
-        { label: "Vencidos", value: "0" },
-        { label: "Por vencer", value: "3" },
-        { label: "Totales", value: "24" },
-      ],
-      className: "bg-purple-700", // Más intenso
-      textColor: "text-white",
-    },
-    {
-      title: "Alertas Alma",
-      count: 57,
-      stats: [
-        { label: "Vencidos", value: "0" },
-        { label: "Por vencer", value: "6" },
-        { label: "Totales", value: "82" },
-      ],
-      className: "bg-yellow-500", // Más intenso
-      textColor: "text-white",
-    },
-  ]
+  const getStatCards = () => {
+    if (!cardData) return []
+
+    return [
+      {
+        title: "Alumnos",
+        count: cardData.alumnos.activos,
+        stats: [
+          { label: "Inactivos", value: cardData.alumnos.inactivos.toString() },
+          { label: "Frecuentes", value: cardData.alumnos.frecuentes.toString() },
+          { label: "Totales", value: cardData.alumnos.totales.toString() },
+        ],
+        className: "bg-gray-700", // Más intenso
+        textColor: "text-white",
+      },
+      {
+        title: "SOS Alma",
+        count: cardData.sos_alma.activos,
+        stats: [
+          { label: "Vencidos", value: cardData.sos_alma.vencidos.toString() },
+          { label: "Por vencer", value: cardData.sos_alma.por_vencer.toString() },
+          { label: "Totales", value: cardData.sos_alma.totales.toString() },
+        ],
+        className: "bg-red-600", // Más intenso
+        textColor: "text-white",
+      },
+      {
+        title: "Denuncias",
+        count: cardData.denuncias.activos,
+        stats: [
+          { label: "Vencidos", value: cardData.denuncias.vencidos.toString() },
+          { label: "Por vencer", value: cardData.denuncias.por_vencer.toString() },
+          { label: "Totales", value: cardData.denuncias.totales.toString() },
+        ],
+        className: "bg-purple-700", // Más intenso
+        textColor: "text-white",
+      },
+      {
+        title: "Alertas Alma",
+        count: cardData.alertas_alma.activos,
+        stats: [
+          { label: "Vencidos", value: cardData.alertas_alma.vencidos.toString() },
+          { label: "Por vencer", value: cardData.alertas_alma.por_vencer.toString() },
+          { label: "Totales", value: cardData.alertas_alma.totales.toString() },
+        ],
+        className: "bg-yellow-500", // Más intenso
+        textColor: "text-white",
+      },
+    ]
+  }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-blue-400 flex justify-center items-center">
-        <div className="text-white text-xl">Cargando...</div>
-      </div>
+      <AppLayout>
+        <div className="container mx-auto px-2 sm:px-6 py-8">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-xl text-gray-500">Cargando datos...</div>
+          </div>
+        </div>
+      </AppLayout>
     )
   }
+
+  const statCards = getStatCards()
 
   return (
     <AppLayout>
@@ -145,18 +178,30 @@ export default function Home() {
         <h2 className="text-2xl font-bold text-gray-800 mb-6">{schoolName}</h2>
 
         {/* Tarjetas de estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {statCards.map((card, index) => (
-            <StatCard
-              key={index}
-              title={card.title}
-              count={card.count}
-              stats={card.stats}
-              className={card.className}
-              textColor={card.textColor}
-            />
-          ))}
-        </div>
+        {cardError ? (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-8">
+            <p>{cardError}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+            >
+              Reintentar
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {statCards.map((card, index) => (
+              <StatCard
+                key={index}
+                title={card.title}
+                count={card.count}
+                stats={card.stats}
+                className={card.className}
+                textColor={card.textColor}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Media emocional General */}
         <div className="mb-8">
@@ -179,7 +224,7 @@ export default function Home() {
 
         {/* Fechas importantes y alertas recientes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ImportantDates />
+          <ImportantDates title="Fechas importantes" />
           <RecentAlerts />
         </div>
       </div>

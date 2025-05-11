@@ -4,11 +4,15 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { RefreshCw } from "lucide-react"
-import { AppLayout } from "@/components/layout/app-layout"
+import { Header } from "@/components/header"
+import { NavigationMenu } from "@/components/navigation-menu"
 import { FilterDropdown } from "@/components/filter-dropdown"
 import { DataTable } from "@/components/data-table"
 import { fetchStudents, type Student } from "@/services/students-service"
 import { useToast } from "@/hooks/use-toast"
+import { MobileSidebar } from "@/components/mobile-sidebar"
+import { AndroidNavMenu } from "@/components/android-nav-menu"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export default function StudentsPage() {
   const router = useRouter()
@@ -16,6 +20,8 @@ export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const isMobile = useIsMobile()
 
   // Estados para los filtros
   const [levelFilter, setLevelFilter] = useState<string>("Todos")
@@ -28,6 +34,10 @@ export default function StudentsPage() {
   const courseOptions = ["Todos", "3°B", "4°A", "5°A", "6°C", "1°A", "2°B"]
   const ageOptions = ["Todos", "8", "9", "11", "12", "14", "15"]
   const statusOptions = ["Todos", "Bien", "Normal", "Mal"]
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
 
   // Cargar datos de estudiantes
   useEffect(() => {
@@ -137,31 +147,52 @@ export default function StudentsPage() {
   }
 
   return (
-    <AppLayout>
-      <div className="container mx-auto px-2 sm:px-6 py-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Alumnos</h2>
+    <div className="flex flex-col min-h-screen bg-white">
+      {/* Header */}
+      <Header toggleSidebar={toggleMobileMenu} />
 
-        {/* Filtros */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <FilterDropdown label="Nivel" options={levelOptions} value={levelFilter} onChange={setLevelFilter} />
-          <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
-          <FilterDropdown label="Edad" options={ageOptions} value={ageFilter} onChange={setAgeFilter} />
-          <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
-        </div>
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar para escritorio (siempre visible en md y superior) */}
+        <aside className="hidden md:block w-64 bg-white border-r border-gray-200">
+          <div className="h-12 border-b"></div>
+          <NavigationMenu />
+        </aside>
 
-        {/* Tabla de alumnos */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          {isLoading ? (
-            renderSkeleton()
-          ) : error ? (
-            renderError()
-          ) : students.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">No hay alumnos disponibles</div>
-          ) : (
-            <DataTable columns={columns} data={filteredStudents} renderCell={renderCell} />
-          )}
-        </div>
+        {/* Contenido principal */}
+        <main className="flex-1 overflow-y-auto p-2 md:p-6">
+          <div className="container mx-auto px-2 sm:px-6 py-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Alumnos</h2>
+
+            {/* Filtros */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <FilterDropdown label="Nivel" options={levelOptions} value={levelFilter} onChange={setLevelFilter} />
+              <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
+              <FilterDropdown label="Edad" options={ageOptions} value={ageFilter} onChange={setAgeFilter} />
+              <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
+            </div>
+
+            {/* Tabla de alumnos */}
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+              {isLoading ? (
+                renderSkeleton()
+              ) : error ? (
+                renderError()
+              ) : students.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No hay alumnos disponibles</div>
+              ) : (
+                <DataTable columns={columns} data={filteredStudents} renderCell={renderCell} />
+              )}
+            </div>
+          </div>
+        </main>
       </div>
-    </AppLayout>
+
+      {/* Menú para Android (solo en dispositivos móviles) */}
+      {isMobile ? (
+        <AndroidNavMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      ) : (
+        <MobileSidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      )}
+    </div>
   )
 }

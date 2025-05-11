@@ -1,111 +1,47 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { AppLayout } from "@/components/layout/app-layout"
 import { DataTable } from "@/components/data-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { AddQuestionModal } from "@/components/question/add-question-modal"
-import { Download } from "lucide-react"
+import { Download, RefreshCw, AlertCircle } from "lucide-react"
 import * as XLSX from "xlsx"
-
-interface Question {
-  id: string
-  diagnostic: string
-  question: string
-  responseType: string
-  responses: string
-  priority: number
-  time: string
-  course: string // Nueva propiedad para la columna Curso
-}
+import { fetchQuestions, type Question } from "@/services/questions-service"
+import { useToast } from "@/hooks/use-toast"
 
 export default function QuestionsPage() {
   const router = useRouter()
+  const { toast } = useToast()
+  const [questionsData, setQuestionsData] = useState<Question[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Datos de ejemplo para las preguntas
-  const [questionsData, setQuestionsData] = useState<Question[]>([
-    {
-      id: "1",
-      diagnostic: "Salud Mental",
-      question: "¿Cómo te sientes hoy?",
-      responseType: "Selección",
-      responses: "Muy bien - Bien - Mal - Muy mal",
-      priority: 1,
-      time: "AM",
-      course: "1° Básico",
-    },
-    {
-      id: "2",
-      diagnostic: "Salud Mental",
-      question: "¿Sientes energía para tus actividades escolares?",
-      responseType: "Selección",
-      responses: "Sí - No",
-      priority: 2,
-      time: "AM",
-      course: "2° Básico",
-    },
-    {
-      id: "3",
-      diagnostic: "Salud Mental",
-      question: "¿Sientes energía para tus actividades escolares?",
-      responseType: "Selección",
-      responses: "Sí - No",
-      priority: 2,
-      time: "AM",
-      course: "3° Básico",
-    },
-    {
-      id: "4",
-      diagnostic: "Salud Mental",
-      question: "¿Sientes energía para tus actividades escolares?",
-      responseType: "Selección",
-      responses: "Sí - No",
-      priority: 2,
-      time: "AM",
-      course: "4° Básico",
-    },
-    {
-      id: "5",
-      diagnostic: "Salud Mental",
-      question: "¿Sientes energía para tus actividades escolares?",
-      responseType: "Selección",
-      responses: "Sí - No",
-      priority: 2,
-      time: "AM",
-      course: "5° Básico",
-    },
-    {
-      id: "6",
-      diagnostic: "Bienestar Emocional",
-      question: "¿Te sientes apoyado por tus compañeros?",
-      responseType: "Selección",
-      responses: "Siempre - A veces - Nunca",
-      priority: 3,
-      time: "PM",
-      course: "6° Básico",
-    },
-    {
-      id: "7",
-      diagnostic: "Bienestar Emocional",
-      question: "¿Has tenido dificultades para dormir?",
-      responseType: "Selección",
-      responses: "Sí - No - A veces",
-      priority: 2,
-      time: "PM",
-      course: "7° Básico",
-    },
-    {
-      id: "8",
-      diagnostic: "Rendimiento Académico",
-      question: "¿Entiendes las explicaciones de tus profesores?",
-      responseType: "Selección",
-      responses: "Siempre - A veces - Nunca",
-      priority: 1,
-      time: "AM",
-      course: "8° Básico",
-    },
-  ])
+  // Función para cargar las preguntas
+  const loadQuestions = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await fetchQuestions()
+      setQuestionsData(data)
+    } catch (err) {
+      console.error("Error al cargar preguntas:", err)
+      setError("No se pudieron cargar las preguntas. Por favor, intenta de nuevo.")
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las preguntas. Se están mostrando datos de ejemplo.",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Cargar preguntas al montar el componente
+  useEffect(() => {
+    loadQuestions()
+  }, [])
 
   // Función para agregar una nueva pregunta
   const handleAddQuestion = (questionData: {
@@ -120,16 +56,18 @@ export default function QuestionsPage() {
     // Crear una nueva pregunta con los datos del formulario
     const newQuestion: Question = {
       id: (questionsData.length + 1).toString(),
+      questionType: questionData.tipoRespuesta === "opcion_multiple" ? "Opción múltiple" : "Texto",
+      educationLevel: "General", // Valor por defecto
       diagnostic: questionData.tipoDiagnostico,
-      question: questionData.pregunta,
-      responseType: questionData.tipoRespuesta === "opcion_multiple" ? "Selección" : "Texto",
-      responses: questionData.opciones.join(" - "),
+      symptoms: questionData.sintomas,
+      questionGroup: "Evaluación general", // Valor por defecto
+      keyword: questionData.palabrasClave,
+      time: "AM", // Valor por defecto
+      questionText: questionData.pregunta,
       priority: Number.parseInt(questionData.prioridad) || 2,
-      time: "AM",
-      course: "General", // Valor por defecto para nuevas preguntas
     }
 
-    // Agregar la nueva pregunta a la lista
+    // Añadir la nueva pregunta a la lista
     setQuestionsData([...questionsData, newQuestion])
   }
 
@@ -143,13 +81,15 @@ export default function QuestionsPage() {
     // Preparar los datos para Excel
     const dataForExcel = questionsData.map((q) => ({
       ID: q.id,
+      "Tipo de pregunta": q.questionType,
+      "Nivel educativo": q.educationLevel,
       Diagnóstico: q.diagnostic,
-      Pregunta: q.question,
-      "Tipo de respuesta": q.responseType,
-      Respuestas: q.responses,
-      Prioridad: q.priority,
+      Síntomas: q.symptoms,
+      "Grupo de preguntas": q.questionGroup,
+      "Palabra clave": q.keyword,
       Horario: q.time,
-      Curso: q.course,
+      Pregunta: q.questionText,
+      Prioridad: q.priority,
     }))
 
     // Crear una hoja de trabajo
@@ -175,21 +115,20 @@ export default function QuestionsPage() {
   // Columnas para la tabla
   const columns = [
     { key: "diagnostic", title: "Diagnóstico" },
-    { key: "question", title: "Pregunta" },
-    { key: "responseType", title: "Tipo de respuesta" },
-    { key: "responses", title: "Respuestas" },
-    { key: "priority", title: "Prioridad de preguntas" },
+    { key: "questionText", title: "Pregunta" },
+    { key: "questionType", title: "Tipo de respuesta" },
+    { key: "educationLevel", title: "Nivel educativo" },
+    { key: "priority", title: "Prioridad" },
     { key: "time", title: "Horario" },
-    { key: "course", title: "Curso" }, // Nueva columna
   ]
 
   // Renderizar celdas de la tabla
   const renderCell = (question: Question, column: { key: string; title: string }) => {
     switch (column.key) {
-      case "question":
+      case "questionText":
         return (
           <span className="cursor-pointer hover:text-blue-500" onClick={() => handleQuestionClick(question)}>
-            {question.question}
+            {question.questionText}
           </span>
         )
       case "priority":
@@ -218,6 +157,10 @@ export default function QuestionsPage() {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Historial de preguntas cargadas</h2>
           <div className="flex justify-end space-x-2">
+            <Button variant="outline" className="flex items-center gap-2" onClick={loadQuestions} disabled={loading}>
+              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Actualizar
+            </Button>
             <Button variant="outline" className="flex items-center gap-2" onClick={exportToExcel}>
               <Download size={16} />
               Exportar Excel
@@ -226,9 +169,28 @@ export default function QuestionsPage() {
           </div>
         </div>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-6 flex items-start">
+            <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-medium">Error al cargar las preguntas</p>
+              <p className="text-sm">{error}</p>
+              <Button variant="link" className="text-red-700 p-0 h-auto text-sm mt-1" onClick={loadQuestions}>
+                Intentar de nuevo
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Tabla de preguntas */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <DataTable columns={columns} data={questionsData} renderCell={renderCell} />
+          <DataTable
+            columns={columns}
+            data={questionsData}
+            renderCell={renderCell}
+            loading={loading}
+            emptyMessage="No se encontraron preguntas"
+          />
         </div>
       </div>
     </AppLayout>
