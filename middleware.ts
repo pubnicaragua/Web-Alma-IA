@@ -5,46 +5,29 @@ export function middleware(request: NextRequest) {
   // Get the path of the request
   const path = request.nextUrl.pathname
 
-  // Define public paths that don't require authentication
-  const isPublicPath =
-    path === "/login" ||
-    path === "/forgot-password" ||
-    path.startsWith("/reset-password") ||
-    path === "/reset-success" ||
-    path === "/register"
-
   // Get the token from cookies
   const token = request.cookies.get("auth_token")?.value || ""
+  const isAuthenticated = !!token
 
-  // If the path is not public and there's no token, redirect to login
-  if (!isPublicPath && !token) {
+  console.log(`Middleware: Acceso a ruta ${path}, isAuthenticated=${isAuthenticated}`)
+
+  // Si es la ruta raíz y el usuario no está autenticado, redirigir a /login
+  if (path === "/" && !isAuthenticated) {
+    console.log("Middleware: Redirigiendo de / a /login porque no hay token")
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  // If the path is login and there's a token, redirect to dashboard
-  if (isPublicPath && token) {
+  // Si el usuario está autenticado y trata de acceder a /login, redirigir a /
+  if (path === "/login" && isAuthenticated) {
+    console.log("Middleware: Redirigiendo de /login a / porque hay token")
     return NextResponse.redirect(new URL("/", request.url))
   }
 
+  // Permitir todas las demás solicitudes sin verificación
   return NextResponse.next()
 }
 
-// Configure the middleware to run on specific paths
+// Configurar el middleware para que se ejecute en las rutas relevantes
 export const config = {
-  matcher: [
-    "/",
-    "/login",
-    "/forgot-password",
-    "/reset-password/:path*",
-    "/reset-success",
-    "/register",
-    "/select-school",
-    "/alumnos/:path*",
-    "/alertas/:path*",
-    "/comparativo",
-    "/informes",
-    "/perfil",
-    "/administrativo/:path*",
-    "/configuracion/:path*",
-  ],
+  matcher: ["/", "/login"],
 }

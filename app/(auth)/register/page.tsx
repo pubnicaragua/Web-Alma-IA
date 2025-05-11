@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
@@ -10,9 +10,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
+import { setAuthToken } from "@/lib/api-config"
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -22,6 +25,19 @@ export default function RegisterPage() {
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [registerSuccess, setRegisterSuccess] = useState(false)
+
+  // Efecto para manejar la redirección después de un registro exitoso
+  useEffect(() => {
+    if (registerSuccess) {
+      // Pequeño retraso para asegurar que el toast se muestre antes de la redirección
+      const redirectTimer = setTimeout(() => {
+        router.push("/")
+      }, 1000)
+
+      return () => clearTimeout(redirectTimer)
+    }
+  }, [registerSuccess, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,28 +45,91 @@ export default function RegisterPage() {
 
     if (!name || !email || !password || !confirmPassword) {
       setError("Por favor, completa todos los campos")
+      toast({
+        title: "Error de registro",
+        description: "Por favor, completa todos los campos",
+        variant: "destructive",
+      })
       return
     }
 
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden")
+      toast({
+        title: "Error de registro",
+        description: "Las contraseñas no coinciden",
+        variant: "destructive",
+      })
       return
     }
 
     if (!acceptTerms) {
       setError("Debes aceptar los términos y condiciones")
+      toast({
+        title: "Error de registro",
+        description: "Debes aceptar los términos y condiciones",
+        variant: "destructive",
+      })
       return
     }
 
     try {
       setIsLoading(true)
-      // Simulación de registro
-      await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      // En un caso real, aquí se haría la petición al servidor
-      router.push("/login")
+      // Realizar la petición de registro al servidor
+      const response = await fetch("/api/proxy/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        // Extraer el mensaje de error del servidor
+        const errorMessage = data.error || data.message || "Error al registrarse"
+        throw new Error(errorMessage)
+      }
+
+      // Si el registro es exitoso y devuelve un token
+      if (data.token) {
+        // Guardar el token en localStorage
+        setAuthToken(data.token)
+        console.log("Token guardado correctamente:", data.token.substring(0, 15) + "...")
+
+        // Mostrar notificación de éxito
+        toast({
+          title: "Registro exitoso",
+          description: "Tu cuenta ha sido creada correctamente. Redirigiendo...",
+        })
+
+        // Marcar el registro como exitoso para activar la redirección
+        setRegisterSuccess(true)
+      } else {
+        // Si el registro es exitoso pero no devuelve un token, redirigir a login
+        toast({
+          title: "Registro exitoso",
+          description: "Tu cuenta ha sido creada correctamente. Por favor, inicia sesión.",
+        })
+
+        // Redirigir a login después de un breve retraso
+        setTimeout(() => {
+          router.push("/login")
+        }, 1000)
+      }
     } catch (err) {
-      setError("Ocurrió un error. Por favor, inténtalo de nuevo.")
+      console.error("Error de registro:", err)
+      const errorMessage = err instanceof Error ? err.message : "Error desconocido al registrarse"
+      setError(errorMessage)
+
+      // Mostrar notificación de error
+      toast({
+        title: "Error de registro",
+        description: errorMessage,
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }

@@ -23,79 +23,93 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-
-    if (!email || !password) {
-      setError("Por favor, completa todos los campos")
-      return
+  // Función para obtener un mensaje de error amigable
+  const getFriendlyErrorMessage = (error: any): string => {
+    // Si el error es un objeto con message y error
+    if (typeof error === "object" && error !== null) {
+      if (error.error === "Invalid login credentials") {
+        return "Las credenciales ingresadas no son válidas. Por favor, verifica tu correo y contraseña."
+      }
+      if (error.message) {
+        return error.message
+      }
     }
 
+    // Si es un string que contiene "Invalid login credentials"
+    if (typeof error === "string" && error.includes("Invalid login credentials")) {
+      return "Las credenciales ingresadas no son válidas. Por favor, verifica tu correo y contraseña."
+    }
+
+    // Si es un string que contiene "Error interno del servidor"
+    if (typeof error === "string" && error.includes("Error interno del servidor")) {
+      return "Ha ocurrido un problema en el servidor. Por favor, intenta nuevamente más tarde."
+    }
+
+    // Mensaje genérico para otros errores
+    return "Ha ocurrido un error al intentar iniciar sesión. Por favor, intenta nuevamente."
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError("")
+
     try {
-      setIsLoading(true)
-
-      // Datos para el login
-      const loginData = {
-        email: email,
-        password: password,
-      }
-
-      console.log("Intentando login con:", loginData)
-
-      // Usar la ruta proxy local en lugar de la API directamente
       const response = await fetch("/api/proxy/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(loginData),
+        body: JSON.stringify({ email, password }),
       })
 
-      console.log("Respuesta del servidor:", response.status, response.statusText)
-
-      // Intentar obtener el cuerpo de la respuesta
-      let data
-      try {
-        data = await response.json()
-        console.log("Datos de respuesta:", data)
-      } catch (err) {
-        console.error("Error al parsear la respuesta:", err)
-        throw new Error("Error al procesar la respuesta del servidor")
-      }
+      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data?.error || data?.message || `Error ${response.status}: ${response.statusText}`)
+        // Extraer el mensaje de error del servidor
+        throw new Error(JSON.stringify(data))
       }
 
-      // Verificar que tenemos un token
-      if (!data.token) {
-        throw new Error("La respuesta del servidor no incluye un token de autenticación")
+      // Asegurarnos de que el token se guarde correctamente
+      if (data.token) {
+        // Guardar el token usando la función centralizada
+        setAuthToken(data.token)
+        console.log("Login exitoso, token guardado")
+
+        // Mostrar notificación de éxito
+        toast({
+          title: "Inicio de sesión exitoso",
+          description: "Has iniciado sesión correctamente. Redirigiendo...",
+        })
+
+        // Redirección inmediata a la página principal
+        router.push("/")
+      } else {
+        throw new Error("No se recibió un token válido")
       }
+    } catch (error) {
+      console.error("Error de login:", error)
 
-      // Guardar el token
-      setAuthToken(data.token)
+      let errorMessage = ""
+      try {
+        // Intentar parsear el mensaje de error si es un JSON
+        const errorObj =
+          error instanceof Error
+            ? error.message.startsWith("{")
+              ? JSON.parse(error.message)
+              : error.message
+            : "Error desconocido al iniciar sesión"
 
-      // Marcar como autenticado
-      if (typeof window !== "undefined") {
-        localStorage.setItem("isAuthenticated", "true")
+        errorMessage = getFriendlyErrorMessage(errorObj)
+      } catch (e) {
+        // Si hay un error al parsear, usar el mensaje original
+        errorMessage = error instanceof Error ? error.message : "Error desconocido al iniciar sesión"
+        errorMessage = getFriendlyErrorMessage(errorMessage)
       }
-
-      // Mostrar mensaje de éxito
-      toast({
-        title: "Inicio de sesión exitoso",
-        description: "Bienvenido al sistema",
-        variant: "default",
-      })
-
-      // Redirigir a la selección de escuela
-      router.push("/select-school")
-    } catch (err) {
-      console.error("Error en el proceso de login:", err)
-      const errorMessage = err instanceof Error ? err.message : "Ocurrió un error. Por favor, inténtalo de nuevo."
 
       setError(errorMessage)
 
+      // Mostrar notificación de error
       toast({
         title: "Error de inicio de sesión",
         description: errorMessage,
@@ -110,13 +124,24 @@ export default function LoginPage() {
   const useDemoCredentials = () => {
     setEmail("demo@example.com")
     setPassword("password123")
+
+    // Mostrar notificación
+    toast({
+      title: "Credenciales de demostración",
+      description: "Se han aplicado las credenciales de demostración",
+    })
   }
 
   return (
     <div className="bg-white rounded-lg p-8 shadow-md">
       <h1 className="text-2xl font-bold text-center mb-6">Inicia sesión</h1>
 
-      {error && <div className="bg-red-50 text-red-500 p-3 rounded-md mb-4 text-sm">{error}</div>}
+      {error && (
+        <div className="bg-red-50 text-red-500 p-4 rounded-md mb-4 text-sm">
+          <p className="font-medium mb-1">No se pudo iniciar sesión</p>
+          <p>{error}</p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">

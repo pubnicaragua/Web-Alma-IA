@@ -1,100 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { RefreshCw } from "lucide-react"
 import { AppLayout } from "@/components/layout/app-layout"
 import { FilterDropdown } from "@/components/filter-dropdown"
 import { DataTable } from "@/components/data-table"
-
-interface Student {
-  id: string
-  name: string
-  level: string
-  course: string
-  age: number
-  status: string
-  image?: string
-}
+import { fetchStudents, type Student } from "@/services/students-service"
+import { useToast } from "@/hooks/use-toast"
 
 export default function StudentsPage() {
   const router = useRouter()
-
-  // Datos de ejemplo para los alumnos
-  const studentsData: Student[] = [
-    {
-      id: "1",
-      name: "Carolina Espina",
-      level: "Básico",
-      course: "4°A",
-      age: 12,
-      status: "Bien",
-      image: "/smiling-woman-garden.png",
-    },
-    {
-      id: "2",
-      name: "Matías Ignacio Díaz",
-      level: "Básico",
-      course: "4°A",
-      age: 8,
-      status: "Bien",
-      image: "/young-man-city.png",
-    },
-    {
-      id: "3",
-      name: "Carolina Espina",
-      level: "Básico",
-      course: "4°A",
-      age: 12,
-      status: "Bien",
-      image: "/smiling-woman-garden.png",
-    },
-    {
-      id: "4",
-      name: "Jaime Brito",
-      level: "Básico",
-      course: "3°B",
-      age: 9,
-      status: "Normal",
-      image: "/young-man-city.png",
-    },
-    {
-      id: "5",
-      name: "Teresa Ulloa",
-      level: "Básico",
-      course: "5°A",
-      age: 11,
-      status: "Bien",
-      image: "/smiling-woman-garden.png",
-    },
-    {
-      id: "6",
-      name: "Carlos Araneda",
-      level: "Básico",
-      course: "6°C",
-      age: 12,
-      status: "Bien",
-      image: "/young-man-city.png",
-    },
-    {
-      id: "7",
-      name: "Valentina Rojas",
-      level: "Medio",
-      course: "1°A",
-      age: 14,
-      status: "Normal",
-      image: "/smiling-woman-garden.png",
-    },
-    {
-      id: "8",
-      name: "Sebastián Muñoz",
-      level: "Medio",
-      course: "2°B",
-      age: 15,
-      status: "Bien",
-      image: "/young-man-city.png",
-    },
-  ]
+  const { toast } = useToast()
+  const [students, setStudents] = useState<Student[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Estados para los filtros
   const [levelFilter, setLevelFilter] = useState<string>("Todos")
@@ -108,8 +29,34 @@ export default function StudentsPage() {
   const ageOptions = ["Todos", "8", "9", "11", "12", "14", "15"]
   const statusOptions = ["Todos", "Bien", "Normal", "Mal"]
 
+  // Cargar datos de estudiantes
+  useEffect(() => {
+    loadStudents()
+  }, [])
+
+  const loadStudents = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const data = await fetchStudents()
+      setStudents(data)
+    } catch (err) {
+      console.error("Error al cargar estudiantes:", err)
+      setError("No se pudieron cargar los datos de estudiantes. Por favor, intente de nuevo.")
+
+      // Mostrar notificación de error
+      toast({
+        title: "Error al cargar datos",
+        description: "No se pudieron cargar los datos de estudiantes. Por favor, intente de nuevo.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // Filtrar los datos según los filtros seleccionados
-  const filteredStudents = studentsData.filter((student) => {
+  const filteredStudents = students.filter((student) => {
     return (
       (levelFilter === "Todos" || student.level === levelFilter) &&
       (courseFilter === "Todos" || student.course === courseFilter) &&
@@ -160,6 +107,35 @@ export default function StudentsPage() {
     }
   }
 
+  // Renderizar esqueleto de carga
+  const renderSkeleton = () => {
+    return (
+      <div className="animate-pulse">
+        <div className="h-10 bg-gray-200 rounded mb-4"></div>
+        <div className="space-y-3">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="h-12 bg-gray-200 rounded"></div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Renderizar mensaje de error
+  const renderError = () => {
+    return (
+      <div className="text-center py-8">
+        <div className="text-red-500 mb-4">{error}</div>
+        <button
+          onClick={loadStudents}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        >
+          <RefreshCw className="w-4 h-4 mr-2 inline" /> Reintentar
+        </button>
+      </div>
+    )
+  }
+
   return (
     <AppLayout>
       <div className="container mx-auto px-2 sm:px-6 py-8">
@@ -175,7 +151,15 @@ export default function StudentsPage() {
 
         {/* Tabla de alumnos */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <DataTable columns={columns} data={filteredStudents} renderCell={renderCell} />
+          {isLoading ? (
+            renderSkeleton()
+          ) : error ? (
+            renderError()
+          ) : students.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">No hay alumnos disponibles</div>
+          ) : (
+            <DataTable columns={columns} data={filteredStudents} renderCell={renderCell} />
+          )}
         </div>
       </div>
     </AppLayout>

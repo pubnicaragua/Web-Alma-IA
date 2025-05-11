@@ -31,91 +31,6 @@ const handleApiError = (error: unknown, path: string) => {
   return NextResponse.json({ error: "Error interno del servidor al procesar la solicitud." }, { status: 500 })
 }
 
-// Implementación alternativa usando XMLHttpRequest para el login
-// Esta función simula el login para pruebas
-async function simulateLogin(email: string, password: string) {
-  console.log("Simulando login con:", { email, password })
-
-  // Para pruebas, aceptamos cualquier combinación de usuario/contraseña
-  return {
-    token:
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlVzdWFyaW8gZGUgUHJ1ZWJhIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-  }
-}
-
-// Función para simular datos de alertas recientes
-async function simulateRecentAlerts() {
-  return [
-    {
-      student: {
-        name: "Carolina Espina",
-        image: "/smiling-woman-garden.png",
-      },
-      alertType: "SOS Alma",
-      date: "Abr 02 - 2024",
-    },
-    {
-      student: {
-        name: "Jaime Brito",
-        image: "/young-man-city.png",
-      },
-      alertType: "Denuncias",
-      date: "Mar 29 - 2024",
-    },
-    {
-      student: {
-        name: "Teresa Ulloa",
-        image: "/smiling-woman-garden.png",
-      },
-      alertType: "IA",
-      date: "Mar 27 - 2024",
-    },
-    {
-      student: {
-        name: "Carlos Araneda",
-        image: "/young-man-city.png",
-      },
-      alertType: "SOS Alma",
-      date: "Mar 26 - 2024",
-    },
-  ]
-}
-
-// Función para simular datos de fechas importantes
-async function simulateImportantDates() {
-  return [
-    { event: "Pruebas Parciales", dateRange: "Abr 02 - Abr 07" },
-    { event: "Reunión de Apoderados", dateRange: "Abr 10 - Abr 12" },
-    { event: "Matrícula 2025", dateRange: "Abr 15 - Abr 20" },
-    { event: "Semana santa", dateRange: "Abr 21 - Abr 28" },
-    { event: "Exámenes Finales", dateRange: "May 02 - May 10" },
-    { event: "Vacaciones de Invierno", dateRange: "Jul 15 - Jul 30" },
-    { event: "Fiestas Patrias", dateRange: "Sep 15 - Sep 20" },
-  ]
-}
-
-// Función para simular datos de alertas totales
-async function simulateTotalAlerts() {
-  return [
-    { label: "10 Pendientes", value: 10, percentage: "22.8%", color: "#facc15" },
-    { label: "07 Nuevos", value: 7, percentage: "13.9%", color: "#22c55e" },
-    { label: "39 Atendidos", value: 39, percentage: "52.1%", color: "#3b82f6" },
-    { label: "05 Aplazados", value: 5, percentage: "11.2%", color: "#a855f7" },
-  ]
-}
-
-// Función para simular datos de emociones
-async function simulateEmotions() {
-  return [
-    { name: "Tristeza", value: 2000, color: "#3b82f6" },
-    { name: "Felicidad", value: 4000, color: "#facc15" },
-    { name: "Estrés", value: 1800, color: "#6b7280" },
-    { name: "Ansiedad", value: 3200, color: "#fb923c" },
-    { name: "Enojo", value: 1200, color: "#ef4444" },
-    { name: "Otros", value: 2800, color: "#a855f7" },
-  ]
-}
-
 export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
   try {
     const path = params.path.join("/")
@@ -125,37 +40,6 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     // Obtener el token de autorización de la solicitud
     const authHeader = request.headers.get("authorization")
 
-    // Simular datos para desarrollo
-    if (process.env.NODE_ENV === "development") {
-      // Simular datos de alertas recientes
-      if (path === "home/alertas/recientes") {
-        console.log("Usando simulación de alertas recientes para desarrollo")
-        const alertsData = await simulateRecentAlerts()
-        return NextResponse.json(alertsData, { status: 200 })
-      }
-
-      // Simular datos de fechas importantes
-      if (path === "home/fechas-importantes") {
-        console.log("Usando simulación de fechas importantes para desarrollo")
-        const datesData = await simulateImportantDates()
-        return NextResponse.json(datesData, { status: 200 })
-      }
-
-      // Simular datos de alertas totales
-      if (path === "home/alertas/totales") {
-        console.log("Usando simulación de alertas totales para desarrollo")
-        const totalAlertsData = await simulateTotalAlerts()
-        return NextResponse.json(totalAlertsData, { status: 200 })
-      }
-
-      // Simular datos de emociones
-      if (path === "home/emotions/general") {
-        console.log("Usando simulación de emociones para desarrollo")
-        const emotionsData = await simulateEmotions()
-        return NextResponse.json(emotionsData, { status: 200 })
-      }
-    }
-
     // Preparar headers para la solicitud a la API externa
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -164,14 +48,16 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     // Añadir el header de autorización si existe
     if (authHeader) {
       headers["Authorization"] = authHeader
+      console.log(`Usando token de autorización: ${authHeader.substring(0, 15)}...`)
     } else {
       console.warn("No se proporcionó token de autorización para la solicitud GET a:", path)
-      // Para desarrollo, podemos continuar sin token, pero en producción podríamos querer rechazar la solicitud
-      if (process.env.NODE_ENV !== "development") {
-        return NextResponse.json({ error: "Se requiere autenticación" }, { status: 401 })
-      }
+
+      // Si no hay token, rechazar la solicitud
+      return NextResponse.json({ error: "Se requiere autenticación" }, { status: 401 })
     }
 
+    // Hacer la solicitud a la API real
+    console.log(`Realizando solicitud a: ${apiUrl}`)
     const response = await fetch(apiUrl, {
       method: "GET",
       headers,
@@ -189,34 +75,7 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
         body: errorText,
       })
 
-      // Si estamos en desarrollo, usar datos simulados para ciertos endpoints
-      if (process.env.NODE_ENV === "development") {
-        if (path === "home/alertas/recientes") {
-          console.log("Usando simulación de alertas recientes después de error")
-          const alertsData = await simulateRecentAlerts()
-          return NextResponse.json(alertsData, { status: 200 })
-        }
-
-        if (path === "home/fechas-importantes") {
-          console.log("Usando simulación de fechas importantes después de error")
-          const datesData = await simulateImportantDates()
-          return NextResponse.json(datesData, { status: 200 })
-        }
-
-        if (path === "home/alertas/totales") {
-          console.log("Usando simulación de alertas totales después de error")
-          const totalAlertsData = await simulateTotalAlerts()
-          return NextResponse.json(totalAlertsData, { status: 200 })
-        }
-
-        if (path === "home/emotions/general") {
-          console.log("Usando simulación de emociones después de error")
-          const emotionsData = await simulateEmotions()
-          return NextResponse.json(emotionsData, { status: 200 })
-        }
-      }
-
-      // Devolver un error formateado
+      // Devolver el error
       return NextResponse.json(
         { error: errorText || response.statusText || "Error en la solicitud" },
         { status: response.status },
@@ -258,15 +117,6 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
     const apiUrl = getApiUrl(params.path)
     console.log(`Proxy POST request to: ${apiUrl}`, body)
 
-    // Si es login y estamos en modo de desarrollo, usar la simulación
-    if (isLoginRequest && process.env.NODE_ENV === "development") {
-      console.log("Usando simulación de login para desarrollo")
-      const { email, password } = body
-      const loginData = await simulateLogin(email, password)
-
-      return NextResponse.json(loginData, { status: 200 })
-    }
-
     // Obtener el token de autorización de la solicitud (excepto para login)
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -276,16 +126,17 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
       const authHeader = request.headers.get("authorization")
       if (authHeader) {
         headers["Authorization"] = authHeader
+        console.log(`Usando token de autorización: ${authHeader.substring(0, 15)}...`)
       } else {
         console.warn("No se proporcionó token de autorización para la solicitud POST a:", path)
-        // Para desarrollo, podemos continuar sin token, pero en producción podríamos querer rechazar la solicitud
-        if (process.env.NODE_ENV !== "development") {
-          return NextResponse.json({ error: "Se requiere autenticación" }, { status: 401 })
-        }
+
+        // Si no hay token y no es login, rechazar la solicitud
+        return NextResponse.json({ error: "Se requiere autenticación" }, { status: 401 })
       }
     }
 
-    // Realizar la solicitud a la API externa
+    // Hacer la solicitud a la API real
+    console.log(`Realizando solicitud a: ${apiUrl}`)
     const response = await fetch(apiUrl, {
       method: "POST",
       headers,
@@ -304,7 +155,7 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
         body: errorText,
       })
 
-      // Devolver un error formateado
+      // Devolver el error
       return NextResponse.json(
         { error: errorText || response.statusText || "Error en la solicitud" },
         { status: response.status },
@@ -346,14 +197,16 @@ export async function PUT(request: NextRequest, { params }: { params: { path: st
     const authHeader = request.headers.get("authorization")
     if (authHeader) {
       headers["Authorization"] = authHeader
+      console.log(`Usando token de autorización: ${authHeader.substring(0, 15)}...`)
     } else {
       console.warn("No se proporcionó token de autorización para la solicitud PUT a:", path)
-      // Para desarrollo, podemos continuar sin token, pero en producción podríamos querer rechazar la solicitud
-      if (process.env.NODE_ENV !== "development") {
-        return NextResponse.json({ error: "Se requiere autenticación" }, { status: 401 })
-      }
+
+      // Si no hay token, rechazar la solicitud
+      return NextResponse.json({ error: "Se requiere autenticación" }, { status: 401 })
     }
 
+    // Hacer la solicitud a la API real
+    console.log(`Realizando solicitud a: ${apiUrl}`)
     const response = await fetch(apiUrl, {
       method: "PUT",
       headers,
@@ -411,14 +264,16 @@ export async function DELETE(request: NextRequest, { params }: { params: { path:
     const authHeader = request.headers.get("authorization")
     if (authHeader) {
       headers["Authorization"] = authHeader
+      console.log(`Usando token de autorización: ${authHeader.substring(0, 15)}...`)
     } else {
       console.warn("No se proporcionó token de autorización para la solicitud DELETE a:", path)
-      // Para desarrollo, podemos continuar sin token, pero en producción podríamos querer rechazar la solicitud
-      if (process.env.NODE_ENV !== "development") {
-        return NextResponse.json({ error: "Se requiere autenticación" }, { status: 401 })
-      }
+
+      // Si no hay token, rechazar la solicitud
+      return NextResponse.json({ error: "Se requiere autenticación" }, { status: 401 })
     }
 
+    // Hacer la solicitud a la API real
+    console.log(`Realizando solicitud a: ${apiUrl}`)
     const response = await fetch(apiUrl, {
       method: "DELETE",
       headers,

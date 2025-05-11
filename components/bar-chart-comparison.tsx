@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Smile, RefreshCw, AlertCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { fetchEmotions, type Emotion } from "@/services/home-service"
+import { useToast } from "@/hooks/use-toast"
 
 interface BarChartComparisonProps {
   title: string
@@ -17,6 +18,7 @@ export function BarChartComparison({ title, selectedEmotions, onToggleEmotion, i
   const [data, setData] = useState<Emotion[]>(initialData || [])
   const [isLoading, setIsLoading] = useState(!initialData)
   const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     if (!initialData) {
@@ -33,6 +35,13 @@ export function BarChartComparison({ title, selectedEmotions, onToggleEmotion, i
     } catch (err) {
       console.error("Error al cargar las emociones:", err)
       setError("No se pudieron cargar los datos de emociones. Intente nuevamente.")
+
+      // Mostrar notificación de error
+      toast({
+        title: "Error al cargar datos",
+        description: "No se pudieron cargar los datos de emociones. Intente nuevamente.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }

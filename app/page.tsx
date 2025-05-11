@@ -8,6 +8,7 @@ import { BarChartComparison } from "@/components/bar-chart-comparison"
 import { DonutChart } from "@/components/donut-chart"
 import { ImportantDates } from "@/components/important-dates"
 import { RecentAlerts } from "@/components/recent-alerts"
+import { isAuthenticated } from "@/lib/api-config"
 
 export default function Home() {
   const router = useRouter()
@@ -48,34 +49,39 @@ export default function Home() {
   }
 
   useEffect(() => {
-    // Comprobar si el usuario está autenticado
-    const isAuthenticated = localStorage.getItem("isAuthenticated")
-    const selectedSchool = localStorage.getItem("selectedSchool")
+    console.log("Home: Inicializando página principal")
 
-    if (isAuthenticated !== "true") {
-      // Si no está autenticado, redirigir al login
+    // Verificar autenticación
+    if (!isAuthenticated()) {
+      console.log("Home: Usuario no autenticado, redirigiendo a /login")
       router.push("/login")
-    } else if (!selectedSchool) {
-      // Si no ha seleccionado un colegio, redirigir a la selección
-      router.push("/select-school")
-    } else {
-      // Si está autenticado y ha seleccionado un colegio, mostrar el dashboard
-      // Aquí podríamos cargar el nombre del colegio según el ID seleccionado
-      if (selectedSchool === "1") {
-        setSchoolName("Colegio San Pedro")
-      } else if (selectedSchool === "2") {
-        setSchoolName("Colegio San Luis")
-      } else if (selectedSchool === "3") {
-        setSchoolName("Colegio San Ignacio")
-      } else if (selectedSchool === "4") {
-        setSchoolName("Colegio San Rafael")
-      } else if (selectedSchool === "5") {
-        setSchoolName("Colegio San Carlos")
-      }
-
-      setIsLoading(false)
+      return
     }
-  }, [router])
+
+    // Si no hay colegio seleccionado, establecer uno por defecto
+    if (!localStorage.getItem("selectedSchool")) {
+      localStorage.setItem("selectedSchool", "1")
+    }
+
+    // Cargar el nombre del colegio según el ID seleccionado
+    const selectedSchool = localStorage.getItem("selectedSchool")
+    if (selectedSchool === "1") {
+      setSchoolName("Colegio San Pedro")
+    } else if (selectedSchool === "2") {
+      setSchoolName("Colegio San Luis")
+    } else if (selectedSchool === "3") {
+      setSchoolName("Colegio San Ignacio")
+    } else if (selectedSchool === "4") {
+      setSchoolName("Colegio San Rafael")
+    } else if (selectedSchool === "5") {
+      setSchoolName("Colegio San Carlos")
+    }
+
+    // Finalizar la carga
+    setIsLoading(false)
+
+    console.log("Home: Página principal inicializada correctamente")
+  }, [router]) // Solo depende de router
 
   // Datos para las tarjetas de estadísticas
   const statCards = [

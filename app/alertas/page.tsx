@@ -1,118 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { AppLayout } from "@/components/layout/app-layout"
 import { FilterDropdown } from "@/components/filter-dropdown"
 import { DataTable } from "@/components/data-table"
 import { Badge } from "@/components/ui/badge"
-
-interface Alert {
-  id: string
-  student: {
-    name: string
-    image?: string
-  }
-  type: string
-  priority: string
-  classroom: string
-  status: string
-  responsible: string
-  date: string
-  time: string
-}
+import { type Alert, fetchAlerts } from "@/services/alerts-service"
+import { AlertCircle, RefreshCw } from "lucide-react"
 
 export default function AlertsPage() {
   const router = useRouter()
-
-  // Datos de ejemplo para las alertas
-  const alertsData: Alert[] = [
-    {
-      id: "1",
-      student: {
-        name: "Carolina Espina",
-        image: "/smiling-woman-garden.png",
-      },
-      type: "SOS Alma",
-      priority: "Alta",
-      classroom: "3°C",
-      status: "Pendiente",
-      responsible: "Enc. Convivencia",
-      date: "08/04/2025",
-      time: "8:02 AM",
-    },
-    {
-      id: "2",
-      student: {
-        name: "Jorge Mendez",
-        image: "/young-man-city.png",
-      },
-      type: "Amarilla",
-      priority: "Med.",
-      classroom: "7°A",
-      status: "En curso",
-      responsible: "Psic. Escolar",
-      date: "08/04/2025",
-      time: "8:10 AM",
-    },
-    {
-      id: "3",
-      student: {
-        name: "Bruno Garay",
-        image: "/young-man-city.png",
-      },
-      type: "Denuncia",
-      priority: "Alta",
-      classroom: "5°C",
-      status: "Resuelta",
-      responsible: "Dir. Académico",
-      date: "07/04/2025",
-      time: "9:15 AM",
-    },
-    {
-      id: "4",
-      student: {
-        name: "Carolina Espina",
-        image: "/smiling-woman-garden.png",
-      },
-      type: "Naranja",
-      priority: "Alta",
-      classroom: "2°B",
-      status: "En curso",
-      responsible: "Prof. J. Rivera",
-      date: "07/04/2025",
-      time: "7:15 AM",
-    },
-    {
-      id: "5",
-      student: {
-        name: "Matías Ignacio Díaz",
-        image: "/young-man-city.png",
-      },
-      type: "SOS Alma",
-      priority: "Alta",
-      classroom: "4°A",
-      status: "Pendiente",
-      responsible: "Enc. Convivencia",
-      date: "06/04/2025",
-      time: "10:45 AM",
-    },
-    {
-      id: "6",
-      student: {
-        name: "Teresa Ulloa",
-        image: "/smiling-woman-garden.png",
-      },
-      type: "Amarilla",
-      priority: "Baja",
-      classroom: "5°A",
-      status: "Resuelta",
-      responsible: "Prof. M. Soto",
-      date: "05/04/2025",
-      time: "2:30 PM",
-    },
-  ]
+  const [alerts, setAlerts] = useState<Alert[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Estados para los filtros
   const [typeFilter, setTypeFilter] = useState<string>("Todos")
@@ -122,23 +24,60 @@ export default function AlertsPage() {
   const [responsibleFilter, setResponsibleFilter] = useState<string>("Todos")
   const [dateFilter, setDateFilter] = useState<string>("Todos")
 
-  // Opciones para los filtros
-  const typeOptions = ["Todos", "SOS Alma", "Amarilla", "Naranja", "Denuncia"]
-  const priorityOptions = ["Todos", "Alta", "Med.", "Baja"]
-  const classroomOptions = ["Todos", "2°B", "3°C", "4°A", "5°A", "5°C", "7°A"]
-  const statusOptions = ["Todos", "Pendiente", "En curso", "Resuelta"]
-  const responsibleOptions = [
-    "Todos",
-    "Enc. Convivencia",
-    "Psic. Escolar",
-    "Dir. Académico",
-    "Prof. J. Rivera",
-    "Prof. M. Soto",
-  ]
+  // Cargar datos solo cuando se accede a la página
+  useEffect(() => {
+    const loadAlerts = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const data = await fetchAlerts()
+        setAlerts(data)
+      } catch (err) {
+        console.error("Error al cargar alertas:", err)
+        setError("No se pudieron cargar las alertas. Intente nuevamente.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadAlerts()
+  }, [])
+
+  // Generar opciones para los filtros basadas en los datos
+  const getUniqueValues = (key: keyof Alert | ((alert: Alert) => string)): string[] => {
+    const getValue = typeof key === "function" ? key : (alert: Alert) => alert[key] as string
+    const uniqueValues = new Set(alerts.map(getValue))
+    return ["Todos", ...Array.from(uniqueValues)]
+  }
+
+  const typeOptions = getUniqueValues("type")
+  const priorityOptions = getUniqueValues("priority")
+  const classroomOptions = getUniqueValues("classroom")
+  const statusOptions = getUniqueValues("status")
+  const responsibleOptions = getUniqueValues("responsible")
   const dateOptions = ["Todos", "Hoy", "Ayer", "Esta semana", "Este mes"]
 
   // Filtrar los datos según los filtros seleccionados
-  const filteredAlerts = alertsData.filter((alert) => {
+  const filteredAlerts = alerts.filter((alert) => {
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    const alertDate = new Date(alert.date.split("/").reverse().join("-"))
+
+    const isToday = alertDate.toDateString() === today.toDateString()
+    const isYesterday = alertDate.toDateString() === yesterday.toDateString()
+
+    const isThisWeek = (() => {
+      const startOfWeek = new Date(today)
+      startOfWeek.setDate(today.getDate() - today.getDay())
+      const endOfWeek = new Date(startOfWeek)
+      endOfWeek.setDate(startOfWeek.getDate() + 6)
+      return alertDate >= startOfWeek && alertDate <= endOfWeek
+    })()
+
+    const isThisMonth = alertDate.getMonth() === today.getMonth() && alertDate.getFullYear() === today.getFullYear()
+
     return (
       (typeFilter === "Todos" || alert.type === typeFilter) &&
       (priorityFilter === "Todos" || alert.priority === priorityFilter) &&
@@ -146,8 +85,10 @@ export default function AlertsPage() {
       (statusFilter === "Todos" || alert.status === statusFilter) &&
       (responsibleFilter === "Todos" || alert.responsible === responsibleFilter) &&
       (dateFilter === "Todos" ||
-        (dateFilter === "Hoy" && alert.date === "08/04/2025") ||
-        (dateFilter === "Ayer" && alert.date === "07/04/2025"))
+        (dateFilter === "Hoy" && isToday) ||
+        (dateFilter === "Ayer" && isYesterday) ||
+        (dateFilter === "Esta semana" && isThisWeek) ||
+        (dateFilter === "Este mes" && isThisMonth))
     )
   })
 
@@ -194,15 +135,15 @@ export default function AlertsPage() {
           <div className="flex justify-center w-full">
             <Badge
               className={`whitespace-nowrap px-3 py-1 text-center ${
-                alert.type === "SOS Alma"
+                alert.type === "SOS Alma" || alert.type === "Rendimiento Académico"
                   ? "bg-red-500"
-                  : alert.type === "Amarilla"
+                  : alert.type === "Amarilla" || alert.type === "Asistencia"
                     ? "bg-yellow-400"
-                    : alert.type === "Naranja"
+                    : alert.type === "Naranja" || alert.type === "Comportamiento"
                       ? "bg-orange-500"
                       : alert.type === "Denuncia"
                         ? "bg-purple-600"
-                        : ""
+                        : "bg-blue-500"
               }`}
             >
               {alert.type}
@@ -217,10 +158,11 @@ export default function AlertsPage() {
               className={`whitespace-nowrap px-3 py-1 text-center ${
                 alert.priority === "Alta"
                   ? "border-red-500 text-red-500"
-                  : alert.priority === "Med."
+                  : alert.priority === "Media"
                     ? "border-yellow-500 text-yellow-500"
                     : "border-green-500 text-green-500"
               }`}
+              style={{ borderColor: alert.priorityColor, color: alert.priorityColor }}
             >
               {alert.priority}
             </Badge>
@@ -246,6 +188,47 @@ export default function AlertsPage() {
       default:
         return <div className="text-center">{alert[column.key as keyof Alert]}</div>
     }
+  }
+
+  // Renderizar mensaje de carga
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="container mx-auto px-2 sm:px-6 py-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Alertas</h2>
+          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando alertas...</p>
+          </div>
+        </div>
+      </AppLayout>
+    )
+  }
+
+  // Renderizar mensaje de error
+  if (error) {
+    return (
+      <AppLayout>
+        <div className="container mx-auto px-2 sm:px-6 py-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Alertas</h2>
+          <div className="bg-white rounded-lg shadow-sm p-8">
+            <div className="flex items-center justify-center mb-4 text-red-500">
+              <AlertCircle className="w-8 h-8 mr-2" />
+              <h3 className="text-xl font-medium">Error</h3>
+            </div>
+            <p className="text-gray-600 text-center mb-6">{error}</p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => window.location.reload()}
+                className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" /> Reintentar
+              </button>
+            </div>
+          </div>
+        </div>
+      </AppLayout>
+    )
   }
 
   return (
@@ -280,7 +263,13 @@ export default function AlertsPage() {
 
         {/* Tabla de alertas */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <DataTable columns={columns} data={filteredAlerts} renderCell={renderCell} />
+          {filteredAlerts.length > 0 ? (
+            <DataTable columns={columns} data={filteredAlerts} renderCell={renderCell} />
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              No se encontraron alertas que coincidan con los filtros seleccionados.
+            </div>
+          )}
         </div>
       </div>
     </AppLayout>

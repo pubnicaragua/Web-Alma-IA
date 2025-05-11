@@ -1,16 +1,22 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts"
+import { AlertCircle, RefreshCw } from "lucide-react"
 import { fetchTotalAlerts, type TotalAlert } from "@/services/home-service"
+import { useToast } from "@/hooks/use-toast"
+import { DonutChartSkeleton } from "./donut-chart-skeleton"
 
 interface DonutChartProps {
+  title?: string
   initialData?: TotalAlert[]
 }
 
-export function DonutChart({ initialData }: DonutChartProps) {
+export function DonutChart({ title = "Distribución de alertas", initialData }: DonutChartProps) {
   const [data, setData] = useState<TotalAlert[]>(initialData || [])
   const [isLoading, setIsLoading] = useState(!initialData)
   const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     if (!initialData) {
@@ -25,8 +31,15 @@ export function DonutChart({ initialData }: DonutChartProps) {
       const alertsData = await fetchTotalAlerts()
       setData(alertsData)
     } catch (err) {
-      console.error("Error al cargar datos de alertas totales:", err)
-      setError("No se pudieron cargar los datos de alertas totales")
+      console.error("Error al cargar las alertas totales:", err)
+      setError("No se pudieron cargar los datos de alertas. Intente nuevamente.")
+
+      // Mostrar notificación de error
+      toast({
+        title: "Error al cargar datos",
+        description: "No se pudieron cargar los datos de alertas. Intente nuevamente.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -34,106 +47,85 @@ export function DonutChart({ initialData }: DonutChartProps) {
 
   // Renderizar esqueleto durante la carga
   if (isLoading) {
-    return (
-      <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200 animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/3 mb-6"></div>
-
-        <div className="flex items-center justify-center mb-6">
-          <div className="relative w-40 h-40 rounded-full bg-gray-200"></div>
-        </div>
-
-        <div className="space-y-2">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-gray-200 mr-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-24"></div>
-              </div>
-              <div className="h-4 bg-gray-200 rounded w-10"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
+    return <DonutChartSkeleton />
   }
 
   // Renderizar mensaje de error
   if (error) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-red-200">
-        <h3 className="font-medium text-gray-800 mb-2">Alertas totales</h3>
-        <div className="text-red-500 text-center py-4">{error}</div>
+        <div className="flex items-center mb-4">
+          <AlertCircle className="mr-2 text-red-500" />
+          <h3 className="font-medium text-gray-800">{title}</h3>
+        </div>
+        <div className="text-red-500 mb-4">{error}</div>
         <button
           onClick={loadData}
-          className="mt-2 w-full py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
         >
-          Reintentar
+          <RefreshCw className="w-4 h-4 mr-2" /> Reintentar
         </button>
       </div>
     )
   }
 
   // Renderizar mensaje si no hay datos
-  if (data.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
-        <h3 className="font-medium text-gray-800 mb-2">Alertas totales</h3>
-        <div className="text-gray-500 text-center py-8">No hay alertas para mostrar</div>
+        <div className="flex items-center mb-4">
+          <h3 className="font-medium text-gray-800">{title}</h3>
+        </div>
+        <div className="text-gray-500 text-center py-10">No hay datos de alertas disponibles.</div>
       </div>
     )
   }
 
+  // Preparar datos para el gráfico
+  const chartData = data.map((item) => ({
+    name: item.label,
+    value: item.value,
+    color: item.color,
+    percentage: item.percentage,
+  }))
+
+  // Renderizar el gráfico
   return (
     <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
-      <h3 className="font-medium text-gray-800 mb-6">Alertas totales</h3>
-
-      <div className="flex items-center justify-center mb-6">
-        <div className="relative w-40 h-40">
-          <svg viewBox="0 0 100 100" className="w-full h-full">
-            {data.map((segment, i) => {
-              // Calculate the segment positions
-              const total = data.reduce((sum, item) => sum + Number.parseFloat(item.percentage), 0)
-              let startAngle = 0
-
-              for (let j = 0; j < i; j++) {
-                startAngle += (Number.parseFloat(data[j].percentage) / total) * 360
-              }
-
-              const endAngle = startAngle + (Number.parseFloat(segment.percentage) / total) * 360
-
-              // Convert to radians
-              const startRad = ((startAngle - 90) * Math.PI) / 180
-              const endRad = ((endAngle - 90) * Math.PI) / 180
-
-              // Calculate the path
-              const x1 = 50 + 40 * Math.cos(startRad)
-              const y1 = 50 + 40 * Math.sin(startRad)
-              const x2 = 50 + 40 * Math.cos(endRad)
-              const y2 = 50 + 40 * Math.sin(endRad)
-
-              // Determine if the arc should be drawn the long way around
-              const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1"
-
-              // Create the path
-              const d = `M 50 50 L ${x1} ${y1} A 40 40 0 ${largeArcFlag} 1 ${x2} ${y2} Z`
-
-              return <path key={i} d={d} fill={segment.color} />
-            })}
-            <circle cx="50" cy="50" r="25" fill="white" />
-          </svg>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        {data.map((item, index) => (
-          <div key={index} className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }} />
-              <span className="text-sm text-gray-700">{item.label}</span>
-            </div>
-            <span className="text-sm font-medium">{item.percentage}</span>
-          </div>
-        ))}
+      <h3 className="font-medium text-gray-800 mb-4">{title}</h3>
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={80}
+              paddingAngle={5}
+              dataKey="value"
+              label={false} // Eliminar las etiquetas alrededor del gráfico
+              labelLine={false}
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Legend
+              layout="vertical"
+              verticalAlign="middle"
+              align="right"
+              formatter={(value, entry, index) => {
+                const item = chartData[index]
+                return (
+                  <span className="text-sm">
+                    {item.name} ({item.percentage})
+                  </span>
+                )
+              }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
     </div>
   )

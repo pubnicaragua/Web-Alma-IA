@@ -1,11 +1,14 @@
+"use client"
+
 import Image from "next/image"
 import { AppLayout } from "@/components/layout/app-layout"
 import { ProfileField } from "@/components/profile-field"
 import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
+import { useAuth } from "@/components/auth-provider"
 
 export default function ProfilePage() {
-  // Datos del usuario
+  // Datos del usuario (estáticos para evitar llamadas infinitas)
   const userData = {
     name: "Emilio Aguilera",
     position: "Rector",
@@ -133,12 +136,27 @@ export default function ProfilePage() {
 
         {/* Zona 6: Botón de cerrar sesión */}
         <div className="bg-white rounded-lg shadow-md p-6 border border-blue-200">
-          <Button className="w-full bg-blue-500 hover:bg-blue-600 py-6 text-lg">
-            <LogOut className="mr-2 h-5 w-5" />
-            Cerrar sesión
-          </Button>
+          <LogoutButton />
         </div>
       </div>
     </AppLayout>
+  )
+}
+
+// Componente separado para el botón de logout
+function LogoutButton() {
+  const { logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    // Redirección manual después del logout
+    window.location.href = "/login"
+  }
+
+  return (
+    <Button onClick={handleLogout} className="w-full bg-blue-500 hover:bg-blue-600 py-6 text-lg">
+      <LogOut className="mr-2 h-5 w-5" />
+      Cerrar sesión
+    </Button>
   )
 }
