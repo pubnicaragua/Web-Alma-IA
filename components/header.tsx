@@ -1,4 +1,5 @@
 "use client"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -13,6 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { removeAuthToken } from "@/lib/api-config"
 import { useToast } from "@/hooks/use-toast"
+import { fetchProfileData, type ProfileResponse } from "@/services/profile-service"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface HeaderProps {
   toggleSidebar?: () => void
@@ -21,6 +24,26 @@ interface HeaderProps {
 export function Header({ toggleSidebar }: HeaderProps) {
   const router = useRouter()
   const { toast } = useToast()
+  const [profileData, setProfileData] = useState<ProfileResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    loadUserProfile()
+  }, [])
+
+  const loadUserProfile = async () => {
+    try {
+      setIsLoading(true)
+      const data = await fetchProfileData()
+      setProfileData(data)
+      console.log("Perfil de usuario cargado:", data)
+    } catch (error) {
+      console.error("Error al cargar el perfil del usuario:", error)
+      setProfileData(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   // Función para navegar al perfil del usuario
   const handleNavigateToProfile = () => {
@@ -52,6 +75,35 @@ export function Header({ toggleSidebar }: HeaderProps) {
 
     // Redirigir al login
     router.push("/login")
+  }
+
+  // Obtener el nombre completo del usuario
+  const getFullName = () => {
+    if (!profileData) return "Usuario"
+
+    const nombres = profileData.persona?.nombres || ""
+    const apellidos = profileData.persona?.apellidos || ""
+
+    if (nombres && apellidos) {
+      return `${nombres} ${apellidos}`
+    } else if (nombres) {
+      return nombres
+    } else if (apellidos) {
+      return apellidos
+    } else {
+      // Si no hay nombres ni apellidos, intentar usar nombre_social
+      return profileData.usuario?.nombre_social || "Usuario"
+    }
+  }
+
+  // Obtener el rol del usuario
+  const getUserRole = () => {
+    return profileData?.rol?.nombre || "Usuario"
+  }
+
+  // Obtener la URL de la imagen del usuario
+  const getUserImageUrl = () => {
+    return profileData?.usuario?.url_foto_perfil || "/confident-businessman.png"
   }
 
   return (
@@ -138,17 +190,30 @@ export function Header({ toggleSidebar }: HeaderProps) {
             <DropdownMenuTrigger className="flex items-center space-x-3 focus:outline-none">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-full overflow-hidden border border-white/30 flex-shrink-0">
-                  <Image
-                    src="/confident-businessman.png"
-                    alt="Perfil de usuario"
-                    width={45}
-                    height={45}
-                    className="w-full h-full object-cover"
-                  />
+                  {isLoading ? (
+                    <Skeleton className="w-full h-full rounded-full" />
+                  ) : (
+                    <Image
+                      src={getUserImageUrl() || "/placeholder.svg"}
+                      alt="Perfil de usuario"
+                      width={45}
+                      height={45}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </div>
                 <div className="text-white text-right hidden sm:block">
-                  <p className="text-base font-medium">Emilio Aguilera</p>
-                  <p className="text-sm text-white/80">Rector</p>
+                  {isLoading ? (
+                    <>
+                      <Skeleton className="h-4 w-24 mb-1" />
+                      <Skeleton className="h-3 w-16" />
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-base font-medium">{getFullName()}</p>
+                      <p className="text-sm text-white/80">{getUserRole()}</p>
+                    </>
+                  )}
                 </div>
               </div>
             </DropdownMenuTrigger>

@@ -60,6 +60,62 @@ export interface StudentReportFilters {
   estado?: string
 }
 
+// Nueva interfaz para la respuesta detallada del alumno
+export interface StudentDetailResponse {
+  alumno: {
+    alumno_id: number
+    colegio_id: number
+    url_foto_perfil: string
+    telefono_contacto1: string
+    telefono_contacto2: string
+    email: string
+  }
+  ficha: {
+    alumno_ant_clinico_id: number
+    alumno_id: number
+    historial_medico: string
+    alergias: string
+    enfermedades_cronicas: string
+    condiciones_medicas_relevantes: string
+    medicamentos_actuales: string
+    diagnosticos_previos: string
+    terapias_tratamiento_curso: string
+  }
+  alertas: Array<{
+    alumno_alerta_id: number
+    alumno_id: number
+    alerta_regla_id: number
+    fecha_generada: string
+    fecha_resolucion: string | null
+    alerta_origen_id: number
+    prioridad_id: number
+    severidad_id: number
+    accion_tomada: string
+    leida: boolean
+    responsable_actual_id: number
+    estado: string
+    alertas_tipo_alerta_tipo_id: number
+  }>
+  informes: Array<{
+    alumno_informe_id: number
+    alumno_id: number
+    fecha: string
+    url_reporte: string
+  }>
+  emociones: Array<{
+    nombre: string
+    valor: number
+  }>
+  apoderados: Array<{
+    alumno_apoderado_id: number
+    alumno_id: number
+    apoderado_id: number
+    tipo_apoderado: string
+    observaciones: string
+    estado_usuario: string
+  }>
+}
+
 // Datos de ejemplo para usar cuando la API no está disponible
 const exampleStudents: Student[] = [
   {
@@ -148,8 +204,6 @@ function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
 // Función para obtener informes de estudiantes
 export const getStudentReports = async (filters: StudentReportFilters = {}): Promise<StudentReport[]> => {
   try {
-    console.log("Obteniendo informes de alumnos con filtros:", filters)
-
     const response = await fetchWithAuth("/informes/alumnos", {
       method: "POST",
       body: JSON.stringify(filters),
@@ -157,15 +211,12 @@ export const getStudentReports = async (filters: StudentReportFilters = {}): Pro
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error("Error al obtener informes de alumnos:", errorText)
       throw new Error(errorText || response.statusText || "Error al obtener informes de alumnos")
     }
 
     const data = await response.json()
-    console.log("Informes de alumnos obtenidos:", data)
     return data
   } catch (error) {
-    console.error("Error en getStudentReports:", error)
     throw error
   }
 }
@@ -173,8 +224,6 @@ export const getStudentReports = async (filters: StudentReportFilters = {}): Pro
 // Función para obtener la lista de estudiantes
 export async function fetchStudents(): Promise<Student[]> {
   try {
-    console.log("Obteniendo lista de alumnos...")
-
     // Realizar la solicitud GET a la API
     const response = await fetchWithAuth("/alumnos", {
       method: "GET",
@@ -184,11 +233,9 @@ export async function fetchStudents(): Promise<Student[]> {
     if (!response.ok) {
       // Intentar leer el mensaje de error
       const errorText = await response.text()
-      console.error(`Error al obtener alumnos: ${response.status} - ${errorText}`)
 
       // Si es un error 404, usar datos de ejemplo
       if (response.status === 404) {
-        console.warn("API de alumnos no disponible, usando datos de ejemplo")
         return exampleStudents
       }
 
@@ -197,16 +244,12 @@ export async function fetchStudents(): Promise<Student[]> {
 
     // Intentar parsear la respuesta como JSON
     const apiStudents = (await response.json()) as ApiStudent[]
-    console.log("Datos de alumnos recibidos:", apiStudents)
 
     // Transformar los datos de la API a nuestro modelo de Student
     const students = mapApiStudentsToStudents(apiStudents)
     return students
   } catch (error) {
-    console.error("Error al obtener alumnos:", error)
-
     // En caso de error, devolver datos de ejemplo
-    console.warn("Usando datos de ejemplo debido a un error:", error)
     return exampleStudents
   }
 }
@@ -214,8 +257,6 @@ export async function fetchStudents(): Promise<Student[]> {
 // Función para obtener un estudiante por ID
 export async function fetchStudentById(id: string): Promise<Student | null> {
   try {
-    console.log(`Obteniendo alumno con ID: ${id}`)
-
     // Realizar la solicitud GET a la API
     const response = await fetchWithAuth(`/alumnos/${id}`, {
       method: "GET",
@@ -225,11 +266,9 @@ export async function fetchStudentById(id: string): Promise<Student | null> {
     if (!response.ok) {
       // Intentar leer el mensaje de error
       const errorText = await response.text()
-      console.error(`Error al obtener alumno: ${response.status} - ${errorText}`)
 
       // Si es un error 404, buscar en datos de ejemplo
       if (response.status === 404) {
-        console.warn("API de alumno no disponible, buscando en datos de ejemplo")
         const exampleStudent = exampleStudents.find((student) => student.id === id)
         return exampleStudent || null
       }
@@ -239,17 +278,37 @@ export async function fetchStudentById(id: string): Promise<Student | null> {
 
     // Intentar parsear la respuesta como JSON
     const apiStudent = (await response.json()) as ApiStudent
-    console.log("Datos de alumno recibidos:", apiStudent)
 
     // Transformar los datos de la API a nuestro modelo de Student
     const students = mapApiStudentsToStudents([apiStudent])
     return students[0] || null
   } catch (error) {
-    console.error(`Error al obtener alumno con ID ${id}:`, error)
-
     // En caso de error, buscar en datos de ejemplo
-    console.warn("Buscando en datos de ejemplo debido a un error:", error)
     const exampleStudent = exampleStudents.find((student) => student.id === id)
     return exampleStudent || null
+  }
+}
+
+// Nueva función para obtener los detalles completos de un estudiante
+export async function fetchStudentDetails(id: string): Promise<StudentDetailResponse | null> {
+  try {
+    // Realizar la solicitud GET a la API
+    const response = await fetchWithAuth(`/alumnos/${id}`, {
+      method: "GET",
+    })
+
+    // Si la respuesta no es exitosa, lanzar un error
+    if (!response.ok) {
+      // Intentar leer el mensaje de error
+      const errorText = await response.text()
+      throw new Error(`Error al obtener detalles del alumno: ${response.status} - ${errorText}`)
+    }
+
+    // Intentar parsear la respuesta como JSON
+    const studentDetails = (await response.json()) as StudentDetailResponse
+    return studentDetails
+  } catch (error) {
+    // En caso de error, devolver null
+    return null
   }
 }

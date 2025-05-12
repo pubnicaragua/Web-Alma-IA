@@ -99,6 +99,17 @@ export const isAuthenticated = (): boolean => {
   return isAuth
 }
 
+// Custom error class for API errors
+export class ApiError extends Error {
+  status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = "ApiError"
+    this.status = status
+  }
+}
+
 // Helper function to make authenticated API requests
 export const fetchWithAuth = async (endpoint: string, options: RequestInit = {}): Promise<Response> => {
   const token = getAuthToken()
@@ -125,13 +136,25 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
     // Si recibimos un 401 Unauthorized, podría ser que el token expiró
     if (response.status === 401) {
       console.error("Error de autenticación: Token inválido o expirado")
-      // Aquí podrías implementar lógica para manejar tokens expirados
+      throw new ApiError("Token inválido o expirado", 401)
+    }
+
+    // Si la respuesta no es exitosa, lanzar un error
+    if (!response.ok) {
+      throw new ApiError(`Error en la solicitud: ${response.status} ${response.statusText}`, response.status)
     }
 
     return response
   } catch (error) {
     console.error("API request error:", error)
-    throw error
+
+    // Si es un ApiError, lo propagamos
+    if (error instanceof ApiError) {
+      throw error
+    }
+
+    // Si es otro tipo de error, lo envolvemos en un ApiError
+    throw new ApiError(`Error de red: ${error}`, 0)
   }
 }
 
@@ -154,9 +177,21 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}): Pro
       headers,
     })
 
+    // Si la respuesta no es exitosa, lanzar un error
+    if (!response.ok) {
+      throw new ApiError(`Error en la solicitud: ${response.status} ${response.statusText}`, response.status)
+    }
+
     return response
   } catch (error) {
     console.error("API request error:", error)
-    throw error
+
+    // Si es un ApiError, lo propagamos
+    if (error instanceof ApiError) {
+      throw error
+    }
+
+    // Si es otro tipo de error, lo envolvemos en un ApiError
+    throw new ApiError(`Error de red: ${error}`, 0)
   }
 }

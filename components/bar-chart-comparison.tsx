@@ -6,25 +6,44 @@ import { Smile, RefreshCw, AlertCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { fetchEmotions, type Emotion } from "@/services/home-service"
 import { useToast } from "@/hooks/use-toast"
+import { themeColors } from "@/lib/theme-colors"
 
 interface BarChartComparisonProps {
   title: string
   selectedEmotions: string[]
   onToggleEmotion: (emotion: string) => void
   initialData?: Emotion[]
+  apiEmotions?: Array<{
+    nombre: string
+    valor: number
+  }>
 }
 
-export function BarChartComparison({ title, selectedEmotions, onToggleEmotion, initialData }: BarChartComparisonProps) {
+export function BarChartComparison({
+  title,
+  selectedEmotions,
+  onToggleEmotion,
+  initialData,
+  apiEmotions,
+}: BarChartComparisonProps) {
   const [data, setData] = useState<Emotion[]>(initialData || [])
-  const [isLoading, setIsLoading] = useState(!initialData)
+  const [isLoading, setIsLoading] = useState(!initialData && !apiEmotions)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
-    if (!initialData) {
+    if (!initialData && !apiEmotions) {
       loadData()
+    } else if (apiEmotions) {
+      // Transformar los datos de la API al formato que espera el componente
+      const transformedData = apiEmotions.map((emotion) => ({
+        name: emotion.nombre,
+        value: Math.round(emotion.valor / 100), // Normalizar para mejor visualización
+        color: getEmotionColor(emotion.nombre),
+      }))
+      setData(transformedData)
     }
-  }, [initialData])
+  }, [initialData, apiEmotions])
 
   const loadData = async () => {
     try {
@@ -33,7 +52,6 @@ export function BarChartComparison({ title, selectedEmotions, onToggleEmotion, i
       const emotionsData = await fetchEmotions()
       setData(emotionsData)
     } catch (err) {
-      console.error("Error al cargar las emociones:", err)
       setError("No se pudieron cargar los datos de emociones. Intente nuevamente.")
 
       // Mostrar notificación de error
@@ -154,4 +172,17 @@ export function BarChartComparison({ title, selectedEmotions, onToggleEmotion, i
       </div>
     </div>
   )
+}
+
+// Función auxiliar para asignar colores a las emociones
+function getEmotionColor(emotion: string): string {
+  const colors: Record<string, string> = {
+    Felicidad: themeColors.chart.yellow,
+    Tristeza: themeColors.chart.blue,
+    Estrés: themeColors.chart.gray,
+    Ansiedad: themeColors.chart.orange,
+    Enojo: themeColors.chart.red,
+    Otros: themeColors.chart.purple,
+  }
+  return colors[emotion] || themeColors.chart.gray
 }

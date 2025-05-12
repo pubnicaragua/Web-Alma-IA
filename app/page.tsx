@@ -4,11 +4,16 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AppLayout } from "@/components/layout/app-layout"
 import { StatCard } from "@/components/stat-card"
+import { StatCardSkeleton } from "@/components/stat-card-skeleton"
 import { BarChartComparison } from "@/components/bar-chart-comparison"
+import { BarChartSkeleton } from "@/components/bar-chart-skeleton"
 import { DonutChart } from "@/components/donut-chart"
+import { DonutChartSkeleton } from "@/components/donut-chart-skeleton"
 import { ImportantDates } from "@/components/important-dates"
+import { ImportantDatesSkeleton } from "@/components/important-dates-skeleton"
 import { RecentAlerts } from "@/components/recent-alerts"
-import { isAuthenticated } from "@/lib/api-config"
+import { RecentAlertsSkeleton } from "@/components/recent-alerts-skeleton"
+import { isAuthenticated, removeAuthToken } from "@/lib/api-config"
 import { type CardData, fetchCardData } from "@/services/home-service"
 import { useToast } from "@/hooks/use-toast"
 
@@ -18,6 +23,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [cardData, setCardData] = useState<CardData | null>(null)
   const [cardError, setCardError] = useState<string | null>(null)
+  const [tokenExpired, setTokenExpired] = useState(false)
   const [schoolName, setSchoolName] = useState("Colegio Santiago Apostol")
   const [selectedEmotionsGeneral, setSelectedEmotionsGeneral] = useState<string[]>([
     "Tristeza",
@@ -51,6 +57,23 @@ export default function Home() {
     } else {
       setSelectedEmotions([...selectedEmotions, emotion])
     }
+  }
+
+  // Función para manejar token expirado
+  const handleTokenExpired = () => {
+    setTokenExpired(true)
+    removeAuthToken()
+
+    toast({
+      title: "Sesión expirada",
+      description: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
+      variant: "destructive",
+    })
+
+    // Redirigir después de un breve retraso para que el usuario pueda ver la notificación
+    setTimeout(() => {
+      router.push("/login")
+    }, 2000)
   }
 
   useEffect(() => {
@@ -88,8 +111,15 @@ export default function Home() {
         setCardError(null)
         const data = await fetchCardData()
         setCardData(data)
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error al cargar datos de tarjetas:", error)
+
+        // Verificar si el error es por token expirado (401 Unauthorized)
+        if (error.status === 401 || error.message?.includes("401") || error.message?.includes("unauthorized")) {
+          handleTokenExpired()
+          return
+        }
+
         setCardError("No se pudieron cargar los datos de las tarjetas")
         toast({
           title: "Error al cargar datos",
@@ -97,7 +127,9 @@ export default function Home() {
           variant: "destructive",
         })
       } finally {
-        setIsLoading(false)
+        if (!tokenExpired) {
+          setIsLoading(false)
+        }
       }
     }
 
@@ -158,12 +190,35 @@ export default function Home() {
     ]
   }
 
+  // Renderizar skeletons durante la carga
   if (isLoading) {
     return (
       <AppLayout>
         <div className="container mx-auto px-2 sm:px-6 py-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-xl text-gray-500">Cargando datos...</div>
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+
+          {/* Skeleton para tarjetas de estadísticas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <StatCardSkeleton key={i} />
+            ))}
+          </div>
+
+          {/* Skeleton para Media emocional General */}
+          <div className="mb-8">
+            <BarChartSkeleton />
+          </div>
+
+          {/* Skeletons para gráficos y datos */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <BarChartSkeleton />
+            <DonutChartSkeleton />
+          </div>
+
+          {/* Skeletons para fechas importantes y alertas recientes */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ImportantDatesSkeleton />
+            <RecentAlertsSkeleton />
           </div>
         </div>
       </AppLayout>

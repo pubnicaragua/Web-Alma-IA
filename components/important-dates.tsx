@@ -7,38 +7,6 @@ import { fetchImportantDates, type ImportantDate } from "@/services/home-service
 import { useToast } from "@/hooks/use-toast"
 import { ImportantDatesSkeleton } from "./important-dates-skeleton"
 
-// Datos de ejemplo para usar cuando la API no está disponible
-const FALLBACK_DATA: ImportantDate[] = [
-  {
-    event: "Reunión de Apoderados",
-    dateRange: "May 15 - 2024",
-  },
-  {
-    event: "Feriado Nacional",
-    dateRange: "May 21 - 2024",
-  },
-  {
-    event: "Semana de Evaluaciones",
-    dateRange: "Jun 05 - Jun 09, 2024",
-  },
-  {
-    event: "Vacaciones de Invierno",
-    dateRange: "Jul 10 - Jul 25, 2024",
-  },
-  {
-    event: "Día del Profesor",
-    dateRange: "Oct 16 - 2024",
-  },
-  {
-    event: "Fiestas Patrias",
-    dateRange: "Sep 18 - Sep 19, 2024",
-  },
-  {
-    event: "Ceremonia de Graduación",
-    dateRange: "Dic 15 - 2024",
-  },
-]
-
 interface ImportantDatesProps {
   title?: string
   initialData?: ImportantDate[]
@@ -48,7 +16,6 @@ export function ImportantDates({ title = "Fechas importantes", initialData }: Im
   const [dates, setDates] = useState<ImportantDate[]>(initialData || [])
   const [isLoading, setIsLoading] = useState(!initialData)
   const [error, setError] = useState<string | null>(null)
-  const [useFallback, setUseFallback] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -61,32 +28,38 @@ export function ImportantDates({ title = "Fechas importantes", initialData }: Im
     try {
       setIsLoading(true)
       setError(null)
-      setUseFallback(false)
 
       try {
         const data = await fetchImportantDates()
-        setDates(data)
-        console.log("Fechas importantes cargadas correctamente:", data)
+        console.log("Fechas importantes recibidas:", data)
+
+        if (!data || !Array.isArray(data) || data.length === 0) {
+          console.log("No se recibieron datos válidos")
+          setDates([])
+
+          toast({
+            title: "No hay fechas importantes",
+            description: "No se encontraron fechas importantes para mostrar.",
+            variant: "warning",
+          })
+        } else {
+          setDates(data)
+          console.log("Fechas importantes cargadas correctamente:", data)
+        }
       } catch (err) {
         console.error("Error al cargar fechas importantes desde la API:", err)
+        setDates([])
 
-        // Usar datos de ejemplo en caso de error
-        console.log("Usando datos de ejemplo para fechas importantes")
-        setDates(FALLBACK_DATA)
-        setUseFallback(true)
-
-        // Mostrar notificación de advertencia
         toast({
-          title: "Usando datos de ejemplo",
-          description: "No se pudieron cargar las fechas importantes desde el servidor. Mostrando datos de ejemplo.",
-          variant: "warning",
+          title: "Error al cargar datos",
+          description: "No se pudieron cargar las fechas importantes desde el servidor.",
+          variant: "destructive",
         })
       }
     } catch (err) {
       console.error("Error crítico al cargar fechas importantes:", err)
       setError("No se pudieron cargar las fechas importantes. Intente nuevamente.")
 
-      // Mostrar notificación de error
       toast({
         title: "Error al cargar datos",
         description: "No se pudieron cargar las fechas importantes. Intente nuevamente.",
@@ -95,6 +68,28 @@ export function ImportantDates({ title = "Fechas importantes", initialData }: Im
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Función para formatear la fecha
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString)
+      return new Intl.DateTimeFormat("es-ES", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }).format(date)
+    } catch (error) {
+      console.error("Error al formatear fecha:", error)
+      return dateString
+    }
+  }
+
+  // Función para truncar texto largo
+  const truncateText = (text: string, maxLength = 60) => {
+    if (!text) return ""
+    if (text.length <= maxLength) return text
+    return text.substring(0, maxLength) + "..."
   }
 
   // Renderizar esqueleto durante la carga
@@ -139,8 +134,13 @@ export function ImportantDates({ title = "Fechas importantes", initialData }: Im
     )
   }
 
+  // Ordenar fechas por fecha (más recientes primero)
+  const sortedDates = [...dates].sort((a, b) => {
+    return new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
+  })
+
   // Limitar a mostrar solo los 7 elementos más recientes
-  const limitedDates = dates.slice(0, 7)
+  const limitedDates = sortedDates.slice(0, 7)
 
   return (
     <Card>
@@ -150,10 +150,17 @@ export function ImportantDates({ title = "Fechas importantes", initialData }: Im
       <CardContent>
         <div className="space-y-0">
           {limitedDates.map((date, index) => (
-            <div key={index}>
-              <div className="flex justify-between py-3">
-                <span className="font-medium text-gray-800">{date.event}</span>
-                <span className="text-sm text-gray-500">{date.dateRange}</span>
+            <div key={date.calendario_fecha_importante_id || index}>
+              <div className="py-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-gray-800">{date.titulo}</span>
+                  <span className="text-sm text-gray-500">{formatDate(date.fecha)}</span>
+                </div>
+                {date.descripcion && (
+                  <div className="text-sm text-gray-500 mt-1" title={date.descripcion}>
+                    {truncateText(date.descripcion)}
+                  </div>
+                )}
               </div>
               {index < limitedDates.length - 1 && <div className="border-t border-gray-100"></div>}
             </div>

@@ -1,43 +1,103 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import { AppLayout } from "@/components/layout/app-layout"
 import { ProfileField } from "@/components/profile-field"
 import { Button } from "@/components/ui/button"
-import { LogOut } from "lucide-react"
+import { LogOut, AlertCircle } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
+import { fetchProfileData, type ProfileResponse, FALLBACK_PROFILE_DATA } from "@/services/profile-service"
+import { ProfileSkeleton } from "@/components/profile-skeleton"
+import { useToast } from "@/hooks/use-toast"
+import { formatDate } from "@/lib/utils"
 
 export default function ProfilePage() {
-  // Datos del usuario (estáticos para evitar llamadas infinitas)
-  const userData = {
-    name: "Emilio Aguilera",
-    position: "Rector",
-    fullName: "Emilio Andrés Aguilera Silva",
-    age: 28,
-    rut: "19.345.876-2",
-    email: "eaguilera@colegiohorizonte.cl",
-    phone: "+56 9 7654 3210",
-    role: "Director General",
-    school: "Santiago Apostol",
-    registrationDate: "08/03/2023",
+  const [profileData, setProfileData] = useState<ProfileResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { logout } = useAuth()
+  const { toast } = useToast()
+
+  useEffect(() => {
+    async function loadProfileData() {
+      try {
+        setLoading(true)
+        setError(null)
+        const data = await fetchProfileData()
+        setProfileData(data)
+      } catch (err) {
+        console.error("Error al cargar datos de perfil:", err)
+        setError("No se pudieron cargar los datos del perfil. Por favor, intenta de nuevo más tarde.")
+
+        // Mostrar toast de error
+        toast({
+          title: "Error al cargar perfil",
+          description: "No se pudieron cargar los datos del perfil. Se están mostrando datos de ejemplo.",
+          variant: "destructive",
+        })
+
+        // Usar datos de ejemplo en caso de error
+        setProfileData(FALLBACK_PROFILE_DATA)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProfileData()
+  }, [toast])
+
+  const handleLogout = () => {
+    logout()
+    // Redirección manual después del logout
+    window.location.href = "/login"
   }
 
-  // Lista de permisos
-  const permissions = [
-    "Ver alertas activas de todos los cursos",
-    "Acceder a seguimientos hechos por psicólogos o docentes",
-    "Descargar reportes generales",
-    "Visualizar estadísticas generales",
-    "Eliminar o agregar docente",
-  ]
+  // Calcular edad a partir de la fecha de nacimiento
+  const calculateAge = (birthDateString: string) => {
+    try {
+      const birthDate = new Date(birthDateString)
+      const today = new Date()
+      let age = today.getFullYear() - birthDate.getFullYear()
+      const monthDiff = today.getMonth() - birthDate.getMonth()
 
-  // Lista de acciones
-  const actions = [
-    "Agregar o editar preguntas para alumnos",
-    "Generar alertas o intervenciones",
-    "Ver respuestas de alumnos por curso",
-    "Modificar datos de otros usuarios",
-  ]
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--
+      }
+
+      return age
+    } catch (error) {
+      console.error("Error al calcular la edad:", error)
+      return "N/A"
+    }
+  }
+
+  // Mostrar skeleton mientras se cargan los datos
+  if (loading) {
+    return (
+      <AppLayout>
+        <ProfileSkeleton />
+      </AppLayout>
+    )
+  }
+
+  // Si no hay datos, mostrar mensaje de error
+  if (!profileData) {
+    return (
+      <AppLayout>
+        <div className="container mx-auto px-4 py-8 text-center">
+          <AlertCircle className="mx-auto h-16 w-16 text-red-500 mb-4" />
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Error al cargar el perfil</h1>
+          <p className="text-gray-600 mb-6">{error || "No se pudieron cargar los datos del perfil."}</p>
+          <Button onClick={() => window.location.reload()} className="bg-blue-500 hover:bg-blue-600">
+            Intentar de nuevo
+          </Button>
+        </div>
+      </AppLayout>
+    )
+  }
+
+  const { usuario, persona, rol, funcionalidades } = profileData
 
   return (
     <AppLayout>
@@ -47,17 +107,17 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <div className="w-32 h-32 rounded-full overflow-hidden mb-4 flex-shrink-0 border-4 border-blue-100">
               <Image
-                src="/confident-businessman.png"
-                alt={userData.name}
+                src={usuario.url_foto_perfil || "/confident-businessman.png"}
+                alt={usuario.nombre_social}
                 width={128}
                 height={128}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="flex flex-col items-center md:items-start">
-              <h1 className="text-3xl font-bold text-gray-800">{userData.name}</h1>
+              <h1 className="text-3xl font-bold text-gray-800">{usuario.nombre_social}</h1>
               <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                {userData.position}
+                {rol.nombre}
               </div>
             </div>
           </div>
@@ -68,9 +128,9 @@ export default function ProfilePage() {
           <div className="bg-white rounded-lg shadow-md p-6 border border-blue-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Datos personales</h2>
             <div className="space-y-4">
-              <ProfileField label="Nombre completo" value={userData.fullName} />
-              <ProfileField label="Edad" value={`${userData.age} años`} />
-              <ProfileField label="RUT" value={userData.rut} />
+              <ProfileField label="Nombre completo" value={`${persona.nombres} ${persona.apellidos}`} />
+              <ProfileField label="Edad" value={`${calculateAge(persona.fecha_nacimiento)} años`} />
+              <ProfileField label={persona.tipo_documento} value={persona.numero_documento} />
             </div>
           </div>
 
@@ -80,27 +140,27 @@ export default function ProfilePage() {
               Información de contacto
             </h2>
             <div className="space-y-4">
-              <ProfileField label="Correo institucional" value={userData.email} />
-              <ProfileField label="Teléfono" value={userData.phone} />
+              <ProfileField label="Correo institucional" value={usuario.email} />
+              <ProfileField label="Teléfono" value={usuario.telefono_contacto} />
             </div>
           </div>
         </div>
 
         {/* Zona 4: Datos académicos */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-blue-200">
-          <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Datos académicos</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Datos del sistema</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-sm text-gray-500 mb-1">Rol institucional</h3>
-              <p className="font-medium">{userData.role}</p>
+              <p className="font-medium">{rol.nombre}</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-sm text-gray-500 mb-1">Colegio</h3>
-              <p className="font-medium">{userData.school}</p>
+              <h3 className="text-sm text-gray-500 mb-1">Estado</h3>
+              <p className="font-medium">{usuario.estado_usuario}</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-sm text-gray-500 mb-1">Fecha de registro</h3>
-              <p className="font-medium">{userData.registrationDate}</p>
+              <h3 className="text-sm text-gray-500 mb-1">Último inicio de sesión</h3>
+              <p className="font-medium">{formatDate(usuario.ultimo_inicio_sesion)}</p>
             </div>
           </div>
         </div>
@@ -109,12 +169,12 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Permisos */}
           <div className="bg-white rounded-lg shadow-md p-6 border border-blue-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Permisos del sistema</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Funcionalidades</h2>
             <div className="space-y-1">
-              {permissions.map((permission, index) => (
-                <div key={index} className="bg-green-50 p-3 rounded-md mb-2 flex items-center">
+              {funcionalidades.map((funcionalidad) => (
+                <div key={funcionalidad.funcionalidad_id} className="bg-green-50 p-3 rounded-md mb-2 flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  <span className="text-gray-800">{permission}</span>
+                  <span className="text-gray-800">{funcionalidad.nombre}</span>
                 </div>
               ))}
             </div>
@@ -122,41 +182,27 @@ export default function ProfilePage() {
 
           {/* Acciones */}
           <div className="bg-white rounded-lg shadow-md p-6 border border-blue-200">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Acciones disponibles</h2>
-            <div className="space-y-1">
-              {actions.map((action, index) => (
-                <div key={index} className="bg-blue-50 p-3 rounded-md mb-2 flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  <span className="text-gray-800">{action}</span>
-                </div>
-              ))}
+            <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Descripción del rol</h2>
+            <div className="bg-blue-50 p-4 rounded-md">
+              <p className="text-gray-800">{rol.descripcion}</p>
+            </div>
+            <div className="mt-4">
+              <h3 className="font-medium text-gray-700 mb-2">Información adicional</h3>
+              <div className="bg-gray-50 p-3 rounded-md">
+                <p className="text-sm text-gray-600">Fecha de creación: {formatDate(rol.fecha_creacion)}</p>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Zona 6: Botón de cerrar sesión */}
         <div className="bg-white rounded-lg shadow-md p-6 border border-blue-200">
-          <LogoutButton />
+          <Button onClick={handleLogout} className="w-full bg-blue-500 hover:bg-blue-600 py-6 text-lg">
+            <LogOut className="mr-2 h-5 w-5" />
+            Cerrar sesión
+          </Button>
         </div>
       </div>
     </AppLayout>
-  )
-}
-
-// Componente separado para el botón de logout
-function LogoutButton() {
-  const { logout } = useAuth()
-
-  const handleLogout = () => {
-    logout()
-    // Redirección manual después del logout
-    window.location.href = "/login"
-  }
-
-  return (
-    <Button onClick={handleLogout} className="w-full bg-blue-500 hover:bg-blue-600 py-6 text-lg">
-      <LogOut className="mr-2 h-5 w-5" />
-      Cerrar sesión
-    </Button>
   )
 }
