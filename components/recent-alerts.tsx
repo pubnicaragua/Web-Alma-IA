@@ -5,6 +5,9 @@ import Image from "next/image"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RecentAlertsSkeleton } from "./recent-alerts-skeleton"
 import { type RecentAlert, fetchRecentAlerts } from "@/services/home-service"
+import { formatDistanceToNow } from "date-fns"
+import { es } from "date-fns/locale"
+import { Badge } from "@/components/ui/badge"
 
 export function RecentAlerts() {
   const [alerts, setAlerts] = useState<RecentAlert[]>([])
@@ -23,50 +26,6 @@ export function RecentAlerts() {
       } catch (error) {
         console.error("Error al cargar alertas recientes:", error)
         setError("No se pudieron cargar las alertas recientes")
-
-        // Usar datos de ejemplo cuando la API no está disponible
-        setAlerts([
-          {
-            student: {
-              name: "Carolina Espina",
-              image: "/smiling-woman-garden.png",
-            },
-            alertType: "SOS Alma",
-            date: "Abr 02 - 2024",
-          },
-          {
-            student: {
-              name: "Martín Soto",
-              image: "/young-man-city.png",
-            },
-            alertType: "Alerta Alma",
-            date: "Abr 01 - 2024",
-          },
-          {
-            student: {
-              name: "Javiera Rojas",
-              image: "/confident-businessman.png",
-            },
-            alertType: "Denuncia",
-            date: "Mar 30 - 2024",
-          },
-          {
-            student: {
-              name: "Pedro Gómez",
-              image: "/young-man-city.png",
-            },
-            alertType: "Alerta Académica",
-            date: "Mar 28 - 2024",
-          },
-          {
-            student: {
-              name: "Ana Martínez",
-              image: "/smiling-woman-garden.png",
-            },
-            alertType: "SOS Alma",
-            date: "Mar 25 - 2024",
-          },
-        ])
       } finally {
         setIsLoading(false)
       }
@@ -80,7 +39,33 @@ export function RecentAlerts() {
   }
 
   // Limitar a mostrar solo los 5 elementos más recientes
-  const limitedAlerts = alerts.slice(0, 5)
+  const limitedAlerts = alerts && alerts.length > 0 ? alerts.slice(0, 5) : []
+
+  // Función para formatear la fecha
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString)
+      return formatDistanceToNow(date, { addSuffix: true, locale: es })
+    } catch (error) {
+      return "Fecha desconocida"
+    }
+  }
+
+  // Función para obtener el color de la prioridad
+  const getPriorityColor = (priority: string | undefined) => {
+    if (!priority) return "bg-gray-200"
+
+    switch (priority.toLowerCase()) {
+      case "alta":
+        return "bg-red-500 hover:bg-red-600"
+      case "media":
+        return "bg-yellow-500 hover:bg-yellow-600"
+      case "baja":
+        return "bg-green-500 hover:bg-green-600"
+      default:
+        return "bg-gray-200 hover:bg-gray-300"
+    }
+  }
 
   return (
     <Card>
@@ -90,25 +75,46 @@ export function RecentAlerts() {
       <CardContent>
         <div className="space-y-0">
           {limitedAlerts.map((alert, index) => (
-            <div key={index}>
-              <div className="flex items-center gap-4 py-3">
-                <div className="relative h-10 w-10 overflow-hidden rounded-full">
-                  <Image
-                    src={alert.student.image || "/placeholder.svg"}
-                    alt={alert.student.name}
-                    fill
-                    className="object-cover"
-                  />
+            <div key={alert.alumno_alerta_id || index}>
+              <div className="flex items-center justify-between py-3">
+                {/* Primera columna: Datos del alumno */}
+                <div className="flex items-center gap-3 w-[45%]">
+                  <div className="relative h-10 w-10 overflow-hidden rounded-full flex-shrink-0">
+                    <Image
+                      src={alert.alumnos?.url_foto_perfil || "/diverse-students-studying.png"}
+                      alt={`${alert.alumnos?.personas?.nombres || "Estudiante"}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-medium truncate">
+                      {alert.alumnos?.personas
+                        ? `${alert.alumnos.personas.nombres} ${alert.alumnos.personas.apellidos}`
+                        : "Estudiante"}
+                    </h4>
+                    <p className="text-xs text-gray-500 truncate">
+                      {alert.alertas_tipos?.nombre || "Alerta"}
+                      {alert.alertas_origenes?.nombre && ` - ${alert.alertas_origenes.nombre}`}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-medium">{alert.student.name}</h4>
-                  <p className="text-xs text-gray-500">{alert.alertType}</p>
+
+                {/* Segunda columna: Prioridad */}
+                <div className="w-[25%] flex justify-center">
+                  <Badge className={`text-xs text-white ${getPriorityColor(alert.alertas_prioridades?.nombre)}`}>
+                    {alert.alertas_prioridades?.nombre || "Sin prioridad"}
+                  </Badge>
                 </div>
-                <div className="text-xs text-gray-500">{alert.date}</div>
+
+                {/* Tercera columna: Fecha */}
+                <div className="text-xs text-gray-500 text-right w-[30%]">{formatDate(alert.fecha_generada)}</div>
               </div>
               {index < limitedAlerts.length - 1 && <div className="border-t border-gray-100"></div>}
             </div>
           ))}
+
+          {limitedAlerts.length === 0 && <div className="py-4 text-center text-gray-500">No hay alertas recientes</div>}
         </div>
       </CardContent>
     </Card>

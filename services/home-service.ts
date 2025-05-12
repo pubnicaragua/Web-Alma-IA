@@ -5,10 +5,31 @@ export interface Student {
   image: string
 }
 
+// Actualizada para coincidir con la estructura de la API
 export interface RecentAlert {
-  student: Student
-  alertType: string
-  date: string
+  alumno_alerta_id: number
+  alumno_id: number
+  fecha_generada: string
+  estado: string
+  alumnos?: {
+    personas?: {
+      nombres: string
+      apellidos: string
+    }
+    url_foto_perfil?: string
+  }
+  alertas_tipos?: {
+    nombre: string
+  }
+  alertas_severidades?: {
+    nombre: string
+  }
+  alertas_prioridades?: {
+    nombre: string
+  }
+  alertas_origenes?: {
+    nombre: string
+  }
 }
 
 export interface ImportantDate {
@@ -224,6 +245,85 @@ export const FALLBACK_IMPORTANT_DATES: ImportantDate[] = [
   },
 ]
 
+// Datos de ejemplo para alertas recientes
+export const FALLBACK_RECENT_ALERTS: RecentAlert[] = [
+  {
+    alumno_alerta_id: 16,
+    alumno_id: 7,
+    fecha_generada: "2025-05-12T20:13:12.302209",
+    estado: "pendiente",
+    alumnos: {
+      personas: {
+        nombres: "Carlos",
+        apellidos: "Muñoz",
+      },
+      url_foto_perfil: "https://example.com/foto.jpg",
+    },
+    alertas_tipos: {
+      nombre: "SOS ALMA",
+    },
+    alertas_severidades: {
+      nombre: "Media",
+    },
+    alertas_prioridades: {
+      nombre: "Alta",
+    },
+    alertas_origenes: {
+      nombre: "Denuncia",
+    },
+  },
+  {
+    alumno_alerta_id: 14,
+    alumno_id: 7,
+    fecha_generada: "2025-05-11T20:13:12.302209",
+    estado: "pendiente",
+    alumnos: {
+      personas: {
+        nombres: "Carlos",
+        apellidos: "Muñoz",
+      },
+      url_foto_perfil: "https://example.com/foto.jpg",
+    },
+    alertas_tipos: {
+      nombre: "SOS ALMA",
+    },
+    alertas_severidades: {
+      nombre: "Baja",
+    },
+    alertas_prioridades: {
+      nombre: "Media",
+    },
+    alertas_origenes: {
+      nombre: "SOS",
+    },
+  },
+  {
+    alumno_alerta_id: 15,
+    alumno_id: 7,
+    fecha_generada: "2025-05-10T20:13:12.302209",
+    estado: "pendiente",
+    alumnos: {
+      personas: {
+        nombres: "Carlos",
+        apellidos: "Muñoz",
+      },
+      url_foto_perfil: "https://example.com/foto.jpg",
+    },
+    alertas_tipos: {
+      nombre: "SOS ALMA",
+    },
+    alertas_severidades: {
+      nombre: "Media",
+    },
+    alertas_prioridades: {
+      nombre: "Media",
+    },
+    alertas_origenes: {
+      nombre: "SOS",
+    },
+  },
+]
+
 export async function fetchCardData(): Promise<CardData> {
   try {
     console.log("Obteniendo datos de tarjetas...")
@@ -251,25 +351,39 @@ export async function fetchCardData(): Promise<CardData> {
 
 export async function fetchRecentAlerts(): Promise<RecentAlert[]> {
   try {
-    console.log("Obteniendo alertas recientes...")
-    const response = await fetchWithAuth("/home/alertas/recientes", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    console.log("Fetching recent alerts from API...")
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`Error al obtener alertas recientes: ${response.status} - ${errorText}`)
-      throw new Error(`Error al obtener alertas recientes: ${response.status} - ${errorText}`)
+    try {
+      const response = await fetchWithAuth("/home/alertas/recientes", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        console.error(`Error en respuesta API (home/alertas/recientes): ${response.status} ${response.statusText}`)
+        console.log("Usando datos de ejemplo para alertas recientes")
+        return FALLBACK_RECENT_ALERTS
+      }
+
+      const data = await response.json()
+      console.log("Recent alerts data:", data)
+
+      // Verificar si los datos tienen la estructura esperada
+      if (Array.isArray(data) && data.length > 0) {
+        return data
+      } else {
+        console.log("Datos de API vacíos o con formato incorrecto, usando datos de ejemplo")
+        return FALLBACK_RECENT_ALERTS
+      }
+    } catch (error) {
+      console.error("Error al obtener alertas recientes:", error)
+      console.log("Usando datos de ejemplo para alertas recientes")
+      return FALLBACK_RECENT_ALERTS
     }
-
-    const data = await response.json()
-    console.log("Alertas recientes obtenidas:", data)
-    return data
   } catch (error) {
-    console.error("Error al obtener alertas recientes:", error)
+    console.error("Error in fetchRecentAlerts:", error)
     throw error
   }
 }

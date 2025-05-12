@@ -292,8 +292,10 @@ export async function fetchStudentById(id: string): Promise<Student | null> {
 // Nueva función para obtener los detalles completos de un estudiante
 export async function fetchStudentDetails(id: string): Promise<StudentDetailResponse | null> {
   try {
-    // Realizar la solicitud GET a la API
-    const response = await fetchWithAuth(`/alumnos/${id}`, {
+    console.log(`Obteniendo detalles del alumno con ID: ${id}`)
+
+    // Realizar la solicitud GET a la API con la nueva ruta
+    const response = await fetchWithAuth(`/alumnos/detalle/${id}`, {
       method: "GET",
     })
 
@@ -301,13 +303,16 @@ export async function fetchStudentDetails(id: string): Promise<StudentDetailResp
     if (!response.ok) {
       // Intentar leer el mensaje de error
       const errorText = await response.text()
+      console.error(`Error al obtener detalles del alumno: ${response.status} - ${errorText}`)
       throw new Error(`Error al obtener detalles del alumno: ${response.status} - ${errorText}`)
     }
 
     // Intentar parsear la respuesta como JSON
     const studentDetails = (await response.json()) as StudentDetailResponse
+    console.log("Detalles del alumno obtenidos correctamente:", studentDetails)
     return studentDetails
   } catch (error) {
+    console.error(`Error en fetchStudentDetails para ID ${id}:`, error)
     // En caso de error, devolver null
     return null
   }
