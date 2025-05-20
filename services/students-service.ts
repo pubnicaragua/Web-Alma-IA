@@ -2,27 +2,43 @@ import { fetchWithAuth } from "@/lib/api-config"
 
 // Interfaces para la respuesta de la API
 export interface ApiStudent {
+
   alumno_id: number
   colegio_id: number
   url_foto_perfil: string
   telefono_contacto1: string
-  email: string
   telefono_contacto2: string
+  email: string
+  creado_por: number
+  actualizado_por: number
+  fecha_creacion: Date
+  fecha_actualizacion: Date
   activo: boolean
-  colegio: {
-    colegio_id: number
-    nombre: string
-    tipo_colegio: string
-    comuna_id: number
-    region_id: number
-    pais_id: number
+  persona_id: number
+  personas: {
+    generos: {
+      nombre: string
+      genero_id: number
+    }
+    nombres: string
+    apellidos: string
+    persona_id: number
+    fecha_nacimiento: Date
   }
-  // Campos adicionales que podrían venir de la API
-  nombre?: string
-  apellido?: string
-  curso?: string
-  nivel?: string
-  edad?: number
+  colegios: {
+    nombre: string
+    colegio_id: number
+  }
+  cursos: {
+    grados: {
+      nombre: string
+      grado_id: number
+    }
+    niveles_educativos: {
+      nomber: string
+      nivel_educativo_id: number
+    }
+  }[]
 }
 
 // Interfaz para el modelo de estudiante usado en la UI
@@ -176,7 +192,7 @@ export interface StudentDetailResponse {
       personas: {
         nombres: string,
         apellidos: string,
-        persona_id: 1
+        persona_id: number
       }
       apoderado_id: number,
       email_contacto1: string,
@@ -244,7 +260,7 @@ function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
     const statuses = ["Bien", "Normal", "Mal"]
 
     // Extraer el nombre del email si no viene en la API
-    let name = apiStudent.nombre || ""
+    let name = `${apiStudent.personas.nombres} ${apiStudent.personas.apellidos}` || ""
     if (!name && apiStudent.email) {
       const emailParts = apiStudent.email.split("@")[0].split(".")
       if (emailParts.length > 1) {
@@ -258,9 +274,12 @@ function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
     return {
       id: apiStudent.alumno_id.toString(),
       name: name,
-      level: apiStudent.nivel || levels[Math.floor(Math.random() * levels.length)],
-      course: apiStudent.curso || courses[Math.floor(Math.random() * courses.length)],
-      age: apiStudent.edad || Math.floor(Math.random() * 8) + 8, // Edad entre 8 y 15
+      level: levels[Math.floor(Math.random() * levels.length)],
+      course: apiStudent.cursos[0]?.grados?.nombre || courses[Math.floor(Math.random() * courses.length)],
+      age: apiStudent.personas?.fecha_nacimiento ?
+        calcularEdad(apiStudent.personas.fecha_nacimiento) ?
+          calcularEdad(apiStudent.personas.fecha_nacimiento) :
+          Math.floor(Math.random() * 8) + 8 : Math.floor(Math.random() * 8) + 8,  // Edad entre 8 y 15
       status: statuses[Math.floor(Math.random() * statuses.length)],
       image:
         apiStudent.url_foto_perfil ||
@@ -270,6 +289,32 @@ function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
     }
   })
 }
+
+// calcular edad
+function calcularEdad(fechaNacimiento: Date | string): number {
+  // Asegurarnos de que tenemos un objeto Date
+  const fechaNac = typeof fechaNacimiento === 'string'
+    ? new Date(fechaNacimiento)
+    : fechaNacimiento;
+
+  // Validar que la fecha es válida
+  if (isNaN(fechaNac.getTime())) {
+    return 0
+  }
+
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - fechaNac.getFullYear();
+  const mes = hoy.getMonth() - fechaNac.getMonth();
+
+  // Ajustar la edad si aún no ha pasado el mes de cumpleaños
+  if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+    edad--;
+  }
+
+  return edad;
+}
+
+
 
 // Función para obtener informes de estudiantes
 export const getStudentReports = async (filters: StudentReportFilters = {}): Promise<StudentReport[]> => {
@@ -314,12 +359,12 @@ export async function fetchStudents(): Promise<Student[]> {
 
     // Intentar parsear la respuesta como JSON
     const apiStudents = (await response.json()) as ApiStudent[]
-
     // Transformar los datos de la API a nuestro modelo de Student
     const students = mapApiStudentsToStudents(apiStudents)
     return students
   } catch (error) {
     // En caso de error, devolver datos de ejemplo
+    console.log('ERROR....', error)
     return exampleStudents
   }
 }
