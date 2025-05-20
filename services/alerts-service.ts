@@ -1,4 +1,5 @@
 import { fetchWithAuth } from "@/lib/api-config"
+import { Alert as AlertPage } from '@/app/alertas/[id]/page'
 
 // Interfaces para los datos de la API según la estructura real
 export interface ApiAlertCourse {
@@ -7,10 +8,16 @@ export interface ApiAlertCourse {
   profesor_jefe: string
 }
 
+export interface ApiAlertPerson {
+  apellidos: string
+  nombres: string
+  persona_id: number
+  email: string
+}
+
 export interface ApiAlertStudent {
   alumno_id: number
-  nombre: string
-  email: string
+  personas: ApiAlertPerson
   curso_actual?: ApiAlertCourse
 }
 
@@ -34,7 +41,7 @@ export interface ApiAlert {
   estado: string
   responsable: string
   curso_alumno: string
-  alumno: ApiAlertStudent
+  alumnos: ApiAlertStudent
   prioridad: ApiAlertPriority
   evidencias?: ApiAlertEvidence[]
 }
@@ -112,7 +119,7 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
       }
 
       // Verificar que el objeto alumno exista
-      if (!apiAlert.alumno) {
+      if (!apiAlert.alumnos) {
         console.error("Student object is undefined for alert:", apiAlert.alumno_alerta_id)
         throw new Error("Student object is undefined")
       }
@@ -139,8 +146,9 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
       }
 
       // Acceso seguro a propiedades con valores por defecto
-      const studentName = apiAlert.alumno.nombre || "Estudiante sin nombre"
-      const studentEmail = apiAlert.alumno.email || "sin-email@ejemplo.com"
+      const studentName = apiAlert.alumnos.personas.nombres || "Estudiante sin nombre"
+      const studentLastName = apiAlert.alumnos.personas.apellidos || "Estudiante sin apellidos"
+      const studentEmail = apiAlert.alumnos.personas.email || "sin-email@ejemplo.com"
       const studentId = apiAlert.alumno_id.toString() || "0"
 
       // Mapear tipo de alerta
@@ -165,7 +173,7 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
 
       // Usar el aula del alumno si está disponible
       const classroom =
-        apiAlert.curso_alumno || (apiAlert.alumno.curso_actual ? apiAlert.alumno.curso_actual.nombre : "N/A")
+        apiAlert.curso_alumno || (apiAlert.alumnos.curso_actual ? apiAlert.alumnos.curso_actual.nombre : "N/A")
 
       // Usar el responsable si está disponible
       const responsible = apiAlert.responsable || "Sin asignar"
@@ -182,10 +190,10 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
       // Mapear evidencias si existen
       const evidence = apiAlert.evidencias
         ? apiAlert.evidencias.map((e) => ({
-            type: e.tipo,
-            url: e.url,
-            date: new Date(e.fecha).toLocaleDateString("es-ES"),
-          }))
+          type: e.tipo,
+          url: e.url,
+          date: new Date(e.fecha).toLocaleDateString("es-ES"),
+        }))
         : undefined
 
       return {
@@ -199,6 +207,8 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
         student: {
           id: studentId,
           name: studentName,
+          lastName: studentLastName,
+          email: studentEmail,
           avatar: studentImage,
         },
       }
@@ -273,25 +283,31 @@ export async function fetchAlerts(): Promise<Alert[]> {
 }
 
 // Función para obtener una alerta por ID
-export async function fetchAlertById(id: string): Promise<Alert | null> {
+export async function fetchAlertById(id: string): Promise<AlertPage | null> {
   try {
     console.log(`Obteniendo alerta con ID ${id}...`)
 
     // Intentar obtener todas las alertas
-    const alerts = await fetchAlerts()
+    const response = await fetchWithAuth(`/alumnos/alertas/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
 
-    // Buscar la alerta con el ID especificado
-    const alert = alerts.find((alert) => alert.id === id)
+    if (!response.ok)
+      throw new Error("error en la petición")
+    const alert = await response.json()
 
     if (!alert) {
       console.error(`No se encontró ninguna alerta con ID ${id}`)
-      return null
+      throw new Error(`No se encontró ninguna alerta con ID ${id}`)
     }
-
+    if (Array.isArray(alert)) return alert[0]
     return alert
   } catch (error) {
     console.error(`Error al obtener alerta con ID ${id}:`, error)
-    return null
+    throw error
   }
 }
 

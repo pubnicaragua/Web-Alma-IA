@@ -33,8 +33,8 @@ const handleApiError = (error: unknown, path: string) => {
 
 export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
   try {
-    const path = params.path.join("/")
-    const apiUrl = getApiUrl(params.path)
+    const path = (await params).path
+    const apiUrl = getApiUrl(path)
     console.log(`Proxy GET request to: ${apiUrl}`)
 
     // Obtener el token de autorización de la solicitud

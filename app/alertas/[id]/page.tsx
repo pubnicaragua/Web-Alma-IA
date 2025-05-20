@@ -1,15 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
-import Image from "next/image"
-import { AppLayout } from "@/components/layout/app-layout"
 import { AddActionModal } from "@/components/alert/add-action-modal"
 import { AlertDetailSkeleton } from "@/components/alert/alert-detail-skeleton"
-import { Lock, ArrowLeft } from "lucide-react"
-import { useIsMobile } from "@/hooks/use-mobile"
+import { AppLayout } from "@/components/layout/app-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { fetchAlertById } from "@/services/alerts-service"
+import { ArrowLeft, Lock } from "lucide-react"
+import Image from "next/image"
+import { useParams, useRouter } from "next/navigation"
+import { useCallback, useEffect, useState } from "react"
 
 interface Action {
   fecha: string
@@ -20,7 +21,7 @@ interface Action {
   observaciones: string
 }
 
-interface Alert {
+export interface Alert {
   id: string
   student: {
     name: string
@@ -39,79 +40,85 @@ interface Alert {
   actions: Action[]
 }
 
+// Datos de ejemplo
+const mockAlert: Alert = {
+  id: '10000',
+  student: {
+    name: "Matías Ignacio Díaz",
+    course: "7°A",
+    image: "/young-man-city.png",
+  },
+  generationDate: "08/04/2025",
+  generationTime: "08:10",
+  responsible: {
+    name: "Marcela Vidal",
+    role: "Psicóloga Escolar",
+    image: "/smiling-woman-garden.png",
+  },
+  isAnonymous: false,
+  description:
+    "El alumno indicó sentir enojo persistente durante su ingreso los últimos 3 días consecutivos. Señaló además una situación de conflicto no resuelta con un compañero de curso.",
+  actions: [
+    {
+      fecha: "08/04/2025",
+      hora: "08:12 AM",
+      usuarioResponsable: "Prof. J. Rivera",
+      accionRealizada: "Derivación a psicóloga escolar",
+      fechaCompromiso: "09/04/2025",
+      observaciones: "Se solicitó seguimiento a psicóloga",
+    },
+    {
+      fecha: "08/04/2025",
+      hora: "10:00 AM",
+      usuarioResponsable: "Psic. Marcela Vidal",
+      accionRealizada: "Primera revisión de alerta",
+      fechaCompromiso: "10/04/2025",
+      observaciones: "Agendada sesión para el día siguiente",
+    },
+    {
+      fecha: "09/04/2025",
+      hora: "08:45 AM",
+      usuarioResponsable: "Psic. Marcela Vidal",
+      accionRealizada: "Confirmación de asistencia a sesión",
+      fechaCompromiso: "-",
+      observaciones: "Alumno asistirá a las 10:30",
+    },
+    {
+      fecha: "10/04/2025",
+      hora: "11:30 AM",
+      usuarioResponsable: "Psic. Marcela Vidal",
+      accionRealizada: "Sesión realizada",
+      fechaCompromiso: "-",
+      observaciones: "Se acordó realizar seguimiento semanal",
+    },
+  ],
+}
+
 export default function AlertDetailPage() {
   const { id } = useParams()
   const router = useRouter()
   const [alert, setAlert] = useState<Alert | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const isMobile = useIsMobile()
 
-  useEffect(() => {
-    // Simulación de carga de datos de la alerta
-    const fetchAlert = async () => {
-      // En un caso real, aquí se haría una petición a la API
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Datos de ejemplo
-      const mockAlert: Alert = {
-        id: id as string,
-        student: {
-          name: "Matías Ignacio Díaz",
-          course: "7°A",
-          image: "/young-man-city.png",
-        },
-        generationDate: "08/04/2025",
-        generationTime: "08:10",
-        responsible: {
-          name: "Marcela Vidal",
-          role: "Psicóloga Escolar",
-          image: "/smiling-woman-garden.png",
-        },
-        isAnonymous: false,
-        description:
-          "El alumno indicó sentir enojo persistente durante su ingreso los últimos 3 días consecutivos. Señaló además una situación de conflicto no resuelta con un compañero de curso.",
-        actions: [
-          {
-            fecha: "08/04/2025",
-            hora: "08:12 AM",
-            usuarioResponsable: "Prof. J. Rivera",
-            accionRealizada: "Derivación a psicóloga escolar",
-            fechaCompromiso: "09/04/2025",
-            observaciones: "Se solicitó seguimiento a psicóloga",
-          },
-          {
-            fecha: "08/04/2025",
-            hora: "10:00 AM",
-            usuarioResponsable: "Psic. Marcela Vidal",
-            accionRealizada: "Primera revisión de alerta",
-            fechaCompromiso: "10/04/2025",
-            observaciones: "Agendada sesión para el día siguiente",
-          },
-          {
-            fecha: "09/04/2025",
-            hora: "08:45 AM",
-            usuarioResponsable: "Psic. Marcela Vidal",
-            accionRealizada: "Confirmación de asistencia a sesión",
-            fechaCompromiso: "-",
-            observaciones: "Alumno asistirá a las 10:30",
-          },
-          {
-            fecha: "10/04/2025",
-            hora: "11:30 AM",
-            usuarioResponsable: "Psic. Marcela Vidal",
-            accionRealizada: "Sesión realizada",
-            fechaCompromiso: "-",
-            observaciones: "Se acordó realizar seguimiento semanal",
-          },
-        ],
-      }
-
-      setAlert(mockAlert)
+  const loadAlert = useCallback(async (id: string) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const data = await fetchAlertById(id)
+      setAlert(data)
+    } catch (err) {
+      console.error("Error al cargar alertas:", err)
+      setError((err as Error).message || 'error en la petición intente más tarde')
+    } finally {
       setIsLoading(false)
     }
-
-    fetchAlert()
   }, [id])
+
+  useEffect(() => {
+    loadAlert(id as string)
+  }, [loadAlert])
 
   const handleAddAction = (newAction: {
     accionRealizada: string
@@ -156,20 +163,20 @@ export default function AlertDetailPage() {
     )
   }
 
-  if (!alert) {
+  if (error) {
     return (
       <AppLayout>
         <div className="container mx-auto px-6 py-8">
           <div className="flex justify-center items-center h-64">
-            <p className="text-xl text-gray-500">No se encontró información de la alerta</p>
+            <p className="text-xl text-gray-500">{error}</p>
           </div>
         </div>
       </AppLayout>
     )
   }
 
-  return (
-    <AppLayout>
+  return (<>
+    {alert ? <AppLayout>
       <div className="container mx-auto px-3 sm:px-6 py-8">
         {/* Botón Volver */}
         <div className="mb-6">
@@ -283,6 +290,6 @@ export default function AlertDetailPage() {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
-  )
+    </AppLayout> : null}
+  </>)
 }
