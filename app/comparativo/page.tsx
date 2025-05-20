@@ -1,14 +1,14 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { AppLayout } from "@/components/layout/app-layout"
-import { FilterDropdown } from "@/components/filter-dropdown"
 import { BarChartComparison } from "@/components/bar-chart-comparison"
+import { FilterDropdown } from "@/components/filter-dropdown"
+import { AppLayout } from "@/components/layout/app-layout"
 import { LineChartComparison } from "@/components/line-chart-comparison"
 import { Button } from "@/components/ui/button"
-import { Download } from "lucide-react"
-import { colors } from "@/lib/colors"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { colors } from "@/lib/colors"
+import { Download } from "lucide-react"
+import { useMemo, useState } from "react"
 
 export default function ComparativePage() {
   // Estados para los filtros
@@ -16,6 +16,7 @@ export default function ComparativePage() {
   const [courseFilter, setCourseFilter] = useState<string>("Todos")
   const [yearFilter, setYearFilter] = useState<string>("2025")
   const [monthFilter, setMonthFilter] = useState<string>("Abril")
+
 
   // Opciones para los filtros
   const levelOptions = ["Todos", "5° Básicos", "6° Básicos", "7° Básicos", "8° Básicos", "9° Básicos"]
@@ -61,19 +62,7 @@ export default function ComparativePage() {
     [],
   )
 
-  // Datos para el gráfico de líneas
-  const alertsData = useMemo(
-    () => [
-      { month: "Ene", courseA: 1200, courseB: 1500 },
-      { month: "Feb", courseA: 900, courseB: 1200 },
-      { month: "Mar", courseA: 1500, courseB: 1000 },
-      { month: "Abr", courseA: 2000, courseB: 1800 },
-      { month: "May", courseA: 3000, courseB: 2500 },
-      { month: "Jun", courseA: 2500, courseB: 2800 },
-      { month: "Jul", courseA: 2800, courseB: 3200 },
-    ],
-    [],
-  )
+
 
   // Estados para las emociones seleccionadas
   const [selectedEmotionsCourseA, setSelectedEmotionsCourseA] = useState<string[]>([
@@ -154,13 +143,13 @@ export default function ComparativePage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <BarChartComparison
             title="Curso A"
-            data={emotionsDataCourseA}
+            initialData={emotionsDataCourseA}
             selectedEmotions={selectedEmotionsCourseA}
             onToggleEmotion={handleToggleEmotionCourseA}
           />
           <BarChartComparison
             title="Curso B"
-            data={emotionsDataCourseB}
+            initialData={emotionsDataCourseB}
             selectedEmotions={selectedEmotionsCourseB}
             onToggleEmotion={handleToggleEmotionCourseB}
           />
@@ -170,7 +159,6 @@ export default function ComparativePage() {
         <div className="mb-6">
           <LineChartComparison
             title="Alertas totales"
-            data={alertsData}
             selectedCourses={selectedCourses}
             onToggleCourse={handleToggleCourse}
           />

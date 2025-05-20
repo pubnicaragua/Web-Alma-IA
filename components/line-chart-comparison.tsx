@@ -1,12 +1,14 @@
 "use client"
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Badge } from "@/components/ui/badge"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useToast } from "@/hooks/use-toast"
 import { themeColors } from "@/lib/theme-colors"
-import { memo } from "react"
+import { fetchTotalAlertsChartLine } from "@/services/alerts-service"
+import { memo, useEffect, useState } from "react"
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 
-interface DataPoint {
+export interface DataPoint {
   month: string
   courseA: number
   courseB: number
@@ -14,19 +16,58 @@ interface DataPoint {
 
 interface LineChartComparisonProps {
   title: string
-  data: DataPoint[]
+  data?: DataPoint[]
   selectedCourses: string[]
   onToggleCourse: (course: string) => void
 }
 
+// Datos para el gráfico de líneas
+
+const alertsData = [
+  { month: "Ene", courseA: 1200, courseB: 1500 },
+  { month: "Feb", courseA: 900, courseB: 1200 },
+  { month: "Mar", courseA: 1500, courseB: 1000 },
+  { month: "Abr", courseA: 2000, courseB: 1800 },
+  { month: "May", courseA: 3000, courseB: 2500 },
+  { month: "Jun", courseA: 2500, courseB: 2800 },
+  { month: "Jul", courseA: 2800, courseB: 3200 },
+]
+
 // Usar memo para evitar re-renderizados innecesarios
 export const LineChartComparison = memo(function LineChartComparison({
   title,
-  data,
   selectedCourses,
   onToggleCourse,
 }: LineChartComparisonProps) {
   const isMobile = useIsMobile()
+  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
+  const [apiData, setApiData] = useState<DataPoint[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      const alertsData = await fetchTotalAlertsChartLine()
+      setApiData(alertsData)
+    } catch (err) {
+      setError("No se pudieron cargar los datos de alertas. Intente nuevamente.")
+
+      // Mostrar notificación de error
+      toast({
+        title: "Error al cargar datos",
+        description: "No se pudieron cargar los datos de las alertas. Intente nuevamente.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
 
   return (
     <div className="bg-white rounded-lg p-6 shadow-sm border border-blue-200">
@@ -66,8 +107,8 @@ export const LineChartComparison = memo(function LineChartComparison({
 
       <div className="h-64 w-full">
         {/* Eliminar el ancho fijo para móviles y usar un enfoque más adaptable */}
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+        {apiData.length ? <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={apiData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="month" />
             <YAxis />
@@ -97,7 +138,9 @@ export const LineChartComparison = memo(function LineChartComparison({
               />
             )}
           </LineChart>
-        </ResponsiveContainer>
+        </ResponsiveContainer> : <div className="bg-blue-500 rounded-md p-2">
+          <h1 className="font-medium text-white">{error}</h1>
+        </div>}
       </div>
     </div>
   )

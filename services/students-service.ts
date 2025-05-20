@@ -69,6 +69,36 @@ export interface StudentDetailResponse {
     telefono_contacto1: string
     telefono_contacto2: string
     email: string
+    creado_por: number
+    actualizado_por: number
+    fecha_creacion: Date
+    fecha_actualizacion: Date
+    activo: boolean
+    persona_id: number
+    personas: {
+      generos: {
+        nombre: string
+        genero_id: number
+      }
+      nombres: string
+      apellidos: string
+      persona_id: number
+      fecha_nacimiento: Date
+    }
+    colegios: {
+      nombre: string
+      colegio_id: number
+    }
+    cursos: {
+      grados: {
+        nombre: string
+        grado_id: number
+      }
+      niveles_educativos: {
+        nomber: string
+        nivel_educativo_id: number
+      }
+    }[]
   }
   ficha: {
     alumno_ant_clinico_id: number
@@ -80,7 +110,12 @@ export interface StudentDetailResponse {
     medicamentos_actuales: string
     diagnosticos_previos: string
     terapias_tratamiento_curso: string
-  }
+    creado_por: number
+    actualizado_por: number
+    fecha_creacion: Date
+    fecha_actualizacion: Date
+    activo: boolean
+  }[]
   alertas: Array<{
     alumno_alerta_id: number
     alumno_id: number
@@ -92,15 +127,34 @@ export interface StudentDetailResponse {
     severidad_id: number
     accion_tomada: string
     leida: boolean
+    activo: boolean
     responsable_actual_id: number
     estado: string
     alertas_tipo_alerta_tipo_id: number
+    alertas_reglas: {
+      nombre: string
+      alerta_regla_id: number
+    }
+    alertas_origenes: {
+      nombre: string
+      alerta_origen_id: number
+    }
+    alertas_severidades: {
+      nombre: string
+      alerta_severidad_id: number
+
+    }
   }>
   informes: Array<{
     alumno_informe_id: number
     alumno_id: number
     fecha: string
     url_reporte: string
+    creado_por: number
+    actualizado_por: number
+    fecha_creacion: Date
+    fecha_actualizacion: Date
+    activo: boolean
   }>
   emociones: Array<{
     nombre: string
@@ -113,6 +167,23 @@ export interface StudentDetailResponse {
     tipo_apoderado: string
     observaciones: string
     estado_usuario: string
+    creado_por: Date
+    actualizado_por: Date
+    fecha_creacion: Date
+    fecha_actualizacion: Date
+    activo: boolean
+    apoderados: {
+      personas: {
+        nombres: string,
+        apellidos: string,
+        persona_id: 1
+      }
+      apoderado_id: number,
+      email_contacto1: string,
+      email_contacto2: string,
+      telefono_contacto1: string,
+      telefono_contacto2: string
+    }
   }>
 }
 
@@ -177,9 +248,8 @@ function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
     if (!name && apiStudent.email) {
       const emailParts = apiStudent.email.split("@")[0].split(".")
       if (emailParts.length > 1) {
-        name = `${emailParts[1].charAt(0).toUpperCase() + emailParts[1].slice(1)} ${
-          emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1)
-        }`
+        name = `${emailParts[1].charAt(0).toUpperCase() + emailParts[1].slice(1)} ${emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1)
+          }`
       } else {
         name = emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1)
       }

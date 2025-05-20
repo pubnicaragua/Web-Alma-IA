@@ -1,5 +1,6 @@
 import { fetchWithAuth } from "@/lib/api-config"
 import { Alert as AlertPage } from '@/app/alertas/[id]/page'
+import { DataPoint } from "@/components/line-chart-comparison"
 
 // Interfaces para los datos de la API según la estructura real
 export interface ApiAlertCourse {
@@ -327,6 +328,32 @@ export async function fetchRecentAlerts(): Promise<Alert[]> {
     return data
   } catch (error) {
     console.error("Error in fetchRecentAlerts:", error)
+    throw error
+  }
+}
+
+//funcion para la data del chartLine de comparativo
+export async function fetchTotalAlertsChartLine(): Promise<DataPoint[]> {
+  try {
+    console.log("Obteniendo Alertas...")
+    const response = await fetchWithAuth("/comparativa/alerts/totales", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`Error al obtener alertas: ${response.status} - ${errorText}`)
+      throw new Error(`Error al obtener alertas: ${response.status} - ${errorText}`)
+    }
+
+    const data = await response.json()
+    console.log("Alertas totales obtenodas:", data)
+    return data
+  } catch (error) {
+    console.error("Error al obtener emociones:", error)
     throw error
   }
 }
