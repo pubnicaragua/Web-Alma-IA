@@ -1,14 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { AppLayout } from "@/components/layout/app-layout"
-import { FilterDropdown } from "@/components/filter-dropdown"
 import { DataTable } from "@/components/data-table"
+import { FilterDropdown } from "@/components/filter-dropdown"
+import { AppLayout } from "@/components/layout/app-layout"
 import { Badge } from "@/components/ui/badge"
 import { type Alert, fetchAlerts } from "@/services/alerts-service"
 import { AlertCircle, RefreshCw } from "lucide-react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export default function AlertsPage() {
   const router = useRouter()
@@ -120,14 +120,14 @@ export default function AlertsPage() {
           >
             <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
               <Image
-                src={alert.student.image || "/placeholder.svg"}
-                alt={alert.student.name}
+                src={alert.student?.avatar || "/placeholder.svg"}
+                alt={alert.student?.name || 'image'}
                 width={32}
                 height={32}
                 className="w-full h-full object-cover"
               />
             </div>
-            <span>{alert.student.name}</span>
+            <span>{alert?.student?.name}</span>
           </div>
         )
       case "type":
