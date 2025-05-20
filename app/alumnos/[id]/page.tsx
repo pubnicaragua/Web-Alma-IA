@@ -1,16 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useParams } from "next/navigation"
+import { BarChartComparison } from "@/components/bar-chart-comparison"
 import { AppLayout } from "@/components/layout/app-layout"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StudentAlerts } from "@/components/student/student-alerts"
 import { StudentReports } from "@/components/student/student-reports"
-import { User, Phone, Mail, Users, FileText, Bell, Smile, AlertTriangle } from "lucide-react"
 import { StudentSkeleton } from "@/components/student/student-skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { fetchStudentDetails, type StudentDetailResponse } from "@/services/students-service"
-import { BarChartComparison } from "@/components/bar-chart-comparison"
+import { AlertTriangle, Bell, FileText, Mail, Phone, Smile, User, Users } from "lucide-react"
 import Image from "next/image"
+import { useParams } from "next/navigation"
+import { useEffect, useState } from "react"
 
 export default function StudentDetailPage() {
   const { id } = useParams()
@@ -34,6 +34,7 @@ export default function StudentDetailPage() {
         setError(null)
 
         const details = await fetchStudentDetails(id as string)
+        // console.log(details)
         if (details) {
           setStudentDetails(details)
         } else {
@@ -97,7 +98,10 @@ export default function StudentDetailPage() {
   const { alumno, ficha, alertas, informes, emociones, apoderados } = studentDetails
 
   // Generar nombre del estudiante (en un caso real vendría de la API)
-  const studentName = generateNameFromEmail(alumno.email)
+  // const studentName = generateNameFromEmail(alumno.email)
+  // si no existe el nomre
+  const studentName = alumno.personas.nombres || generateNameFromEmail(alumno.email)
+  const studentLastName = alumno.personas.apellidos
 
   // Convertir emociones al formato esperado por el componente StudentEmotions
   const emotionData = emociones.map((emotion) => ({
@@ -146,7 +150,7 @@ export default function StudentDetailPage() {
               />
             </div>
             <div className="flex flex-col items-center md:items-start">
-              <h1 className="text-3xl font-bold text-gray-800">{studentName}</h1>
+              <h1 className="text-3xl font-bold text-gray-800">{`${studentName}  ${studentLastName}`}</h1>
               <p className="text-xl text-gray-600 mb-2">ID: {alumno.alumno_id}</p>
               <div className="flex flex-wrap gap-4">
                 <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -265,31 +269,31 @@ export default function StudentDetailPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                       <h4 className="font-medium text-gray-700 mb-2">Historial médico</h4>
-                      <p className="text-gray-600">{ficha.historial_medico}</p>
+                      <p className="text-gray-600">{ficha[0]?.historial_medico || 'No disponible'}</p>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                       <h4 className="font-medium text-gray-700 mb-2">Alergias</h4>
-                      <p className="text-gray-600">{ficha.alergias}</p>
+                      <p className="text-gray-600">{ficha[0]?.alergias.trim() || 'No disponible'}</p>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                       <h4 className="font-medium text-gray-700 mb-2">Enfermedades crónicas</h4>
-                      <p className="text-gray-600">{ficha.enfermedades_cronicas}</p>
+                      <p className="text-gray-600">{ficha[0]?.enfermedades_cronicas.trim() || 'No disponible'}</p>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                       <h4 className="font-medium text-gray-700 mb-2">Condiciones médicas relevantes</h4>
-                      <p className="text-gray-600">{ficha.condiciones_medicas_relevantes}</p>
+                      <p className="text-gray-600">{ficha[0]?.condiciones_medicas_relevantes.trim() || 'No disponible'}</p>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                       <h4 className="font-medium text-gray-700 mb-2">Medicamentos actuales</h4>
-                      <p className="text-gray-600">{ficha.medicamentos_actuales}</p>
+                      <p className="text-gray-600">{ficha[0]?.medicamentos_actuales.trim() || 'No disponible'}</p>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                       <h4 className="font-medium text-gray-700 mb-2">Diagnósticos previos</h4>
-                      <p className="text-gray-600">{ficha.diagnosticos_previos}</p>
+                      <p className="text-gray-600">{ficha[0]?.diagnosticos_previos.trim() || 'No disponible'}</p>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 md:col-span-2">
                       <h4 className="font-medium text-gray-700 mb-2">Terapias y tratamientos en curso</h4>
-                      <p className="text-gray-600">{ficha.terapias_tratamiento_curso}</p>
+                      <p className="text-gray-600">{ficha[0]?.terapias_tratamiento_curso.trim() || 'No disponible'}</p>
                     </div>
                   </div>
                 </div>
@@ -300,60 +304,69 @@ export default function StudentDetailPage() {
                     <Users className="mr-2 h-5 w-5 text-blue-500" />
                     Apoderados
                   </h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[640px]">
-                      <thead>
-                        <tr className="bg-blue-300">
-                          <th className="px-4 py-3 text-left font-medium text-white">ID</th>
-                          <th className="px-4 py-3 text-left font-medium text-white">Tipo</th>
-                          <th className="px-4 py-3 text-left font-medium text-white">Observaciones</th>
-                          <th className="px-4 py-3 text-left font-medium text-white">Estado</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {apoderados.map((apoderado, index) => (
-                          <tr key={index} className="border-b-2 border-gray-100 hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm font-medium">{apoderado.apoderado_id}</td>
-                            <td className="px-4 py-3 text-sm">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  apoderado.tipo_apoderado === "Padre" || apoderado.tipo_apoderado === "Madre"
+                  {apoderados.length ?
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[640px]">
+                        <thead>
+                          <tr className="bg-blue-300">
+                            <th className="px-4 py-3 text-left font-medium text-white">ID</th>
+                            <th className="px-4 py-3 text-left font-medium text-white">Tipo</th>
+                            <th className="px-4 py-3 text-left font-medium text-white">Observaciones</th>
+                            <th className="px-4 py-3 text-left font-medium text-white">Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {apoderados.map((apoderado, index) => (
+                            <tr key={index} className="border-b-2 border-gray-100 hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm font-medium">{apoderado.apoderado_id}</td>
+                              <td className="px-4 py-3 text-sm">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${apoderado.tipo_apoderado === "Padre" || apoderado.tipo_apoderado === "Madre"
                                     ? "bg-green-100 text-green-800"
                                     : "bg-blue-100 text-blue-800"
-                                }`}
-                              >
-                                {apoderado.tipo_apoderado}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-sm">{apoderado.observaciones}</td>
-                            <td className="px-4 py-3 text-sm">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  apoderado.estado_usuario === "activo"
+                                    }`}
+                                >
+                                  {apoderado.tipo_apoderado}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-sm">{apoderado.observaciones}</td>
+                              <td className="px-4 py-3 text-sm">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${apoderado.estado_usuario === "activo"
                                     ? "bg-green-100 text-green-800"
                                     : "bg-red-100 text-red-800"
-                                }`}
-                              >
-                                {apoderado.estado_usuario}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                                    }`}
+                                >
+                                  {apoderado.estado_usuario}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div> : <div className="bg-blue-500 rounded-md p-2">
+                      <h1 className="font-medium text-white">Apoderados no disponibles</h1>
+                    </div>}
                 </div>
               </TabsContent>
 
               <TabsContent value="alertas">
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
-                  <StudentAlerts alerts={alertsData} />
+                  {alertsData.length ? <StudentAlerts alerts={alertsData} /> :
+                    <div className="bg-blue-500 rounded-md p-2">
+                      <h1 className="font-medium text-white">Alertas no disponibles</h1>
+                    </div>
+                  }
                 </div>
               </TabsContent>
 
               <TabsContent value="informes">
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
-                  <StudentReports reports={reportsData} />
+                  {reportsData.length ? <StudentReports reports={reportsData} /> :
+                    <div className="bg-blue-500 rounded-md p-2">
+                      <h1 className="font-medium text-white">Informes no disponibles</h1>
+                    </div>
+                  }
                 </div>
               </TabsContent>
 
