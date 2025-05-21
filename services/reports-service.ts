@@ -29,6 +29,21 @@ export interface Report {
   statusColor: string
 }
 
+export interface APIReportGeneral {
+  informe_id: number;
+  tipo: string;
+  nivel: string;
+  fecha_generacion: Date;
+  url_reporte: string;
+  creado_por: number;
+  actualizado_por: number;
+  fecha_creacion: Date;
+  fecha_actualizacion: Date;
+  activo: boolean;
+  colegio_id: number;
+}
+
+
 // Función para convertir el formato de la API al formato de la UI
 function mapApiReportsToReports(apiReports: ApiReport[]): Report[] {
   return apiReports.map((apiReport) => {
@@ -136,10 +151,10 @@ const sampleReports: Report[] = [
 ]
 
 // Función para obtener los informes
-export async function fetchReports(): Promise<Report[]> {
+export async function fetchReports(): Promise<APIReportGeneral[]> {
   try {
     // Usar el proxy local en lugar de la URL directa
-    const response = await fetchWithAuth("/informes/alumnos", {
+    const response = await fetchWithAuth("/informes/generales", {
       method: "GET",
     })
 
@@ -155,17 +170,18 @@ export async function fetchReports(): Promise<Report[]> {
     }
 
     const data = await response.json()
+    console.log('REPORTES......',data)
     // Verificar que data sea un array antes de mapearlo
     if (!Array.isArray(data)) {
       console.error("La respuesta de la API no es un array:", data)
-      return sampleReports
+      throw new Error('Error al obtener informes, intente más tarde')
     }
-    return mapApiReportsToReports(data)
+    return data
   } catch (error) {
     console.error("Error al obtener informes:", error)
     // En caso de error, devolver datos de ejemplo
     console.log("Usando datos de ejemplo para informes")
-    return sampleReports
+   throw error
   }
 }
 

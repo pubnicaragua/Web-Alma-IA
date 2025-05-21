@@ -2,43 +2,48 @@ import { fetchWithAuth } from "@/lib/api-config"
 
 // Interfaces para la respuesta de la API
 export interface ApiStudent {
+  alumno_id: number;
+  colegio_id: number;
+  url_foto_perfil: string;
+  telefono_contacto1: string;
+  email: string;
+  telefono_contacto2: string;
+  creado_por: number;
+  actualizado_por: number;
+  fecha_creacion: Date;
+  fecha_actualizacion: Date;
+  activo: boolean;
+  persona_id: number;
+  personas: Personas;
+  colegios: Colegios;
+  cursos: Curso[];
+}
 
-  alumno_id: number
-  colegio_id: number
-  url_foto_perfil: string
-  telefono_contacto1: string
-  telefono_contacto2: string
-  email: string
-  creado_por: number
-  actualizado_por: number
-  fecha_creacion: Date
-  fecha_actualizacion: Date
-  activo: boolean
-  persona_id: number
-  personas: {
-    generos: {
-      nombre: string
-      genero_id: number
-    }
-    nombres: string
-    apellidos: string
-    persona_id: number
-    fecha_nacimiento: Date
-  }
-  colegios: {
-    nombre: string
-    colegio_id: number
-  }
-  cursos: {
-    grados: {
-      nombre: string
-      grado_id: number
-    }
-    niveles_educativos: {
-      nomber: string
-      nivel_educativo_id: number
-    }
-  }[]
+export interface Colegios {
+  nombre: string;
+  colegio_id: number;
+}
+
+export interface Curso {
+  grados: Grados;
+  niveles_educativos: NivelesEducativos;
+}
+
+export interface Grados {
+  nombre: string;
+  grado_id: number;
+}
+
+export interface NivelesEducativos {
+  nombre: string;
+  nivel_educativo_id: number;
+}
+
+export interface Personas {
+  nombres: string;
+  apellidos: string;
+  persona_id: number;
+  fecha_nacimiento: string | null;
 }
 
 // Interfaz para el modelo de estudiante usado en la UI
@@ -158,7 +163,6 @@ export interface StudentDetailResponse {
     alertas_severidades: {
       nombre: string
       alerta_severidad_id: number
-
     }
   }>
   informes: Array<{
@@ -203,118 +207,120 @@ export interface StudentDetailResponse {
   }>
 }
 
-// Datos de ejemplo para usar cuando la API no está disponible
-const exampleStudents: Student[] = [
-  {
-    id: "101",
-    name: "Carolina Espina",
-    level: "7° Básicos",
-    course: "7°A",
-    age: 12,
-    status: "Bien",
-    image: "/smiling-woman-garden.png",
-    email: "carolina.espina@ejemplo.com",
-    phone: "+56912345678",
-  },
-  {
-    id: "102",
-    name: "Martín Soto",
-    level: "8° Básicos",
-    course: "8°B",
-    age: 13,
-    status: "Normal",
-    image: "/young-man-city.png",
-    email: "martin.soto@ejemplo.com",
-    phone: "+56923456789",
-  },
-  {
-    id: "103",
-    name: "Valentina Rojas",
-    level: "6° Básicos",
-    course: "6°C",
-    age: 11,
-    status: "Mal",
-    image: "/smiling-woman-garden.png",
-    email: "valentina.rojas@ejemplo.com",
-    phone: "+56934567890",
-  },
-  {
-    id: "104",
-    name: "Diego Muñoz",
-    level: "5° Básicos",
-    course: "5°A",
-    age: 10,
-    status: "Bien",
-    image: "/young-man-city.png",
-    email: "diego.munoz@ejemplo.com",
-    phone: "+56945678901",
-  },
-]
-
 // Función para transformar los datos de la API a nuestro modelo de Student
 function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
-  return apiStudents.map((apiStudent) => {
-    // Generar datos aleatorios para los campos que no vienen en la API
-    const levels = ["5° Básicos", "6° Básicos", "7° Básicos", "8° Básicos", "9° Básicos"]
-    const courses = ["1°A", "2°B", "3°B", "4°A", "5°A", "6°C", "7°A", "8°B"]
-    const statuses = ["Bien", "Normal", "Mal"]
+  try {
+    if (!Array.isArray(apiStudents)) {
+      console.error("Error: apiStudents no es un array", apiStudents);
+      return [];
+    }
 
-    // Extraer el nombre del email si no viene en la API
-    let name = `${apiStudent.personas.nombres} ${apiStudent.personas.apellidos}` || ""
-    if (!name && apiStudent.email) {
-      const emailParts = apiStudent.email.split("@")[0].split(".")
-      if (emailParts.length > 1) {
-        name = `${emailParts[1].charAt(0).toUpperCase() + emailParts[1].slice(1)} ${emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1)
-          }`
-      } else {
-        name = emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1)
+    return apiStudents.map((apiStudent) => {
+      try {
+        // Determinar el estado basado en algún criterio (por ejemplo, alertas activas)
+        // Como no tenemos un criterio claro, usaremos "Normal" como valor predeterminado
+        const status = "Normal";
+
+        // Extraer el nombre completo
+        let name = "";
+        if (apiStudent.personas?.nombres && apiStudent.personas?.apellidos) {
+          name = `${ apiStudent.personas.nombres } ${ apiStudent.personas.apellidos }`;
+        } else if (apiStudent.email) {
+          const emailParts = apiStudent.email.split("@")[0].split(".");
+          if (emailParts.length > 1) {
+            name = `${ emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1) } ${ emailParts[1].charAt(0).toUpperCase() + emailParts[1].slice(1) }`;
+          } else {
+            name = emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1);
+          }
+        }
+
+        // Calcular edad correctamente
+        let age = 0; // Valor por defecto
+        if (apiStudent.personas?.fecha_nacimiento) {
+          const calculatedAge = calcularEdad(apiStudent.personas.fecha_nacimiento);
+          if (calculatedAge > 0) {
+            age = calculatedAge;
+          }
+        }
+
+        // Acceder a nivel y curso correctamente
+        let level = "No especificado";
+        let course = "No especificado";
+
+        if (apiStudent.cursos && apiStudent.cursos.length > 0) {
+          // Obtener el nivel educativo
+          if (apiStudent.cursos[0].niveles_educativos?.nombre) {
+            level = apiStudent.cursos[0].niveles_educativos.nombre;
+          }
+
+          // Obtener el grado/curso
+          if (apiStudent.cursos[0].grados?.nombre) {
+            course = apiStudent.cursos[0].grados.nombre;
+          }
+        }
+
+        // Construir el objeto Student
+        return {
+          id: apiStudent.alumno_id.toString(),
+          name: name,
+          level: level,
+          course: course,
+          age: age,
+          status: status,
+          image: apiStudent.url_foto_perfil || "/placeholder.svg",
+          email: apiStudent.email,
+          phone: apiStudent.telefono_contacto1,
+        };
+      } catch (error) {
+        console.error("Error al mapear estudiante individual:", error, apiStudent);
+        // Devolver un estudiante con datos mínimos para evitar errores en la UI
+        return {
+          id: apiStudent.alumno_id?.toString() || "0",
+          name: "Error en datos",
+          level: "No disponible",
+          course: "No disponible",
+          age: 0,
+          status: "Error",
+          email: "",
+          phone: "",
+        };
       }
-    }
-
-    return {
-      id: apiStudent.alumno_id.toString(),
-      name: name,
-      level: levels[Math.floor(Math.random() * levels.length)],
-      course: apiStudent.cursos[0]?.grados?.nombre || courses[Math.floor(Math.random() * courses.length)],
-      age: apiStudent.personas?.fecha_nacimiento ?
-        calcularEdad(apiStudent.personas.fecha_nacimiento) ?
-          calcularEdad(apiStudent.personas.fecha_nacimiento) :
-          Math.floor(Math.random() * 8) + 8 : Math.floor(Math.random() * 8) + 8,  // Edad entre 8 y 15
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      image:
-        apiStudent.url_foto_perfil ||
-        ["/smiling-woman-garden.png", "/young-man-city.png"][Math.floor(Math.random() * 2)],
-      email: apiStudent.email,
-      phone: apiStudent.telefono_contacto1,
-    }
-  })
+    });
+  } catch (error) {
+    console.error("Error en mapApiStudentsToStudents:", error);
+    return [];
+  }
 }
 
-// calcular edad
+// Calcular edad correctamente
 function calcularEdad(fechaNacimiento: Date | string): number {
-  // Asegurarnos de que tenemos un objeto Date
-  const fechaNac = typeof fechaNacimiento === 'string'
-    ? new Date(fechaNacimiento)
-    : fechaNacimiento;
+  try {
+    // Asegurarnos de que tenemos un objeto Date
+    const fechaNac = typeof fechaNacimiento === 'string'
+      ? new Date(fechaNacimiento)
+      : fechaNacimiento;
 
-  // Validar que la fecha es válida
-  if (isNaN(fechaNac.getTime())) {
-    return 0
+    // Validar que la fecha es válida
+    if (isNaN(fechaNac.getTime())) {
+      console.warn("Fecha de nacimiento inválida:", fechaNacimiento);
+      return 0;
+    }
+
+    const hoy = new Date();
+    let edad = hoy.getFullYear() - fechaNac.getFullYear();
+    const mes = hoy.getMonth() - fechaNac.getMonth();
+
+    // Ajustar la edad si aún no ha pasado el mes de cumpleaños
+    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+      edad--;
+    }
+
+    return edad;
+  } catch (error) {
+    console.error("Error al calcular edad:", error, fechaNacimiento);
+    return 0;
   }
-
-  const hoy = new Date();
-  let edad = hoy.getFullYear() - fechaNac.getFullYear();
-  const mes = hoy.getMonth() - fechaNac.getMonth();
-
-  // Ajustar la edad si aún no ha pasado el mes de cumpleaños
-  if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-    edad--;
-  }
-
-  return edad;
 }
-
-
 
 // Función para obtener informes de estudiantes
 export const getStudentReports = async (filters: StudentReportFilters = {}): Promise<StudentReport[]> => {
@@ -332,6 +338,7 @@ export const getStudentReports = async (filters: StudentReportFilters = {}): Pro
     const data = await response.json()
     return data
   } catch (error) {
+    console.error("Error al obtener informes de estudiantes:", error);
     throw error
   }
 }
@@ -339,96 +346,95 @@ export const getStudentReports = async (filters: StudentReportFilters = {}): Pro
 // Función para obtener la lista de estudiantes
 export async function fetchStudents(): Promise<Student[]> {
   try {
+    console.log("Obteniendo lista de estudiantes desde la API...");
+
+    // Obtener el ID del colegio seleccionado
+    const selectedSchool = localStorage.getItem("selectedSchool");
+
+    // Construir la URL con el parámetro de colegio si existe
+    let url = "/alumnos";
+    if (selectedSchool) {
+      url += `?colegio_id = ${ selectedSchool }`;
+    }
+
     // Realizar la solicitud GET a la API
-    const response = await fetchWithAuth("/alumnos", {
+    const response = await fetchWithAuth(url, {
       method: "GET",
-    })
+    });
 
     // Si la respuesta no es exitosa, lanzar un error
     if (!response.ok) {
       // Intentar leer el mensaje de error
-      const errorText = await response.text()
-
-      // Si es un error 404, usar datos de ejemplo
-      if (response.status === 404) {
-        return exampleStudents
-      }
-
-      throw new Error(`Error al obtener alumnos: ${response.status} - ${errorText}`)
+      const errorText = await response.text();
+      throw new Error(`Error al obtener alumnos: ${ response.status } - ${ errorText }`);
     }
 
     // Intentar parsear la respuesta como JSON
-    const apiStudents = (await response.json()) as ApiStudent[]
+    const apiStudents = (await response.json()) as ApiStudent[];
+    console.log(`Recibidos ${ apiStudents.length } estudiantes de la API`);
+
     // Transformar los datos de la API a nuestro modelo de Student
-    const students = mapApiStudentsToStudents(apiStudents)
-    return students
+    const students = mapApiStudentsToStudents(apiStudents);
+    return students;
   } catch (error) {
-    // En caso de error, devolver datos de ejemplo
-    console.log('ERROR....', error)
-    return exampleStudents
+    console.error('Error al obtener estudiantes:', error);
+    throw error; // Propagar el error para que se maneje en el componente
   }
 }
 
 // Función para obtener un estudiante por ID
 export async function fetchStudentById(id: string): Promise<Student | null> {
   try {
+    console.log(`Obteniendo estudiante con ID ${ id } desde la API...`);
+
     // Realizar la solicitud GET a la API
-    const response = await fetchWithAuth(`/alumnos/${id}`, {
+    const response = await fetchWithAuth(`/alumnos/${ id }`, {
       method: "GET",
-    })
+    });
 
     // Si la respuesta no es exitosa, lanzar un error
     if (!response.ok) {
       // Intentar leer el mensaje de error
-      const errorText = await response.text()
-
-      // Si es un error 404, buscar en datos de ejemplo
-      if (response.status === 404) {
-        const exampleStudent = exampleStudents.find((student) => student.id === id)
-        return exampleStudent || null
-      }
-
-      throw new Error(`Error al obtener alumno: ${response.status} - ${errorText}`)
+      const errorText = await response.text();
+      throw new Error(`Error al obtener alumno: ${ response.status } - ${ errorText }`);
     }
 
     // Intentar parsear la respuesta como JSON
-    const apiStudent = (await response.json()) as ApiStudent
+    const apiStudent = (await response.json()) as ApiStudent;
 
     // Transformar los datos de la API a nuestro modelo de Student
-    const students = mapApiStudentsToStudents([apiStudent])
-    return students[0] || null
+    const students = mapApiStudentsToStudents([apiStudent]);
+    return students[0] || null;
   } catch (error) {
-    // En caso de error, buscar en datos de ejemplo
-    const exampleStudent = exampleStudents.find((student) => student.id === id)
-    return exampleStudent || null
+    console.error(`Error al obtener estudiante con ID ${ id }`, error);
+    throw error; // Propagar el error para que se maneje en el componente
   }
 }
 
 // Nueva función para obtener los detalles completos de un estudiante
 export async function fetchStudentDetails(id: string): Promise<StudentDetailResponse | null> {
   try {
-    console.log(`Obteniendo detalles del alumno con ID: ${id}`)
+    console.log(`Obteniendo detalles del alumno con ID: ${ id }`);
 
     // Realizar la solicitud GET a la API con la nueva ruta
-    const response = await fetchWithAuth(`/alumnos/detalle/${id}`, {
+    const response = await fetchWithAuth(`/alumnos/detalle / ${ id }`, {
       method: "GET",
-    })
+    });
 
     // Si la respuesta no es exitosa, lanzar un error
     if (!response.ok) {
       // Intentar leer el mensaje de error
-      const errorText = await response.text()
-      console.error(`Error al obtener detalles del alumno: ${response.status} - ${errorText}`)
-      throw new Error(`Error al obtener detalles del alumno: ${response.status} - ${errorText}`)
+      const errorText = await response.text();
+      console.error(`Error al obtener detalles del alumno: ${ response.status } - ${ errorText }`);
+      throw new Error(`Error al obtener detalles del alumno: ${ response.status } - ${ errorText }`);
     }
 
     // Intentar parsear la respuesta como JSON
-    const studentDetails = (await response.json()) as StudentDetailResponse
-    console.log("Detalles del alumno obtenidos correctamente:", studentDetails)
-    return studentDetails
+    const studentDetails = (await response.json()) as StudentDetailResponse;
+    console.log("Detalles del alumno obtenidos correctamente:", studentDetails);
+    return studentDetails;
   } catch (error) {
-    console.error(`Error en fetchStudentDetails para ID ${id}:`, error)
-    // En caso de error, devolver null
-    return null
+    console.error(`Error en fetchStudentDetails para ID ${ id }:`, error);
+    throw error; // Propagar el error para que se maneje en el componente
   }
 }

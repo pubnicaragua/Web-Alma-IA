@@ -13,7 +13,7 @@ import { ImportantDates } from "@/components/important-dates"
 import { ImportantDatesSkeleton } from "@/components/important-dates-skeleton"
 import { RecentAlerts } from "@/components/recent-alerts"
 import { RecentAlertsSkeleton } from "@/components/recent-alerts-skeleton"
-import { isAuthenticated, removeAuthToken } from "@/lib/api-config"
+import { isAuthenticated, removeAuthToken, fetchWithAuth } from "@/lib/api-config"
 import { type CardData, fetchCardData } from "@/services/home-service"
 import { useToast } from "@/hooks/use-toast"
 
@@ -24,7 +24,7 @@ export default function Home() {
   const [cardData, setCardData] = useState<CardData | null>(null)
   const [cardError, setCardError] = useState<string | null>(null)
   const [tokenExpired, setTokenExpired] = useState(false)
-  const [schoolName, setSchoolName] = useState("Colegio Santiago Apostol")
+  const [schoolName, setSchoolName] = useState("")
   const [selectedEmotionsGeneral, setSelectedEmotionsGeneral] = useState<string[]>([
     "Tristeza",
     "Felicidad",
@@ -63,13 +63,11 @@ export default function Home() {
   const handleTokenExpired = () => {
     setTokenExpired(true)
     removeAuthToken()
-
     toast({
       title: "Sesión expirada",
       description: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
       variant: "destructive",
     })
-
     // Redirigir después de un breve retraso para que el usuario pueda ver la notificación
     setTimeout(() => {
       router.push("/login")
@@ -86,13 +84,15 @@ export default function Home() {
       return
     }
 
-    // Si no hay colegio seleccionado, establecer uno por defecto
-    if (!localStorage.getItem("selectedSchool")) {
-      localStorage.setItem("selectedSchool", "1")
+    // Verificar si hay un colegio seleccionado
+    const selectedSchool = localStorage.getItem("selectedSchool")
+    if (!selectedSchool) {
+      console.log("Home: No hay colegio seleccionado, redirigiendo a /select-school")
+      router.push("/select-school")
+      return
     }
 
     // Cargar el nombre del colegio según el ID seleccionado
-    const selectedSchool = localStorage.getItem("selectedSchool")
     if (selectedSchool === "1") {
       setSchoolName("Colegio San Pedro")
     } else if (selectedSchool === "2") {
@@ -113,13 +113,11 @@ export default function Home() {
         setCardData(data)
       } catch (error: any) {
         console.error("Error al cargar datos de tarjetas:", error)
-
         // Verificar si el error es por token expirado (401 Unauthorized)
         if (error.status === 401 || error.message?.includes("401") || error.message?.includes("unauthorized")) {
           handleTokenExpired()
           return
         }
-
         setCardError("No se pudieron cargar los datos de las tarjetas")
         toast({
           title: "Error al cargar datos",
@@ -134,14 +132,12 @@ export default function Home() {
     }
 
     loadCardData()
-
     console.log("Home: Página principal inicializada correctamente")
   }, [router, toast]) // Dependencias: router y toast
 
   // Datos para las tarjetas de estadísticas
   const getStatCards = () => {
     if (!cardData) return []
-
     return [
       {
         title: "Alumnos",
@@ -196,25 +192,21 @@ export default function Home() {
       <AppLayout>
         <div className="container mx-auto px-2 sm:px-6 py-8">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-
           {/* Skeleton para tarjetas de estadísticas */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {[1, 2, 3, 4].map((i) => (
               <StatCardSkeleton key={i} />
             ))}
           </div>
-
           {/* Skeleton para Media emocional General */}
           <div className="mb-8">
             <BarChartSkeleton />
           </div>
-
           {/* Skeletons para gráficos y datos */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             <BarChartSkeleton />
             <DonutChartSkeleton />
           </div>
-
           {/* Skeletons para fechas importantes y alertas recientes */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ImportantDatesSkeleton />
@@ -231,7 +223,6 @@ export default function Home() {
     <AppLayout>
       <div className="container mx-auto px-2 sm:px-6 py-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">{schoolName}</h2>
-
         {/* Tarjetas de estadísticas */}
         {cardError ? (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-8">
@@ -257,7 +248,6 @@ export default function Home() {
             ))}
           </div>
         )}
-
         {/* Media emocional General */}
         <div className="mb-8">
           <BarChartComparison
@@ -266,7 +256,6 @@ export default function Home() {
             onToggleEmotion={handleToggleEmotionGeneral}
           />
         </div>
-
         {/* Gráficos y datos */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <BarChartComparison
@@ -276,7 +265,6 @@ export default function Home() {
           />
           <DonutChart />
         </div>
-
         {/* Fechas importantes y alertas recientes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ImportantDates title="Fechas importantes" />

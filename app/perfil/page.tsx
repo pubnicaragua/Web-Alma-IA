@@ -26,6 +26,7 @@ export default function ProfilePage() {
         setError(null)
         const data = await fetchProfileData()
         setProfileData(data)
+        console.log(data)
       } catch (err) {
         console.error("Error al cargar datos de perfil:", err)
         setError("No se pudieron cargar los datos del perfil. Por favor, intenta de nuevo más tarde.")
@@ -38,7 +39,7 @@ export default function ProfilePage() {
         })
 
         // Usar datos de ejemplo en caso de error
-        setProfileData(FALLBACK_PROFILE_DATA)
+        // setProfileData(FALLBACK_PROFILE_DATA)
       } finally {
         setLoading(false)
       }
@@ -54,9 +55,17 @@ export default function ProfilePage() {
   }
 
   // Calcular edad a partir de la fecha de nacimiento
-  const calculateAge = (birthDateString: string) => {
+  const calculateAge = (birthDateString: string): number | null => {
     try {
+      if (!birthDateString) return 0
+
       const birthDate = new Date(birthDateString)
+
+      // Verificar si la fecha es válida
+      if (isNaN(birthDate.getTime())) {
+        return 0
+      }
+
       const today = new Date()
       let age = today.getFullYear() - birthDate.getFullYear()
       const monthDiff = today.getMonth() - birthDate.getMonth()
@@ -68,7 +77,7 @@ export default function ProfilePage() {
       return age
     } catch (error) {
       console.error("Error al calcular la edad:", error)
-      return "N/A"
+      return 0
     }
   }
 
@@ -108,14 +117,14 @@ export default function ProfilePage() {
             <div className="w-32 h-32 rounded-full overflow-hidden mb-4 flex-shrink-0 border-4 border-blue-100">
               <Image
                 src={usuario.url_foto_perfil || "/confident-businessman.png"}
-                alt={usuario.nombre_social}
+                alt={`${persona.nombres} ${persona.apellidos}`}
                 width={128}
                 height={128}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="flex flex-col items-center md:items-start">
-              <h1 className="text-3xl font-bold text-gray-800">{usuario.nombre_social}</h1>
+              <h1 className="text-3xl font-bold text-gray-800">{`${persona.nombres} ${persona.apellidos}`}</h1>
               <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
                 {rol.nombre}
               </div>

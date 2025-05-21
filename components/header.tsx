@@ -35,6 +35,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
     try {
       setIsLoading(true)
       const data = await fetchProfileData()
+      console.log(data)
       setProfileData(data)
       console.log("Perfil de usuario cargado:", data)
     } catch (error) {

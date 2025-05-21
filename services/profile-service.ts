@@ -178,6 +178,6 @@ export async function fetchProfileData(): Promise<ProfileResponse> {
   } catch (error) {
     console.error("Error al obtener datos de perfil:", error)
     console.log("Usando datos de ejemplo para perfil")
-    return FALLBACK_PROFILE_DATA
+    throw error
   }
 }

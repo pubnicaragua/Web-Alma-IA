@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Building2, Bell, Users } from "lucide-react"
+import { Building2, Bell, Users } from 'lucide-react'
 import { Header } from "@/components/header"
 
 interface School {
@@ -125,9 +125,9 @@ export default function SelectSchoolPage() {
                 <div className={`absolute right-0 top-0 bottom-0 w-2 ${school.color}`}></div>
               </button>
             ))}
-          </div>
         </div>
       </div>
     </div>
+    </div >
   )
 }

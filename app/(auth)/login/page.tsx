@@ -5,7 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -74,6 +74,7 @@ export default function LoginPage() {
       if (data.token) {
         // Guardar el token usando la función centralizada
         setAuthToken(data.token)
+        localStorage.setItem("isAuthenticated", "true")
         console.log("Login exitoso, token guardado")
 
         // Mostrar notificación de éxito
@@ -82,8 +83,8 @@ export default function LoginPage() {
           description: "Has iniciado sesión correctamente. Redirigiendo...",
         })
 
-        // Redirección inmediata a la página principal
-        router.push("/")
+        // Redirección a la página de selección de colegio
+        router.push("/select-school")
       } else {
         throw new Error("No se recibió un token válido")
       }

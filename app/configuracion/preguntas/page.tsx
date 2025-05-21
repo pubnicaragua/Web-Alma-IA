@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { AppLayout } from "@/components/layout/app-layout"
-import { DataTable } from "@/components/data-table"
+import { DataTable } from "@/components/data-table(2)"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { AddQuestionModal } from "@/components/question/add-question-modal"
@@ -114,8 +114,8 @@ export default function QuestionsPage() {
 
   // Columnas para la tabla
   const columns = [
-    { key: "diagnostic", title: "Diagnóstico" },
     { key: "questionText", title: "Pregunta" },
+    { key: "diagnostic", title: "Diagnóstico" },
     { key: "questionType", title: "Tipo de respuesta" },
     { key: "educationLevel", title: "Nivel educativo" },
     { key: "priority", title: "Prioridad" },

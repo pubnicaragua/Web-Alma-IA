@@ -74,7 +74,7 @@ export function RecentAlerts() {
       </CardHeader>
       <CardContent>
         <div className="space-y-0">
-          {limitedAlerts.map((alert, index) => (
+          {alerts.map((alert, index) => (
             <div key={alert.alumno_alerta_id || index}>
               <div className="flex items-center justify-between py-3">
                 {/* Primera columna: Datos del alumno */}

@@ -1,6 +1,6 @@
 "use client"
 
-import { DataTable } from "@/components/data-table"
+import { DataTable } from "@/components/data-table(2)"
 import { FilterDropdown } from "@/components/filter-dropdown"
 import { AppLayout } from "@/components/layout/app-layout"
 import { Badge } from "@/components/ui/badge"

@@ -1,16 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { fetchReports, type Report } from "@/services/reports-service"
+import { APIReportGeneral, fetchReports, type Report } from "@/services/reports-service"
 import { ReportsList } from "@/components/report/reports-list"
 import { ReportsSkeleton } from "@/components/report/reports-skeleton"
 import { Button } from "@/components/ui/button"
 import { PlusCircle, RefreshCw, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { AppLayout } from "@/components/layout/app-layout"
+import { DataTable } from "@/components/data-table(2)"
+import { Student } from "@/services/home-service"
+
 
 export default function ReportsPage() {
-  const [reports, setReports] = useState<Report[]>([])
+  const [reports, setReports] = useState<APIReportGeneral[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()

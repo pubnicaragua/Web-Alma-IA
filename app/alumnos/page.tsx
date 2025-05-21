@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { RefreshCw } from "lucide-react"
+import { RefreshCw } from 'lucide-react'
 import { Header } from "@/components/header"
 import { NavigationMenu } from "@/components/navigation-menu"
 import { FilterDropdown } from "@/components/filter-dropdown"
-import { DataTable } from "@/components/data-table"
+import { DataTable } from "@/components/data-table(2)"
 import { fetchStudents, type Student } from "@/services/students-service"
 import { useToast } from "@/hooks/use-toast"
 import { MobileSidebar } from "@/components/mobile-sidebar"
@@ -28,12 +28,10 @@ export default function StudentsPage() {
   const [courseFilter, setCourseFilter] = useState<string>("Todos")
   const [ageFilter, setAgeFilter] = useState<string>("Todos")
   const [statusFilter, setStatusFilter] = useState<string>("Todos")
-
-  // Opciones para los filtros
-  const levelOptions = ["Todos", "5° Básicos", "6° Básicos", "7° Básicos", "8° Básicos", "9° Básicos"]
-  const courseOptions = ["Todos", "3°B", "4°A", "5°A", "6°C", "1°A", "2°B"]
-  const ageOptions = ["Todos", "8", "9", "11", "12", "14", "15"]
-  const statusOptions = ["Todos", "Bien", "Normal", "Mal"]
+  const [levelOptions, setLevelOptions] = useState<string[]>(["Todos"])
+  const [courseOptions, setCourseOptions] = useState<string[]>(["Todos"])
+  const [ageOptions, setAgeOptions] = useState<string[]>(["Todos"])
+  const [statusOptions, setStatusOptions] = useState<string[]>(["Todos"])
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
@@ -48,7 +46,23 @@ export default function StudentsPage() {
     try {
       setIsLoading(true)
       setError(null)
+
+      // Obtener datos de estudiantes desde la API
       const data = await fetchStudents()
+      console.log("Datos de estudiantes obtenidos:", data)
+
+      // Extraer opciones únicas para los filtros y añadir "Todos" al principio
+      const uniqueLevels = Array.from(new Set(data.map(student => student.level)))
+      const uniqueCourses = Array.from(new Set(data.map(student => student.course)))
+      const uniqueAges = Array.from(new Set(data.map(student => String(student.age))))
+      const uniqueStatuses = Array.from(new Set(data.map(student => student.status)))
+
+      setLevelOptions(["Todos", ...uniqueLevels])
+      setCourseOptions(["Todos", ...uniqueCourses])
+      setAgeOptions(["Todos", ...uniqueAges])
+      setStatusOptions(["Todos", ...uniqueStatuses])
+
+      // Actualizar el estado con los datos obtenidos
       setStudents(data)
     } catch (err) {
       console.error("Error al cargar estudiantes:", err)
@@ -86,7 +100,7 @@ export default function StudentsPage() {
 
   // Función para navegar a la vista detallada del alumno
   const handleStudentClick = (student: Student) => {
-    router.push(`/alumnos/${student.id}`)
+    router.push(`/alumnos/${ student.id }`)
   }
 
   // Renderizar celdas de la tabla
@@ -111,7 +125,7 @@ export default function StudentsPage() {
           </div>
         )
       case "age":
-        return `${student.age} años`
+        return `${ student.age } años`
       default:
         return student[column.key as keyof Student]
     }
