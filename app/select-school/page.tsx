@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Building2, Bell, Users } from 'lucide-react'
+import { Building2, Bell, Users, MapPin } from 'lucide-react'
 import { Header } from "@/components/header"
+import { ColegiosAPI, fetchAllColegios } from "@/services/colegios-service"
+import { useAuth } from "@/components/auth-provider"
 
 interface School {
   id: string
@@ -17,6 +19,9 @@ export default function SelectSchoolPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [colegios, setColegios] = useState<ColegiosAPI[]>([])
+  const [selectedColegio, setSelectedColegio] = useState<ColegiosAPI | null>(null)
+  const { saveColegioId } = useAuth()
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen)
@@ -73,6 +78,21 @@ export default function SelectSchoolPage() {
     },
   ]
 
+  const loadAllColegios = async () => {
+    try {
+      const data = await fetchAllColegios()
+      console.log('Todos los colegios', data)
+      setColegios(data)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
+  useEffect(() => {
+    loadAllColegios()
+  }, [])
+
   const handleSelectSchool = (schoolId: string) => {
     // Guardar el colegio seleccionado
     localStorage.setItem("selectedSchool", schoolId)
@@ -97,37 +117,37 @@ export default function SelectSchoolPage() {
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Seleccionar colegio</h2>
 
           <div className="space-y-4">
-            {schools.map((school) => (
+            {colegios.map((school) => (
               <button
-                key={school.id}
+                key={school.colegio_id}
                 className="w-full bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center sm:justify-between border border-gray-100 relative overflow-hidden"
-                onClick={() => handleSelectSchool(school.id)}
+                onClick={() => handleSelectSchool(String(school.colegio_id))}
               >
                 <div className="flex items-center mb-3 sm:mb-0 w-full sm:w-auto">
                   <div className="bg-gray-100 p-2 sm:p-3 rounded-lg mr-3 sm:mr-4">
                     <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />
                   </div>
-                  <span className="font-medium text-gray-800">{school.name}</span>
+                  <span className="font-medium text-gray-800">{school.nombre}</span>
                 </div>
 
                 <div className="flex flex-wrap gap-3 sm:gap-0 sm:flex-nowrap sm:items-center sm:space-x-6 w-full sm:w-auto">
                   <div className="flex items-center space-x-2">
-                    <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
-                    <span className="text-xs sm:text-sm text-gray-600">{school.alerts} alertas</span>
+                    <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
+                    <span className="text-xs sm:text-sm text-gray-600">{school.direccion}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Users className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
-                    <span className="text-xs sm:text-sm text-gray-600">{school.students} alumnos</span>
+                    <span className="text-xs sm:text-sm text-gray-600"></span>
                   </div>
                 </div>
 
                 {/* Barra de color */}
-                <div className={`absolute right-0 top-0 bottom-0 w-2 ${school.color}`}></div>
+                <div className={`absolute right-0 top-0 bottom-0 w-2`}></div>
               </button>
             ))}
+          </div>
         </div>
       </div>
-    </div>
     </div >
   )
 }

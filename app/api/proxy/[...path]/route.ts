@@ -1,4 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
+// import fetch from 'node-fetch'
+// import { HttpsProxyAgent } from 'https-proxy-agent';
+// const agent = new HttpsProxyAgent('http://localhost:56625')
 
 // API base URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api-almaia.onrender.com/api/v1"
@@ -61,6 +64,7 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     const response = await fetch(apiUrl, {
       method: "GET",
       headers,
+      // agent,
       // Añadir un timeout para evitar que la solicitud se quede colgada
       signal: AbortSignal.timeout(10000), // 10 segundos de timeout
     })
@@ -103,6 +107,7 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
 
 export async function POST(request: NextRequest, { params }: { params: { path: string[] } }) {
   try {
+    const awaitedParams = await params;
     const path = params.path.join("/")
 
     // Verificar si es una solicitud de login
@@ -114,7 +119,7 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
       return {}
     })
 
-    const apiUrl = getApiUrl(params.path)
+    const apiUrl = getApiUrl(awaitedParams.path)
     console.log(`Proxy POST request to: ${apiUrl}`, body)
 
     // Obtener el token de autorización de la solicitud (excepto para login)
@@ -140,6 +145,7 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
     const response = await fetch(apiUrl, {
       method: "POST",
       headers,
+      // agent,
       body: JSON.stringify(body),
       // Añadir un timeout para evitar que la solicitud se quede colgada
       signal: AbortSignal.timeout(10000), // 10 segundos de timeout

@@ -417,7 +417,7 @@ export async function fetchStudentDetails(id: string): Promise<StudentDetailResp
     console.log(`Obteniendo detalles del alumno con ID: ${ id }`);
 
     // Realizar la solicitud GET a la API con la nueva ruta
-    const response = await fetchWithAuth(`/alumnos/detalle / ${ id }`, {
+    const response = await fetchWithAuth(`/alumno/${ id }`, {
       method: "GET",
     });
 

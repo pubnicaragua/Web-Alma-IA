@@ -6,9 +6,11 @@ import { AppLayout } from "@/components/layout/app-layout"
 import { LineChartComparison } from "@/components/line-chart-comparison"
 import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { fetchWithAuth } from "@/lib/api-config"
 import { colors } from "@/lib/colors"
+import { getComparativaEmotionsCourses } from "@/services/comparativa-service"
 import { Download } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 export default function ComparativePage() {
   // Estados para los filtros
@@ -85,6 +87,38 @@ export default function ComparativePage() {
 
   // Estado para los cursos seleccionados en el gráfico de líneas
   const [selectedCourses, setSelectedCourses] = useState<string[]>(["courseA", "courseB"])
+
+  useEffect(() => {
+    try {
+      loadComparativaEmotionsCourses()
+    } catch (error) {
+      console.log(error)
+
+    }
+  }, [])
+
+  const loadComparativaEmotionsCourses = async () => {
+
+    try {
+      // setIsLoading(true)
+      // setError(null)
+
+      // Obtener datos de estudiantes desde la API
+      const data = await getComparativaEmotionsCourses()
+      console.log("Datos de comparativa de emociones:", data)
+      return data
+
+
+
+
+    } catch (err) {
+      console.error("Error al cargar estudiantes:", err)
+      // setError("No se pudieron cargar los datos de estudiantes. Por favor, intente de nuevo.")
+
+
+    }
+
+  }
 
   // Funciones para manejar la selección de emociones
   const handleToggleEmotionCourseA = (emotion: string) => {

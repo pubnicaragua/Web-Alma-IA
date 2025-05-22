@@ -13,6 +13,9 @@ import { useToast } from "@/hooks/use-toast"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 import { AndroidNavMenu } from "@/components/android-nav-menu"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { Pagination } from "@/components/pagination"
+
+const PAGE_SIZE = 10
 
 export default function StudentsPage() {
   const router = useRouter()
@@ -32,6 +35,14 @@ export default function StudentsPage() {
   const [courseOptions, setCourseOptions] = useState<string[]>(["Todos"])
   const [ageOptions, setAgeOptions] = useState<string[]>(["Todos"])
   const [statusOptions, setStatusOptions] = useState<string[]>(["Todos"])
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([])
+
+  //paginacion
+  const [currentPage, setCurrentPage] = useState(1)
+  const [dataPage, setDataPage] = useState<Student[]>([])
+  const [totalPages, setTotalPages] = useState(1)
+
+  
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
@@ -64,6 +75,10 @@ export default function StudentsPage() {
 
       // Actualizar el estado con los datos obtenidos
       setStudents(data)
+      setFilteredStudents(data)
+   // Actualizar estados de paginacion
+      setDataPage(data.slice(0, PAGE_SIZE))
+      setTotalPages(Math.ceil(data.length / PAGE_SIZE))
     } catch (err) {
       console.error("Error al cargar estudiantes:", err)
       setError("No se pudieron cargar los datos de estudiantes. Por favor, intente de nuevo.")
@@ -79,15 +94,32 @@ export default function StudentsPage() {
     }
   }
 
+  const handleFilterType = (type: string | number,property:keyof Student) => {
+    if (type === 'Todos') {
+      setFilteredStudents(students)
+      setDataPage(students)
+      setDataPage(students.slice(0, PAGE_SIZE))
+      setCurrentPage(1)
+      setTotalPages(Math.ceil(students.length / PAGE_SIZE))
+      return
+    }
+    let filteredStudent = []
+    filteredStudent = students.filter(student => student[property] === type)
+    setFilteredStudents(filteredStudent)
+    setDataPage(filteredStudent.slice(0, PAGE_SIZE))
+    setCurrentPage(1)
+    setTotalPages(Math.ceil(filteredStudent.length / PAGE_SIZE))
+  }
+
   // Filtrar los datos según los filtros seleccionados
-  const filteredStudents = students.filter((student) => {
-    return (
-      (levelFilter === "Todos" || student.level === levelFilter) &&
-      (courseFilter === "Todos" || student.course === courseFilter) &&
-      (ageFilter === "Todos" || student.age.toString() === ageFilter) &&
-      (statusFilter === "Todos" || student.status === statusFilter)
-    )
-  })
+  // const filteredStudents = students.filter((student) => {
+  //   return (
+  //     (levelFilter === "Todos" || student.level === levelFilter) &&
+  //     (courseFilter === "Todos" || student.course === courseFilter) &&
+  //     (ageFilter === "Todos" || student.age.toString() === ageFilter) &&
+  //     (statusFilter === "Todos" || student.status === statusFilter)
+  //   )
+  // })
 
   // Columnas para la tabla
   const columns = [
@@ -145,6 +177,22 @@ export default function StudentsPage() {
     )
   }
 
+
+  //manejar paginacion
+  const handlePageChange = (page: number) => {
+    // console.log('HANDLEPAGECHANGE.......................',page)
+    // console.log(alerts)
+    setCurrentPage(page)
+    const indexOfLastItem = page * PAGE_SIZE
+    const indexOfFirstItem = indexOfLastItem - PAGE_SIZE
+    // console.log('indexOfLastItem', indexOfLastItem)
+    // console.log('indexOfFirstItem', indexOfFirstItem)
+    const currentItems = filteredStudents.slice(indexOfFirstItem, indexOfLastItem)
+    console.log(currentItems)
+    setDataPage(currentItems)
+  }
+
+
   // Renderizar mensaje de error
   const renderError = () => {
     return (
@@ -179,10 +227,10 @@ export default function StudentsPage() {
 
             {/* Filtros */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <FilterDropdown label="Nivel" options={levelOptions} value={levelFilter} onChange={setLevelFilter} />
-              <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
-              <FilterDropdown label="Edad" options={ageOptions} value={ageFilter} onChange={setAgeFilter} />
-              <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
+              <FilterDropdown label="Nivel" options={levelOptions} value={levelFilter} onChange={(value) => handleFilterType(value,'level')} />
+              <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={(value) => handleFilterType(value, 'course')} />
+              <FilterDropdown label="Edad" options={ageOptions} value={ageFilter} onChange={(value) => handleFilterType(value, 'age')} />
+              <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={(value) => handleFilterType(value, 'status')} />
             </div>
 
             {/* Tabla de alumnos */}
@@ -193,8 +241,12 @@ export default function StudentsPage() {
                 renderError()
               ) : students.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">No hay alumnos disponibles</div>
-              ) : (
-                <DataTable columns={columns} data={filteredStudents} renderCell={renderCell} />
+              ) : (<>
+                <DataTable columns={columns} data={dataPage} renderCell={renderCell} />
+                      {totalPages > 1 && <div className="mt-6 flex justify-center">
+                          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
+                    </div>}
+                    </>
               )}
             </div>
           </div>

@@ -112,6 +112,7 @@ export const FALLBACK_ALERTS: Alert[] = [
 // Función para convertir el formato de la API al formato de la UI
 function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
   return apiAlerts.map((apiAlert) => {
+    console.log("API Alert:", apiAlert)
     try {
       // Verificar que los objetos necesarios existan
       if (!apiAlert) {
@@ -241,7 +242,12 @@ export async function fetchAlerts(): Promise<Alert[]> {
 
     // Intentar obtener datos reales de la API
     console.log("Intentando obtener datos reales de alertas...")
-    const response = await fetchWithAuth("/alumnos/alertas", {
+    const selectedSchool = localStorage.getItem("selectedSchool");
+    let url = "/alumnos/alertas";
+    if (selectedSchool) {
+      url += `?colegio_id = ${selectedSchool}`;
+    }
+    const response = await fetchWithAuth(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -256,7 +262,8 @@ export async function fetchAlerts(): Promise<Alert[]> {
       // Si es un 404, usar datos de ejemplo
       if (response.status === 404) {
         console.log("API no encontrada, usando datos de ejemplo")
-        return FALLBACK_ALERTS
+        // return FALLBACK_ALERTS
+        throw new Error(`Error al obtener alertas: ${response.status} - ${errorText}`)
       }
 
       throw new Error(`Error al obtener alertas: ${response.status} - ${errorText}`)
@@ -269,8 +276,10 @@ export async function fetchAlerts(): Promise<Alert[]> {
     // Verificar que apiAlerts sea un array
     if (!Array.isArray(apiAlerts)) {
       console.error("La respuesta de la API no es un array:", apiAlerts)
-      return FALLBACK_ALERTS
+       throw new Error(`La respuesta de la API no es un array:`)
+      // return FALLBACK_ALERTS
     }
+    
 
     // Convertir los datos de la API al formato de la UI
     const alerts = mapApiAlertsToAlerts(apiAlerts)
@@ -279,7 +288,8 @@ export async function fetchAlerts(): Promise<Alert[]> {
     console.error("Error al obtener alertas:", error)
     // Usar datos de ejemplo en caso de error
     console.log("Usando datos de ejemplo debido a un error")
-    return FALLBACK_ALERTS
+    // return FALLBACK_ALERTS
+    throw new Error(`La respuesta de la API no es un array:`)
   }
 }
 

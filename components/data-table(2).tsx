@@ -18,14 +18,13 @@ interface DataTableProps<T> {
 }
 
 export function DataTable<T>({ columns, data, renderCell, className, alternateRows = true }: DataTableProps<T>) {
-  console.log(data)
   return (
     <div className={cn("w-full overflow-auto", className)}>
       <table className="w-full">
         <thead>
           <tr className="bg-blue-300">
             {columns.map((column) => (
-              <th key={column.key} className={cn("px-4 py-3 text-left font-medium text-white", column.className)}>
+              <th key={column.key} className={cn("px-4 py-3 text-center font-medium text-white", column.className)}>
                 {column.title}
               </th>
             ))}

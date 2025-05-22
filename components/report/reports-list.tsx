@@ -12,6 +12,9 @@ import { useEffect, useState } from "react"
 import { DataTable } from "../data-table(2)"
 import { Column } from "../data-table"
 
+
+const PAGE_SIZE = 5
+
 interface ReportsListProps {
   reports: APIReportGeneral[]
 }
@@ -32,45 +35,20 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
   const safeReports = Array.isArray(reports) ? reports : []
 
   const [currentPage, setCurrentPage] = useState(1)
+  const [dataPage, setDataPage] = useState<APIReportGeneral[]>([])
+  const [totalPages, setTotalPages] = useState(1)
   const [filterType, setFilterType] = useState<string>("all")
   const [filterNivel, setFilterNivel] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("date-desc")
   const [uniqueTypes, setUniqueTypes] = useState<string[]>(['all'])
   const [uniqueNivel, setUniqueNivel] = useState<string[]>(['all'])
-  const [filteredReports, setFilteredReports] = useState<APIReportGeneral[]>([])
+  const [filteredReports, setFilteredReports] = useState<APIReportGeneral[]>(safeReports)
 
   const itemsPerPage = 5
 
-  // const renderCell = (report: APIReportGeneral, column: { key: string; title: string }, index: number) => {
-  //   switch (column.key) {
-  //     case "informe_id":
-  //     case "tipo":
-  //     case "fecha_generacion":
-  //     case "nivel":
-  //     case "creado_por":
-  //       return (
-  //         <div
-  //           className={`flex items-center space-x-3  hover:text-blue-500`}
-  //         // onClick={() => handleStudentClick(student)}
-  //         >
-  //           <span>{column.key === 'fecha_generacion' ? new Date(report[column.key]).toLocaleDateString('ES-es') : String(report[column.key])}</span>
-  //         </div>
-  //       )
-  //     case "url_reporte":
-  //       return <div>
-  //         <Link href={report[column.key]}
-  //           target="_blank"
-  //           className="px-3 py-2 text-white rounded-md bg-blue-500 flex justify-between"
-  //         >
-  //           <ArrowDown className="h-4 w-4" />
-  //           Decargar
-  //         </Link>
-  //       </div>
 
-  //   }
-  // }
 
-   const renderCell = (report: APIReportGeneral, column: Column, index?: number) => {
+  const renderCell = (report: APIReportGeneral, column: Column, index?: number) => {
     switch (column.key) {
       // Para las columnas de texto simple
       case "informe_id":
@@ -113,27 +91,25 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
     }
   }
 
+
+
   const handleFilterType = (type: string) => {
     setFilterType(type)
-    console.log('handleFilterType:', type)
-    // Obtener tipos únicos para el filtro
-    // const TypesFiltered = Array.from(new Set(safeReports.map((report) => report.tipo)))
-    // setUniqueTypes(TypesFiltered)
-    const reportsFiltered = filteredReports.filter(report => report.tipo === type)
+    if (type === 'all') return setFilteredReports(safeReports)
+
+    const reportsFiltered = safeReports.filter(report => report.tipo === type)
     setFilteredReports(reportsFiltered)
   }
   const handleFilterNivel = (nivel: string) => {
     setFilterNivel(nivel)
-
-    // const NivelFiltered = Array.from(new Set(safeReports.map((report) => report.nivel)))
-    // setUniqueNivel(NivelFiltered)
-    const reportsFiltered = filteredReports.filter(report => report.nivel === nivel)
+    if (nivel === 'all') return setFilteredReports(safeReports)
+    const reportsFiltered = safeReports.filter(report => report.nivel === nivel)
     setFilteredReports(reportsFiltered)
   }
 
   useEffect(() => {
-    setFilteredReports(safeReports)
-
+    setDataPage(filteredReports.slice(0, PAGE_SIZE))
+    setTotalPages(Math.ceil(filteredReports.length / PAGE_SIZE))
     const NivelFiltered = Array.from(new Set(safeReports.map((report) => report.nivel)))
     setUniqueNivel(NivelFiltered)
     const TypesFiltered = Array.from(new Set(safeReports.map((report) => report.tipo)))
@@ -164,16 +140,22 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
     }
   })
 
-  // Paginación
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = sortedReports.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(sortedReports.length / itemsPerPage)
-
-  // Manejar cambio de página
+  // manejar paginacion
   const handlePageChange = (page: number) => {
+    // console.log('HANDLEPAGECHANGE.......................',page)
+    // console.log(alerts)
     setCurrentPage(page)
+    const indexOfLastItem = page * PAGE_SIZE
+    const indexOfFirstItem = indexOfLastItem - PAGE_SIZE
+    // console.log('indexOfLastItem', indexOfLastItem)
+    // console.log('indexOfFirstItem', indexOfFirstItem)
+    const currentItems = safeReports.slice(indexOfFirstItem, indexOfLastItem)
+    console.log(currentItems)
+    setDataPage(currentItems)
   }
+
+
+  
 
   // Abrir informe en nueva pestaña
   const openReport = (url: string) => {
@@ -244,7 +226,7 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
         </Select>
       </div>
 
-      {currentItems.length === 0 ? (
+      {filteredReports.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
             <p className="text-center text-gray-500">No se encontraron informes con los filtros seleccionados.</p>
@@ -304,7 +286,7 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
               </CardFooter>
             </Card>
           ))} */}
-            <DataTable columns={columns} data={filteredReports} renderCell={renderCell} />
+          <DataTable columns={columns} data={dataPage} renderCell={renderCell} />
         </div>
       )}
 

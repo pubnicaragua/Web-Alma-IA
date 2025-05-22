@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+ 
 
   // Función para obtener un mensaje de error amigable
   const getFriendlyErrorMessage = (error: any): string => {
@@ -64,6 +65,8 @@ export default function LoginPage() {
       })
 
       const data = await response.json()
+      console.log('Data de login',data)
+      // saveProfile()
 
       if (!response.ok) {
         // Extraer el mensaje de error del servidor

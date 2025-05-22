@@ -52,9 +52,7 @@ export default function AlertsPage() {
 
   const typeOptions = getUniqueValues("type")
   const priorityOptions = getUniqueValues("priority")
-  const classroomOptions = getUniqueValues("classroom")
   const statusOptions = getUniqueValues("status")
-  const responsibleOptions = getUniqueValues("responsible")
   const dateOptions = ["Todos", "Hoy", "Ayer", "Esta semana", "Este mes"]
 
   // Filtrar los datos según los filtros seleccionados
@@ -81,9 +79,7 @@ export default function AlertsPage() {
     return (
       (typeFilter === "Todos" || alert.type === typeFilter) &&
       (priorityFilter === "Todos" || alert.priority === priorityFilter) &&
-      (classroomFilter === "Todos" || alert.classroom === classroomFilter) &&
       (statusFilter === "Todos" || alert.status === statusFilter) &&
-      (responsibleFilter === "Todos" || alert.responsible === responsibleFilter) &&
       (dateFilter === "Todos" ||
         (dateFilter === "Hoy" && isToday) ||
         (dateFilter === "Ayer" && isYesterday) ||
@@ -97,11 +93,8 @@ export default function AlertsPage() {
     { key: "student", title: "Alumno" },
     { key: "type", title: "Tipo de Alerta" },
     { key: "priority", title: "Prioridad" },
-    { key: "classroom", title: "Aula" },
     { key: "status", title: "Estado" },
-    { key: "responsible", title: "Responsable" },
     { key: "date", title: "Fecha" },
-    { key: "time", title: "Hora" },
   ]
 
   // Función para navegar a la vista detallada de la alerta
@@ -134,17 +127,16 @@ export default function AlertsPage() {
         return (
           <div className="flex justify-center w-full">
             <Badge
-              className={`whitespace-nowrap px-3 py-1 text-center ${
-                alert.type === "SOS Alma" || alert.type === "Rendimiento Académico"
-                  ? "bg-red-500"
-                  : alert.type === "Amarilla" || alert.type === "Asistencia"
-                    ? "bg-yellow-400"
-                    : alert.type === "Naranja" || alert.type === "Comportamiento"
-                      ? "bg-orange-500"
-                      : alert.type === "Denuncia"
-                        ? "bg-purple-600"
-                        : "bg-blue-500"
-              }`}
+              className={`whitespace-nowrap px-3 py-1 text-center ${alert.type === "SOS Alma" || alert.type === "Rendimiento Académico"
+                ? "bg-red-500"
+                : alert.type === "Amarilla" || alert.type === "Asistencia"
+                  ? "bg-yellow-400"
+                  : alert.type === "Naranja" || alert.type === "Comportamiento"
+                    ? "bg-orange-500"
+                    : alert.type === "Denuncia"
+                      ? "bg-purple-600"
+                      : "bg-blue-500"
+                }`}
             >
               {alert.type}
             </Badge>
@@ -155,13 +147,12 @@ export default function AlertsPage() {
           <div className="flex justify-center w-full">
             <Badge
               variant="outline"
-              className={`whitespace-nowrap px-3 py-1 text-center ${
-                alert.priority === "Alta"
-                  ? "border-red-500 text-red-500"
-                  : alert.priority === "Media"
-                    ? "border-yellow-500 text-yellow-500"
-                    : "border-green-500 text-green-500"
-              }`}
+              className={`whitespace-nowrap px-3 py-1 text-center ${alert.priority === "Alta"
+                ? "border-red-500 text-red-500"
+                : alert.priority === "Media"
+                  ? "border-yellow-500 text-yellow-500"
+                  : "border-green-500 text-green-500"
+                }`}
               style={{ borderColor: alert.priorityColor, color: alert.priorityColor }}
             >
               {alert.priority}
@@ -173,13 +164,12 @@ export default function AlertsPage() {
           <div className="flex justify-center w-full">
             <Badge
               variant="outline"
-              className={`whitespace-nowrap px-3 py-1 text-center ${
-                alert.status === "Pendiente"
-                  ? "border-red-500 text-red-500"
-                  : alert.status === "En curso"
-                    ? "border-blue-500 text-blue-500"
-                    : "border-green-500 text-green-500"
-              }`}
+              className={`whitespace-nowrap px-3 py-1 text-center ${alert.status === "Pendiente"
+                ? "border-red-500 text-red-500"
+                : alert.status === "En curso"
+                  ? "border-blue-500 text-blue-500"
+                  : "border-green-500 text-green-500"
+                }`}
             >
               {alert.status}
             </Badge>
@@ -245,19 +235,7 @@ export default function AlertsPage() {
             value={priorityFilter}
             onChange={setPriorityFilter}
           />
-          <FilterDropdown
-            label="Aula"
-            options={classroomOptions}
-            value={classroomFilter}
-            onChange={setClassroomFilter}
-          />
           <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
-          <FilterDropdown
-            label="Responsable"
-            options={responsibleOptions}
-            value={responsibleFilter}
-            onChange={setResponsibleFilter}
-          />
           <FilterDropdown label="Fecha" options={dateOptions} value={dateFilter} onChange={setDateFilter} />
         </div>
 
@@ -266,9 +244,9 @@ export default function AlertsPage() {
           {filteredAlerts.length > 0 ? (
             <DataTable columns={columns} data={filteredAlerts} renderCell={renderCell} />
           ) : (
-            <div className="p-8 text-center text-gray-500">
-              No se encontraron alertas que coincidan con los filtros seleccionados.
-            </div>
+          <div className="p-8 text-center text-gray-500">
+            No se encontraron alertas que coincidan con los filtros seleccionados.
+          </div>
           )}
         </div>
       </div>

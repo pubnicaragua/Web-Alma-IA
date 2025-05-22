@@ -4,23 +4,33 @@ import type React from "react"
 import { createContext, useContext, useState, useEffect, useRef } from "react"
 import { isAuthenticated, removeAuthToken } from "@/lib/api-config"
 import { subscribeToAuthChanges } from "@/lib/auth-events"
+import { ProfileResponse } from "@/services/profile-service"
 
 type AuthContextType = {
-  isAuthenticated: boolean
-  logout: () => void
-  checkAuth: () => boolean
+  isAuthenticated: boolean,
+  profile?: ProfileResponse,
+  colegioId:string
+  logout: () => void,
+  checkAuth: () => boolean,
+  saveProfile?: (profile: ProfileResponse)=>void,
+  saveColegioId?:(colegioId:string)=>void
 }
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   logout: () => {},
   checkAuth: () => false,
+  colegioId:'',
+ 
+
 })
 
 export const useAuth = () => useContext(AuthContext)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuth, setIsAuth] = useState(false)
+  const [profile, setProfile] = useState<ProfileResponse | undefined>(undefined)
+  const [colegioId, setColegioId] = useState<string>('')
   // Usar useRef para evitar múltiples verificaciones
   const initialCheckDone = useRef(false)
 
@@ -36,6 +46,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuth(authStatus)
     initialCheckDone.current = true
     return authStatus
+  }
+
+  const saveProfile = (profile: ProfileResponse)=>{
+    setProfile(profile)
+  }
+  const saveColegioId = (colegioId: string)=>{
+    setColegioId(colegioId)
   }
 
   useEffect(() => {
@@ -64,5 +81,5 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log("Logout completado. No se redirige automáticamente.")
   }
 
-  return <AuthContext.Provider value={{ isAuthenticated: isAuth, logout, checkAuth }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ isAuthenticated: isAuth, logout, checkAuth, saveProfile, profile, saveColegioId, colegioId }}>{children}</AuthContext.Provider>
 }
