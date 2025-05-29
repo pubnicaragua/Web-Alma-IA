@@ -8,9 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { APIReportGeneral, Report } from "@/services/reports-service"
 import { ArrowDown, ExternalLink, FileText, Filter, Paperclip } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState } from "react"
-import { DataTable } from "../data-table(2)"
-import { Column } from "../data-table"
+import { useCallback, useEffect, useState } from "react"
+import { DataTable } from "../data-table"
 
 interface ReportsListProps {
   reports: APIReportGeneral[]
@@ -31,60 +30,33 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
   // Asegurarnos de que reports siempre sea un array
   const safeReports = Array.isArray(reports) ? reports : []
 
-  const [currentPage, setCurrentPage] = useState(1)
+  // Estados para filtros y paginación
+  const [filteredReports, setFilteredReports] = useState<APIReportGeneral[]>([])
+  const [uniqueTypes, setUniqueTypes] = useState<string[]>([])
+  const [uniqueNiveles, setUniqueNiveles] = useState<string[]>([])
   const [filterType, setFilterType] = useState<string>("all")
   const [filterNivel, setFilterNivel] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("date-desc")
-  const [uniqueTypes, setUniqueTypes] = useState<string[]>(['all'])
-  const [uniqueNivel, setUniqueNivel] = useState<string[]>(['all'])
-  const [filteredReports, setFilteredReports] = useState<APIReportGeneral[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 25
 
-  const itemsPerPage = 5
+  interface Column {
+    key: string
+    title: string
+    className?: string
+  }
 
-  // const renderCell = (report: APIReportGeneral, column: { key: string; title: string }, index: number) => {
-  //   switch (column.key) {
-  //     case "informe_id":
-  //     case "tipo":
-  //     case "fecha_generacion":
-  //     case "nivel":
-  //     case "creado_por":
-  //       return (
-  //         <div
-  //           className={`flex items-center space-x-3  hover:text-blue-500`}
-  //         // onClick={() => handleStudentClick(student)}
-  //         >
-  //           <span>{column.key === 'fecha_generacion' ? new Date(report[column.key]).toLocaleDateString('ES-es') : String(report[column.key])}</span>
-  //         </div>
-  //       )
-  //     case "url_reporte":
-  //       return <div>
-  //         <Link href={report[column.key]}
-  //           target="_blank"
-  //           className="px-3 py-2 text-white rounded-md bg-blue-500 flex justify-between"
-  //         >
-  //           <ArrowDown className="h-4 w-4" />
-  //           Decargar
-  //         </Link>
-  //       </div>
-
-  //   }
-  // }
-
-   const renderCell = (report: APIReportGeneral, column: Column, index?: number) => {
+  // Función para renderizar las celdas de la tabla
+  const renderCell = (report: APIReportGeneral, column: Column, index?: number) => {
     switch (column.key) {
-      // Para las columnas de texto simple
       case "informe_id":
       case "tipo":
       case "fecha_generacion":
       case "nivel":
       case "creado_por":
         return (
-          <div
-            className="flex items-center space-x-3 hover:text-blue-500"
-          // onClick={() => handleStudentClick(report)} // Descomentado para implementar funcionalidad de clic
-          >
+          <div className="flex items-center space-x-3 hover:text-blue-500">
             <span>
-              {/* Formatea la fecha si es la columna de fecha_generacion, de lo contrario muestra el valor como texto */}
               {column.key === "fecha_generacion"
                 ? new Date(report[column.key]).toLocaleDateString("es-ES")
                 : String(report[column.key])}
@@ -92,7 +64,6 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
           </div>
         )
 
-      // Para la columna de acciones (botón de descarga)
       case "url_reporte":
         return (
           <div>
@@ -106,39 +77,63 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
             </Link>
           </div>
         )
-
-      // Caso por defecto para cualquier otra columna no especificada
-      // default:
-      //   return <span>{String(report[column.key]) || ""}</span>
     }
   }
 
+  // Efecto para inicializar los filtros únicos
+  useEffect(() => {
+    if (safeReports.length > 0) {
+      // Obtener tipos y niveles únicos para los filtros
+      const tiposUnicos = Array.from(new Set(safeReports.map(report => report.tipo))).filter(Boolean) as string[]
+      const nivelesUnicos = Array.from(new Set(safeReports.map(report => report.nivel))).filter(Boolean) as string[]
+      
+      setUniqueTypes([...tiposUnicos])
+      setUniqueNiveles([...nivelesUnicos])
+      
+      // Aplicar filtros iniciales
+      applyFilters(safeReports, filterType, filterNivel, sortBy)
+    }
+  }, [safeReports])
+
+  // Función para aplicar los filtros
+  const applyFilters = useCallback((reports: APIReportGeneral[], type: string, nivel: string, sort: string) => {
+    let result = [...reports]
+
+    // Aplicar filtros
+    if (type !== 'all') {
+      result = result.filter(report => report.tipo === type)
+    }
+    if (nivel !== 'all') {
+      result = result.filter(report => report.nivel === nivel)
+    }
+
+    // Ordenar
+    result.sort((a, b) => {
+      const dateA = new Date(a.fecha_generacion).getTime()
+      const dateB = new Date(b.fecha_generacion).getTime()
+      return sort === 'date-asc' ? dateA - dateB : dateB - dateA
+    })
+
+    setFilteredReports(result)
+    setCurrentPage(1) // Resetear a la primera página al cambiar filtros
+  }, [])
+
+  
+  // Manejadores de cambio de filtros
   const handleFilterType = (type: string) => {
     setFilterType(type)
-    console.log('handleFilterType:', type)
-    // Obtener tipos únicos para el filtro
-    // const TypesFiltered = Array.from(new Set(safeReports.map((report) => report.tipo)))
-    // setUniqueTypes(TypesFiltered)
-    const reportsFiltered = filteredReports.filter(report => report.tipo === type)
-    setFilteredReports(reportsFiltered)
+    applyFilters(safeReports, type, filterNivel, sortBy)
   }
+  
   const handleFilterNivel = (nivel: string) => {
     setFilterNivel(nivel)
-
-    // const NivelFiltered = Array.from(new Set(safeReports.map((report) => report.nivel)))
-    // setUniqueNivel(NivelFiltered)
-    const reportsFiltered = filteredReports.filter(report => report.nivel === nivel)
-    setFilteredReports(reportsFiltered)
+    applyFilters(safeReports, filterType, nivel, sortBy)
   }
-
-  useEffect(() => {
-    setFilteredReports(safeReports)
-
-    const NivelFiltered = Array.from(new Set(safeReports.map((report) => report.nivel)))
-    setUniqueNivel(NivelFiltered)
-    const TypesFiltered = Array.from(new Set(safeReports.map((report) => report.tipo)))
-    setUniqueTypes(TypesFiltered)
-  }, [filterNivel, filterType])
+  
+  const handleSortChange = (sort: string) => {
+    setSortBy(sort)
+    applyFilters(safeReports, filterType, filterNivel, sort)
+  }
 
 
 
@@ -167,8 +162,8 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
   // Paginación
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = sortedReports.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(sortedReports.length / itemsPerPage)
+  const currentItems = filteredReports.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil(filteredReports.length / itemsPerPage)
 
   // Manejar cambio de página
   const handlePageChange = (page: number) => {
@@ -181,138 +176,110 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          <Filter className="h-5 w-5 text-gray-500" />
-          <Select value={filterNivel} onValueChange={handleFilterNivel}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filtrar por..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Nivel (todos)</SelectItem>
-              {/* <SelectItem value="active">Activos</SelectItem>
-              <SelectItem value="pending">Pendientes</SelectItem>
-              <SelectItem value="archived">Archivados</SelectItem> */}
-              {uniqueNivel.map((type, index) => (
-                <SelectItem key={index} value={type}>
-                  {type}
-                </SelectItem>
-              ))}
-              {/* {uniqueNivel.map((period,index) => (
-                <SelectItem key={index} value={period}>
-                  {period}
-                </SelectItem>
-              ))}  */}
-            </SelectContent>
-          </Select>
+    <div className="space-y-6">
+      {/* Sección de Filtros */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+            <Filter className="h-4 w-4" />
+            <span>Filtrar por:</span>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Filtro por Nivel */}
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nivel</label>
+              <Select value={filterNivel} onValueChange={handleFilterNivel}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar nivel" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {uniqueNiveles.map((nivel, index) => (
+                    <SelectItem key={`nivel-${index}`} value={nivel}>
+                      {nivel}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Filtro por Tipo */}
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+              <Select value={filterType} onValueChange={handleFilterType}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {uniqueTypes.map((tipo, index) => (
+                    <SelectItem key={`tipo-${index}`} value={tipo}>
+                      {tipo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Ordenar por fecha */}
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ordenar por fecha</label>
+              <Select value={sortBy} onValueChange={handleSortChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar orden" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date-desc">Más recientes primero</SelectItem>
+                  <SelectItem value="date-asc">Más antiguos primero</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          <Filter className="h-5 w-5 text-gray-500" />
-          <Select value={filterType} onValueChange={handleFilterType}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filtrar por..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">tipo (todos)</SelectItem>
-              {/* <SelectItem value="active">Activos</SelectItem>
-              <SelectItem value="pending">Pendientes</SelectItem>
-              <SelectItem value="archived">Archivados</SelectItem> */}
-              {uniqueTypes.map((type, index) => (
-                <SelectItem key={index} value={type}>
-                  {type}
-                </SelectItem>
-              ))}
-              {/* {uniqueNivel.map((period,index) => (
-                <SelectItem key={index} value={period}>
-                  {period}
-                </SelectItem>
-              ))}  */}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Ordenar por..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="date-desc">Más recientes</SelectItem>
-            <SelectItem value="date-asc">Más antiguos</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
-      {currentItems.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-gray-500">No se encontraron informes con los filtros seleccionados.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {/* {currentItems.map((report) => (
-            <Card key={report.id} className="overflow-hidden">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg font-medium">{report.type}</CardTitle>
-                  <Badge style={{ backgroundColor: report.statusColor }}>{report.status}</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="pb-2">
-                <div className="grid gap-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Fecha:</span>
-                    <span>{report.date}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Período:</span>
-                    <span>{report.evaluationPeriod}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Creado por:</span>
-                    <span>{report.createdBy}</span>
-                  </div>
-                  {report.observations && (
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500 mb-1">Observaciones:</p>
-                      <p className="text-sm">{report.observations}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between pt-2">
-                <div className="flex items-center">
-                  {report.attachments && report.attachments.length > 0 && (
-                    <div className="flex items-center text-sm text-gray-500 mr-4">
-                      <Paperclip className="h-4 w-4 mr-1" />
-                      <span>{report.attachments.length} anexo(s)</span>
-                    </div>
-                  )}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center"
-                  onClick={() => openReport(report.reportUrl)}
-                >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Ver informe
-                  <ExternalLink className="h-3 w-3 ml-1" />
-                </Button>
-              </CardFooter>
-            </Card>
-          ))} */}
-            <DataTable columns={columns} data={filteredReports} renderCell={renderCell} />
-        </div>
-      )}
-
-      {totalPages > 1 && (
-        <div className="mt-6 flex justify-center">
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
-        </div>
-      )}
+      {/* Tabla de Resultados */}
+      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <DataTable 
+          columns={columns} 
+          data={filteredReports.slice(
+            (currentPage - 1) * itemsPerPage, 
+            currentPage * itemsPerPage
+          )} 
+          renderCell={renderCell} 
+        />
+        
+        {filteredReports.length > itemsPerPage && (
+          <div className="px-6 py-4 border-t flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Mostrando {Math.min((currentPage - 1) * itemsPerPage + 1, filteredReports.length)}-
+              {Math.min(currentPage * itemsPerPage, filteredReports.length)} de {filteredReports.length} informes
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </Button>
+              <span className="px-3 py-1 text-sm font-medium">
+                Página {currentPage} de {Math.ceil(filteredReports.length / itemsPerPage)}
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(p + 1, Math.ceil(filteredReports.length / itemsPerPage)))}
+                disabled={currentPage * itemsPerPage >= filteredReports.length}
+              >
+                Siguiente
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

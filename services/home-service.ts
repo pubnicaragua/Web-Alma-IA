@@ -363,8 +363,8 @@ export async function fetchRecentAlerts(): Promise<RecentAlert[]> {
 
       if (!response.ok) {
         console.error(`Error en respuesta API (home/alertas/recientes): ${response.status} ${response.statusText}`)
-        console.log("Usando datos de ejemplo para alertas recientes")
-        return FALLBACK_RECENT_ALERTS
+        // console.log("Usando datos de ejemplo para alertas recientes")
+        throw new Error('No se pudo obtener las alertas recientes, inténtelo más tarde')
       }
 
       const data = await response.json()
@@ -374,13 +374,13 @@ export async function fetchRecentAlerts(): Promise<RecentAlert[]> {
       if (Array.isArray(data) && data.length > 0) {
         return data
       } else {
-        console.log("Datos de API vacíos o con formato incorrecto, usando datos de ejemplo")
-        return FALLBACK_RECENT_ALERTS
+        // console.log("Datos de API vacíos o con formato incorrecto, usando datos de ejemplo")
+        throw new Error('No se pudo obtener las alertas recientes, inténtelo más tarde')
       }
     } catch (error) {
       console.error("Error al obtener alertas recientes:", error)
-      console.log("Usando datos de ejemplo para alertas recientes")
-      return FALLBACK_RECENT_ALERTS
+      // console.log("Usando datos de ejemplo para alertas recientes")
+      throw new Error('No se pudo obtener las alertas recientes, inténtelo más tarde')
     }
   } catch (error) {
     console.error("Error in fetchRecentAlerts:", error)
@@ -412,17 +412,17 @@ export async function fetchImportantDates(): Promise<ImportantDate[]> {
       // Verificar si los datos tienen el formato esperado
       if (!data || !Array.isArray(data)) {
         console.error("Los datos recibidos no son un array:", data)
-        return FALLBACK_IMPORTANT_DATES
+        throw new Error('No se pudo obtener las fechas importantes, inténtelo más tarde')
       }
 
       return data
     } catch (parseError) {
       console.error("Error al parsear la respuesta JSON:", parseError)
-      return FALLBACK_IMPORTANT_DATES
+      throw new Error('No se pudo obtener las fechas importantes, inténtelo más tarde')
     }
   } catch (error) {
     console.error("Error al obtener fechas importantes:", error)
-    return FALLBACK_IMPORTANT_DATES
+    throw new Error('No se pudo obtener las fechas importantes, inténtelo más tarde')
   }
 }
 

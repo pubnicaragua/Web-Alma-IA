@@ -11,18 +11,20 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useModal } from "@/lib/modal-utils"
 
-interface AddTeacherModalProps {
+export interface AddTeacherModalProps {
   onAddTeacher: (teacher: {
-    name: string
-    rut: string
+    tipo_documento: string
+    numero_documento: string
+    nombres: string
+    apellidos: string
+    genero_id: number
+    estado_civil_id: number
+    fecha_nacimiento: string
+    especialidad: string
     email: string
     phone: string
-    birthDate: string
-    position: string
-    subject: string
-    tutorCourse: string
-    type: string
-    courses: string
+    estado: string
+    colegio_id: number
   }) => void
   isMobile?: boolean
 }
@@ -30,16 +32,18 @@ interface AddTeacherModalProps {
 export function AddTeacherModal({ onAddTeacher, isMobile = false }: AddTeacherModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false)
   const [formData, setFormData] = useState({
-    name: "",
-    rut: "",
+    tipo_documento: "DNI",
+    numero_documento: "",
+    nombres: "",
+    apellidos: "",
+    genero_id: 1, // 1: Masculino, 2: Femenino
+    estado_civil_id: 1, // 1: Soltero/a, 2: Casado/a, 3: Viudo/a
+    fecha_nacimiento: "",
+    especialidad: "",
     email: "",
     phone: "",
-    birthDate: "",
-    position: "",
-    subject: "",
-    tutorCourse: "",
-    type: "",
-    courses: "",
+    estado:'activo',
+    colegio_id: Number(localStorage.getItem("selectedSchool"))
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,7 +59,7 @@ export function AddTeacherModal({ onAddTeacher, isMobile = false }: AddTeacherMo
     e.preventDefault()
 
     // Validación básica
-    if (!formData.name || !formData.rut || !formData.email) {
+    if (!formData.nombres || !formData.apellidos || !formData.numero_documento) {
       return
     }
 
@@ -64,16 +68,18 @@ export function AddTeacherModal({ onAddTeacher, isMobile = false }: AddTeacherMo
 
     // Limpiar formulario y cerrar modal
     setFormData({
-      name: "",
-      rut: "",
+      tipo_documento: "DNI",
+      numero_documento: "",
+      nombres: "",
+      apellidos: "",
+      genero_id: 1,
+      estado_civil_id: 1,
+      fecha_nacimiento: "",
+      especialidad: "",
       email: "",
       phone: "",
-      birthDate: "",
-      position: "",
-      subject: "",
-      tutorCourse: "",
-      type: "",
-      courses: "",
+      estado:'activo',
+      colegio_id: Number(localStorage.getItem("selectedSchool"))
     })
     onClose()
   }
@@ -112,110 +118,135 @@ export function AddTeacherModal({ onAddTeacher, isMobile = false }: AddTeacherMo
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Nombre Completo</Label>
+              <Label htmlFor="tipo_documento">Tipo de Documento</Label>
+              <Select 
+                value={formData.tipo_documento} 
+                onValueChange={(value) => handleSelectChange("tipo_documento", value)}
+              >
+                <SelectTrigger id="tipo_documento">
+                  <SelectValue placeholder="Seleccione tipo de documento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DNI">DNI</SelectItem>
+                  <SelectItem value="Pasaporte">Pasaporte</SelectItem>
+                  <SelectItem value="Carné de Extranjería">Carné de Extranjería</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="numero_documento">Número de Documento</Label>
               <Input
-                id="name"
-                name="name"
-                value={formData.name}
+                id="numero_documento"
+                name="numero_documento"
+                value={formData.numero_documento}
                 onChange={handleChange}
-                placeholder="Nombre"
+                placeholder="Número de documento"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="rut">RUT</Label>
-              <Input id="rut" name="rut" value={formData.rut} onChange={handleChange} placeholder="Nombre" required />
+              <Label htmlFor="nombres">Nombres</Label>
+              <Input
+                id="nombres"
+                name="nombres"
+                value={formData.nombres}
+                onChange={handleChange}
+                placeholder="Nombres"
+                required
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Correo institucional</Label>
+              <Label htmlFor="apellidos">Apellidos</Label>
+              <Input
+                id="apellidos"
+                name="apellidos"
+                value={formData.apellidos}
+                onChange={handleChange}
+                placeholder="Apellidos"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="genero_id">Género</Label>
+              <Select 
+                value={formData.genero_id.toString()} 
+                onValueChange={(value) => handleSelectChange("genero_id", value)}
+              >
+                <SelectTrigger id="genero_id">
+                  <SelectValue placeholder="Seleccione género" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Masculino</SelectItem>
+                  <SelectItem value="2">Femenino</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="estado_civil_id">Estado Civil</Label>
+              <Select 
+                value={formData.estado_civil_id.toString()} 
+                onValueChange={(value) => handleSelectChange("estado_civil_id", value)}
+              >
+                <SelectTrigger id="estado_civil_id">
+                  <SelectValue placeholder="Seleccione estado civil" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Soltero/a</SelectItem>
+                  <SelectItem value="2">Casado/a</SelectItem>
+                  <SelectItem value="3">Viudo/a</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="fecha_nacimiento">Fecha de Nacimiento</Label>
+              <Input
+                id="fecha_nacimiento"
+                name="fecha_nacimiento"
+                type="date"
+                value={formData.fecha_nacimiento}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="especialidad">Especialidad</Label>
+              <Input
+                id="especialidad"
+                name="especialidad"
+                value={formData.especialidad}
+                onChange={handleChange}
+                placeholder="Ej: Lenguaje, Matemáticas, etc."
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Correo Electrónico</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Nombre"
-                required
+                placeholder="correo@ejemplo.com"
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="phone">Teléfono</Label>
-              <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="Nombre" />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="birthDate">Fecha de nacimiento</Label>
-              <Input
-                id="birthDate"
-                name="birthDate"
-                type="date"
-                value={formData.birthDate}
-                onChange={handleChange}
-                placeholder="Nombre"
-              />
-            </div>
-
-            <div className="pt-4 pb-2">
-              <h3 className="text-lg font-medium">Rol y asignación</h3>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="position">Cargo</Label>
-              <Input
-                id="position"
-                name="position"
-                value={formData.position}
-                onChange={handleChange}
-                placeholder="Nombre"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="subject">Materia principal</Label>
-              <Input
-                id="subject"
-                name="subject"
-                value={formData.subject}
-                onChange={handleChange}
-                placeholder="Nombre"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tutorCourse">Curso que tutoriza (si aplica)</Label>
-              <Input
-                id="tutorCourse"
-                name="tutorCourse"
-                value={formData.tutorCourse}
-                onChange={handleChange}
-                placeholder="Nombre"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="type">¿Principal o secundario?</Label>
-              <Select value={formData.type} onValueChange={(value) => handleSelectChange("type", value)}>
-                <SelectTrigger id="type">
-                  <SelectValue placeholder="Nombre" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Principal">Principal</SelectItem>
-                  <SelectItem value="Secundario">Secundario</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="courses">Cursos en los que enseña</Label>
-              <Input
-                id="courses"
-                name="courses"
-                value={formData.courses}
-                onChange={handleChange}
-                placeholder="Nombre"
+              <Input 
+                id="phone" 
+                name="phone" 
+                value={formData.phone} 
+                onChange={handleChange} 
+                placeholder="Número de teléfono" 
               />
             </div>
 

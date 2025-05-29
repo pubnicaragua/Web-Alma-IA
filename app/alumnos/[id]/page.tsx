@@ -34,7 +34,7 @@ export default function StudentDetailPage() {
         setError(null)
 
         const details = await fetchStudentDetails(id as string)
-        // console.log(details)
+        console.log("DETALLE alumno", details)
         if (details) {
           setStudentDetails(details)
         } else {
@@ -110,12 +110,6 @@ export default function StudentDetailPage() {
     color: getEmotionColor(emotion.nombre),
   }))
 
-  // Datos para el gráfico de radar (simulados)
-  const radarData = {
-    alumno: [4.5, 3.8, 2.5, 4.2, 3.9],
-    promedio: [3.2, 2.8, 3.5, 3.0, 2.7],
-  }
-
   // Convertir alertas al formato esperado por el componente
   const alertsData = alertas.map((alerta) => ({
     fecha: formatDate(alerta.fecha_generada),
@@ -131,8 +125,9 @@ export default function StudentDetailPage() {
     fecha: formatDate(informe.fecha),
     tipo: "Informe General",
     resumen: `Informe ${formatDate(informe.fecha)}`,
-    url: informe.url_reporte,
+    url_reporte: informe.url_reporte,
   }))
+  console.log('reportData',reportsData)
 
   return (
     <AppLayout>
@@ -142,7 +137,7 @@ export default function StudentDetailPage() {
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <div className="relative w-32 h-32 rounded-full overflow-hidden flex-shrink-0 border-4 border-blue-100">
               <Image
-                src={alumno.url_foto_perfil || "/placeholder.svg?height=128&width=128&query=student"}
+                src={alumno.url_foto_perfil || "/placeholder.svg"}
                 alt={studentName}
                 width={128}
                 height={128}
@@ -151,10 +146,9 @@ export default function StudentDetailPage() {
             </div>
             <div className="flex flex-col items-center md:items-start">
               <h1 className="text-3xl font-bold text-gray-800">{`${studentName}  ${studentLastName}`}</h1>
-              <p className="text-xl text-gray-600 mb-2">ID: {alumno.alumno_id}</p>
               <div className="flex flex-wrap gap-4">
                 <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                  Colegio ID: {alumno.colegio_id}
+                  Colegio: <span className="font-bold">{alumno.colegios.nombre}</span>
                 </div>
                 <div className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                   Email: {alumno.email}
@@ -216,10 +210,6 @@ export default function StudentDetailPage() {
                       <div className="flex flex-col">
                         <span className="text-sm text-gray-500">Email:</span>
                         <span className="text-gray-800 font-medium">{alumno.email}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm text-gray-500">Colegio ID:</span>
-                        <span className="text-gray-800 font-medium">{alumno.colegio_id}</span>
                       </div>
                     </div>
                   </div>
@@ -309,7 +299,7 @@ export default function StudentDetailPage() {
                       <table className="w-full min-w-[640px]">
                         <thead>
                           <tr className="bg-blue-300">
-                            <th className="px-4 py-3 text-left font-medium text-white">ID</th>
+                            <th className="px-4 py-3 text-left font-medium text-white">Nombre</th>
                             <th className="px-4 py-3 text-left font-medium text-white">Tipo</th>
                             <th className="px-4 py-3 text-left font-medium text-white">Observaciones</th>
                             <th className="px-4 py-3 text-left font-medium text-white">Estado</th>
@@ -318,7 +308,9 @@ export default function StudentDetailPage() {
                         <tbody>
                           {apoderados.map((apoderado, index) => (
                             <tr key={index} className="border-b-2 border-gray-100 hover:bg-gray-50">
-                              <td className="px-4 py-3 text-sm font-medium">{apoderado.apoderado_id}</td>
+                              <td className="px-4 py-3 text-sm font-medium">
+                                {apoderado.apoderados.personas.nombres} {apoderado.apoderados.personas.apellidos}
+                              </td>
                               <td className="px-4 py-3 text-sm">
                                 <span
                                   className={`px-2 py-1 rounded-full text-xs font-medium ${apoderado.tipo_apoderado === "Padre" || apoderado.tipo_apoderado === "Madre"

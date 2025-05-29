@@ -114,7 +114,11 @@ export function RecentAlerts() {
             </div>
           ))}
 
-          {limitedAlerts.length === 0 && <div className="py-4 text-center text-gray-500">No hay alertas recientes</div>}
+          {limitedAlerts.length === 0 && (
+            <div className="bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-100 text-lg font-medium text-center py-6 px-4 rounded-md">
+              No hay alertas recientes disponibles.
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

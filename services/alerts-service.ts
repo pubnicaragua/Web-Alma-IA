@@ -3,48 +3,75 @@ import { Alert as AlertPage } from '@/app/alertas/[id]/page'
 import { DataPoint } from "@/components/line-chart-comparison"
 
 // Interfaces para los datos de la API según la estructura real
-export interface ApiAlertCourse {
-  curso_id: number
-  nombre: string
-  profesor_jefe: string
-}
-
-export interface ApiAlertPerson {
-  apellidos: string
+interface ApiPerson {
   nombres: string
+  apellidos: string
   persona_id: number
-  email: string
 }
 
-export interface ApiAlertStudent {
+interface ApiAlertStudent {
   alumno_id: number
-  personas: ApiAlertPerson
-  curso_actual?: ApiAlertCourse
+  personas: {
+    nombres: string
+    apellidos: string
+    persona_id: number
+  }
+  url_foto_perfil?: string
 }
 
-export interface ApiAlertPriority {
-  nivel: string
-  color: string
+interface ApiAlertRule {
+  nombre: string
+  alerta_regla_id: number
 }
 
-export interface ApiAlertEvidence {
-  tipo: string
-  url: string
-  fecha: string
+interface ApiAlertOrigin {
+  nombre: string
+  alerta_origen_id: number
+}
+
+interface ApiAlertSeverity {
+  nombre: string
+  alerta_severidad_id: number
+}
+
+interface ApiAlertPriority {
+  nombre: string
+  alerta_prioridad_id: number
+}
+
+interface ApiAlertType {
+  nombre: string
+  alerta_tipo_id: number
 }
 
 export interface ApiAlert {
   alumno_alerta_id: number
   alumno_id: number
-  tipo_alerta: string
+  alerta_regla_id: number
   fecha_generada: string
   fecha_resolucion: string | null
+  alerta_origen_id: number
+  prioridad_id: number
+  severidad_id: number
+  accion_tomada: string | null
+  leida: boolean
+  responsable_actual_id: number | null
   estado: string
-  responsable: string
-  curso_alumno: string
+  creado_por: number
+  actualizado_por: number
+  fecha_creacion: string
+  fecha_actualizacion: string
+  activo: boolean
+  alertas_tipo_alerta_tipo_id: number
+  mensaje: string | null
   alumnos: ApiAlertStudent
-  prioridad: ApiAlertPriority
-  evidencias?: ApiAlertEvidence[]
+  alertas_reglas: ApiAlertRule
+  alertas_origenes: ApiAlertOrigin
+  alertas_severidades: ApiAlertSeverity
+  alertas_prioridades: ApiAlertPriority
+  alertas_tipos: ApiAlertType
+  personas: ApiPerson | null
+  persona_responsable_actual: ApiPerson | null
 }
 
 // Interfaces para la UI
@@ -53,6 +80,7 @@ export interface Alert {
   title: string
   description: string
   date: string
+  time: string
   status: string
   priority: string
   type: string
@@ -70,6 +98,7 @@ export const FALLBACK_ALERTS: Alert[] = [
     title: "SOS Alma",
     description: "Alerta generada por bajo rendimiento académico",
     date: "08/04/2025",
+    time: "10:00",
     status: "Pendiente",
     priority: "Alta",
     type: "SOS Alma",
@@ -84,6 +113,7 @@ export const FALLBACK_ALERTS: Alert[] = [
     title: "Amarilla",
     description: "Alerta generada por inasistencias",
     date: "08/04/2025",
+    time: "10:00",
     status: "En curso",
     priority: "Media",
     type: "Amarilla",
@@ -98,6 +128,7 @@ export const FALLBACK_ALERTS: Alert[] = [
     title: "Denuncia",
     description: "Alerta generada por comportamiento",
     date: "07/04/2025",
+    time: "10:00",
     status: "Resuelta",
     priority: "Alta",
     type: "Denuncia",
@@ -149,35 +180,25 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
       // Acceso seguro a propiedades con valores por defecto
       const studentName = apiAlert.alumnos.personas.nombres || "Estudiante sin nombre"
       const studentLastName = apiAlert.alumnos.personas.apellidos || "Estudiante sin apellidos"
-      const studentEmail = apiAlert.alumnos.personas.email || "sin-email@ejemplo.com"
       const studentId = apiAlert.alumno_id.toString() || "0"
 
       // Mapear tipo de alerta
-      let alertType = apiAlert.tipo_alerta || "General"
+      let alertType = apiAlert.alertas_tipos.nombre || "General"
       // Convertir primera letra a mayúscula
       alertType = alertType.charAt(0).toUpperCase() + alertType.slice(1)
 
       // Mapear prioridad
       let priority = "Media"
-      let priorityColor = "#FFA500"
 
-      if (apiAlert.prioridad) {
-        if (apiAlert.prioridad.nivel) {
-          const nivel = apiAlert.prioridad.nivel.toLowerCase()
+      if (apiAlert.alertas_prioridades) {
+        if (apiAlert.alertas_prioridades.nombre) {
+          const nivel = apiAlert.alertas_prioridades.nombre.toLowerCase()
           if (nivel === "alta") priority = "Alta"
           else if (nivel === "media") priority = "Media"
           else if (nivel === "baja") priority = "Baja"
         }
 
-        priorityColor = apiAlert.prioridad.color || priorityColor
       }
-
-      // Usar el aula del alumno si está disponible
-      const classroom =
-        apiAlert.curso_alumno || (apiAlert.alumnos.curso_actual ? apiAlert.alumnos.curso_actual.nombre : "N/A")
-
-      // Usar el responsable si está disponible
-      const responsible = apiAlert.responsable || "Sin asignar"
 
       // Mapear el estado
       let status = apiAlert.estado || "Pendiente"
@@ -185,23 +206,15 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
       status = status.charAt(0).toUpperCase() + status.slice(1)
 
       // Crear la imagen del estudiante (aleatoria)
-      const studentImages = ["/smiling-woman-garden.png", "/young-man-city.png", "/confident-businessman.png"]
-      const studentImage = studentImages[Math.floor(Math.random() * studentImages.length)]
-
-      // Mapear evidencias si existen
-      const evidence = apiAlert.evidencias
-        ? apiAlert.evidencias.map((e) => ({
-          type: e.tipo,
-          url: e.url,
-          date: new Date(e.fecha).toLocaleDateString("es-ES"),
-        }))
-        : undefined
+      // const studentImages = ["/smiling-woman-garden.png", "/young-man-city.png", "/confident-businessman.png"]
+      const studentImage = apiAlert.alumnos.url_foto_perfil || "/confident-businessman.png"
 
       return {
         id: apiAlert.alumno_alerta_id.toString(),
         title: alertType,
-        description: apiAlert.tipo_alerta, // Using tipo_alerta as description
+        description: alertType, // Using tipo_alerta as description
         date: formattedDate,
+        time: formattedTime,
         status: status,
         priority: priority,
         type: alertType,
@@ -209,27 +222,13 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
           id: studentId,
           name: studentName,
           lastName: studentLastName,
-          email: studentEmail,
           avatar: studentImage,
         },
       }
     } catch (error) {
       console.error("Error mapping alert:", error)
       // Devolver un objeto de alerta por defecto en caso de error
-      return {
-        id: (apiAlert?.alumno_alerta_id || Math.floor(Math.random() * 1000)).toString(),
-        title: "Error",
-        description: "Error en datos",
-        date: new Date().toLocaleDateString("es-ES"),
-        status: "Error",
-        priority: "Media",
-        type: "Error",
-        student: {
-          id: "0",
-          name: "Error en datos",
-          avatar: "/placeholder.svg",
-        },
-      }
+      throw error
     }
   })
 }
@@ -254,10 +253,10 @@ export async function fetchAlerts(): Promise<Alert[]> {
       console.error(`Error en respuesta API (alumnos/alertas): ${response.status} - ${errorText}`)
 
       // Si es un 404, usar datos de ejemplo
-      if (response.status === 404) {
-        console.log("API no encontrada, usando datos de ejemplo")
-        return FALLBACK_ALERTS
-      }
+      // if (response.status === 404) {
+      //   console.log("API no encontrada, usando datos de ejemplo")
+      //   throw new Error(`Error al obtener alertas: ${response.status} - ${errorText}`)
+      // }
 
       throw new Error(`Error al obtener alertas: ${response.status} - ${errorText}`)
     }
@@ -267,10 +266,10 @@ export async function fetchAlerts(): Promise<Alert[]> {
     console.log("Datos reales de alertas obtenidos:", apiAlerts)
 
     // Verificar que apiAlerts sea un array
-    if (!Array.isArray(apiAlerts)) {
-      console.error("La respuesta de la API no es un array:", apiAlerts)
-      return FALLBACK_ALERTS
-    }
+    // if (!Array.isArray(apiAlerts)) {
+    //   console.error("La respuesta de la API no es un array:", apiAlerts)
+    //   return FALLBACK_ALERTS
+    // }
 
     // Convertir los datos de la API al formato de la UI
     const alerts = mapApiAlertsToAlerts(apiAlerts)
@@ -299,6 +298,7 @@ export async function fetchAlertById(id: string): Promise<AlertPage | null> {
     if (!response.ok)
       throw new Error("error en la petición")
     const alert = await response.json()
+    console.log('detalle Alerta',alert)
 
     if (!alert) {
       console.error(`No se encontró ninguna alerta con ID ${id}`)

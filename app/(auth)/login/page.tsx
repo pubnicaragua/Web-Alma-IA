@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { setAuthToken } from "@/lib/api-config"
+import { removeAuthToken, setAuthToken } from "@/lib/api-config"
+import { fetchProfileData } from "@/services/profile-service"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -76,6 +77,24 @@ export default function LoginPage() {
         setAuthToken(data.token)
         localStorage.setItem("isAuthenticated", "true")
         console.log("Login exitoso, token guardado")
+
+       try {
+        const profile = await fetchProfileData()
+        if(profile.rol.nombre === "Alumno" || profile.rol.nombre === "Apoderado") {
+          toast({
+            title: "Acceso denegado",
+            description: "No tienes permiso para acceder a esta sección.",
+            variant: "destructive",
+          })
+          removeAuthToken()
+          // form reset
+          return
+        } 
+       } catch (error) {
+        removeAuthToken()
+        return
+       }
+
 
         // Mostrar notificación de éxito
         toast({

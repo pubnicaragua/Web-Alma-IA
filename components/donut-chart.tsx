@@ -76,7 +76,9 @@ export function DonutChart({ title = "Distribución de alertas", initialData }: 
         <div className="flex items-center mb-4">
           <h3 className="font-medium text-gray-800">{title}</h3>
         </div>
-        <div className="text-gray-500 text-center py-10">No hay datos de alertas disponibles.</div>
+        <div className="bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-100 text-lg font-medium text-center py-6 px-4 rounded-md">
+          No hay datos de alertas disponibles.
+        </div>
       </div>
     )
   }

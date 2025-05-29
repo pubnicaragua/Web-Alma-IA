@@ -3,20 +3,28 @@ import { fetchWithAuth } from "@/lib/api-config"
 // Interfaces para la API
 export interface ApiQuestion {
   pregunta_id: number
-  tipo_pregunta: {
-    tipo_pregunta_id: number
-    nombre: string
-  }
-  nivel_educativo: {
-    nivel_educativo_id: number
-    nombre: string
-  }
+  tipo_pregunta_id: number
+  nivel_educativo_id: number
   diagnostico: string
   sintomas: string
   grupo_preguntas: string
   palabra_clave: string
   horario: string
   texto_pregunta: string
+  creado_por: number
+  actualizado_por: number
+  fecha_creacion: string
+  activo: boolean
+  fecha_actualizacion: string
+  template_code: string
+  tipos_preguntas: {
+    nombre: string
+    tipo_pregunta_id: number
+  }
+  niveles_educativos: {
+    nombre: string
+    nivel_educativo_id: number
+  }
 }
 
 // Interfaces para la UI
@@ -47,8 +55,8 @@ function mapApiQuestionsToQuestions(apiQuestions: ApiQuestion[]): Question[] {
 
     return {
       id: apiQuestion.pregunta_id.toString(),
-      questionType: apiQuestion.tipo_pregunta.nombre,
-      educationLevel: apiQuestion.nivel_educativo.nombre,
+      questionType: apiQuestion.tipos_preguntas.nombre,
+      educationLevel: apiQuestion.niveles_educativos.nombre,
       diagnostic: apiQuestion.diagnostico,
       symptoms: apiQuestion.sintomas,
       questionGroup: apiQuestion.grupo_preguntas,
@@ -144,12 +152,13 @@ export async function fetchQuestions(): Promise<Question[]> {
     }
 
     const data = await response.json()
+    console.log('preguntas.....',data)
     return mapApiQuestionsToQuestions(data)
   } catch (error) {
     console.error("Error al obtener preguntas:", error)
     // En caso de error, devolver datos de ejemplo
-    console.log("Usando datos de ejemplo para preguntas")
-    return sampleQuestions
+    // console.log("Usando datos de ejemplo para preguntas")
+    throw error
   }
 }
 

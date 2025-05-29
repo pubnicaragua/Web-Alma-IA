@@ -185,7 +185,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
 
         <div className="flex items-center space-x-4">
           <Bell className="text-white h-5 w-5 hidden sm:block" />
-          <Mail className="text-white h-5 w-5 hidden sm:block" />
+          {/* <Mail className="text-white h-5 w-5 hidden sm:block" /> */}
 
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center space-x-3 focus:outline-none">

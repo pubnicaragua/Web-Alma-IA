@@ -8,8 +8,6 @@ import { Button } from "@/components/ui/button"
 import { PlusCircle, RefreshCw, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { AppLayout } from "@/components/layout/app-layout"
-import { DataTable } from "@/components/data-table(2)"
-import { Student } from "@/services/home-service"
 
 
 export default function ReportsPage() {

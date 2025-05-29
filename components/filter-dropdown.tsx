@@ -1,7 +1,8 @@
 "use client"
-import { ChevronDown } from "lucide-react"
+import { Check, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 
 interface FilterDropdownProps {
   label: string
@@ -12,25 +13,41 @@ interface FilterDropdownProps {
 }
 
 export function FilterDropdown({ label, options, value, onChange, className }: FilterDropdownProps) {
+  // Mostrar el valor seleccionado o la etiqueta si es "Todos"
+  const displayValue = value === "Todos" ? label : `${label}: ${value}`
+
   return (
-    <div className={className}>
+    <div className={cn("w-full", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="w-full justify-between">
-            {label}
-            <ChevronDown className="h-4 w-4 opacity-50" />
+          <Button 
+            variant="outline" 
+            className="w-full justify-between overflow-hidden"
+            aria-label={`Filtrar por ${label?.toString()?.toLowerCase() || 'filtro'}`}
+          >
+            <span className="truncate">{displayValue}</span>
+            <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[200px]">
-          {options.map((option) => (
-            <DropdownMenuItem
-              key={option}
-              onClick={() => onChange(option)}
-              className={value === option ? "bg-gray-100" : ""}
-            >
-              {option}
-            </DropdownMenuItem>
-          ))}
+        <DropdownMenuContent align="start" className="w-[200px] p-1">
+          {options.map((option) => {
+            const isSelected = value === option
+            return (
+              <DropdownMenuItem
+                key={option}
+                onSelect={() => onChange(option)}
+                className={cn(
+                  "flex cursor-pointer items-center justify-between rounded-sm px-2 py-1.5 text-sm",
+                  isSelected && "bg-accent font-medium"
+                )}
+              >
+                <span className={cn("truncate", isSelected && "font-medium")}>
+                  {option}
+                </span>
+                {isSelected && <Check className="ml-2 h-4 w-4" />}
+              </DropdownMenuItem>
+            )
+          })}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -6,45 +6,44 @@ export interface ApiStudent {
   colegio_id: number;
   url_foto_perfil: string;
   telefono_contacto1: string;
-  email: string;
   telefono_contacto2: string;
+  email: string;
   creado_por: number;
   actualizado_por: number;
-  fecha_creacion: Date;
-  fecha_actualizacion: Date;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
   activo: boolean;
   persona_id: number;
-  personas: Personas;
-  colegios: Colegios;
-  cursos: Curso[];
+  consentimiento: boolean;
+  personas: {
+    nombres: string;
+    apellidos: string;
+    persona_id: number;
+    fecha_nacimiento: string;
+    numero_documento: string;
+    usuarios: Array<{
+      rol_id: number;
+      usuario_id: number;
+    }>;
+  };
+  colegios: {
+    nombre: string;
+    colegio_id: number;
+  };
+  cursos: Array<{
+    grados: {
+      nombre: string;
+      grado_id: number;
+    };
+    curso_id: number;
+    nombre_curso: string;
+    niveles_educativos: {
+      nombre: string;
+      nivel_educativo_id: number;
+    };
+  }>;
 }
 
-export interface Colegios {
-  nombre: string;
-  colegio_id: number;
-}
-
-export interface Curso {
-  grados: Grados;
-  niveles_educativos: NivelesEducativos;
-}
-
-export interface Grados {
-  nombre: string;
-  grado_id: number;
-}
-
-export interface NivelesEducativos {
-  nombre: string;
-  nivel_educativo_id: number;
-}
-
-export interface Personas {
-  nombres: string;
-  apellidos: string;
-  persona_id: number;
-  fecha_nacimiento: string | null;
-}
 
 // Interfaz para el modelo de estudiante usado en la UI
 export interface Student {
@@ -215,80 +214,35 @@ function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
       return [];
     }
 
-    return apiStudents.map((apiStudent) => {
+    return apiStudents.map(apiStudent => {
       try {
-        // Determinar el estado basado en algún criterio (por ejemplo, alertas activas)
-        // Como no tenemos un criterio claro, usaremos "Normal" como valor predeterminado
-        const status = "Normal";
-
-        // Extraer el nombre completo
-        let name = "";
-        if (apiStudent.personas?.nombres && apiStudent.personas?.apellidos) {
-          name = `${ apiStudent.personas.nombres } ${ apiStudent.personas.apellidos }`;
-        } else if (apiStudent.email) {
-          const emailParts = apiStudent.email.split("@")[0].split(".");
-          if (emailParts.length > 1) {
-            name = `${ emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1) } ${ emailParts[1].charAt(0).toUpperCase() + emailParts[1].slice(1) }`;
-          } else {
-            name = emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1);
-          }
-        }
-
-        // Calcular edad correctamente
-        let age = 0; // Valor por defecto
-        if (apiStudent.personas?.fecha_nacimiento) {
-          const calculatedAge = calcularEdad(apiStudent.personas.fecha_nacimiento);
-          if (calculatedAge > 0) {
-            age = calculatedAge;
-          }
-        }
-
-        // Acceder a nivel y curso correctamente
-        let level = "No especificado";
-        let course = "No especificado";
-
-        if (apiStudent.cursos && apiStudent.cursos.length > 0) {
-          // Obtener el nivel educativo
-          if (apiStudent.cursos[0].niveles_educativos?.nombre) {
-            level = apiStudent.cursos[0].niveles_educativos.nombre;
-          }
-
-          // Obtener el grado/curso
-          if (apiStudent.cursos[0].grados?.nombre) {
-            course = apiStudent.cursos[0].grados.nombre;
-          }
-        }
-
-        // Construir el objeto Student
+        // Calcular la edad a partir de la fecha de nacimiento
+        const fechaNacimiento = apiStudent.personas?.fecha_nacimiento;
+        const edad = fechaNacimiento ? calcularEdad(fechaNacimiento) : 0;
+        
+        // Obtener nivel y curso de la estructura anidada
+        const curso = apiStudent.cursos?.[0]?.nombre_curso || "No especificado";
+        const grado = apiStudent.cursos?.[0]?.grados?.nombre || "No especificado";
+        
         return {
           id: apiStudent.alumno_id.toString(),
-          name: name,
-          level: level,
-          course: course,
-          age: age,
-          status: status,
-          image: apiStudent.url_foto_perfil || "/placeholder.svg",
-          email: apiStudent.email,
-          phone: apiStudent.telefono_contacto1,
+          name: `${apiStudent.personas?.nombres || ''} ${apiStudent.personas?.apellidos || ''}`.trim(),
+          level: grado,
+          course: curso,
+          age: edad,
+          status: apiStudent.activo ? "Activo" : "Inactivo",
+          image: apiStudent.url_foto_perfil || "",
+          email: apiStudent.email || "",
+          phone: apiStudent.telefono_contacto1 || ""
         };
       } catch (error) {
         console.error("Error al mapear estudiante individual:", error, apiStudent);
-        // Devolver un estudiante con datos mínimos para evitar errores en la UI
-        return {
-          id: apiStudent.alumno_id?.toString() || "0",
-          name: "Error en datos",
-          level: "No disponible",
-          course: "No disponible",
-          age: 0,
-          status: "Error",
-          email: "",
-          phone: "",
-        };
+        throw error
       }
     });
   } catch (error) {
     console.error("Error en mapApiStudentsToStudents:", error);
-    return [];
+    throw error
   }
 }
 
@@ -348,17 +302,8 @@ export async function fetchStudents(): Promise<Student[]> {
   try {
     console.log("Obteniendo lista de estudiantes desde la API...");
 
-    // Obtener el ID del colegio seleccionado
-    const selectedSchool = localStorage.getItem("selectedSchool");
-
-    // Construir la URL con el parámetro de colegio si existe
-    let url = "/alumnos";
-    if (selectedSchool) {
-      url += `?colegio_id = ${ selectedSchool }`;
-    }
-
     // Realizar la solicitud GET a la API
-    const response = await fetchWithAuth(url, {
+    const response = await fetchWithAuth("/alumnos", {
       method: "GET",
     });
 
@@ -372,9 +317,11 @@ export async function fetchStudents(): Promise<Student[]> {
     // Intentar parsear la respuesta como JSON
     const apiStudents = (await response.json()) as ApiStudent[];
     console.log(`Recibidos ${ apiStudents.length } estudiantes de la API`);
+    console.log('apiStudents',apiStudents);
 
     // Transformar los datos de la API a nuestro modelo de Student
     const students = mapApiStudentsToStudents(apiStudents);
+    console.log("Estudiantes transformados:", students);
     return students;
   } catch (error) {
     console.error('Error al obtener estudiantes:', error);
@@ -417,7 +364,7 @@ export async function fetchStudentDetails(id: string): Promise<StudentDetailResp
     console.log(`Obteniendo detalles del alumno con ID: ${ id }`);
 
     // Realizar la solicitud GET a la API con la nueva ruta
-    const response = await fetchWithAuth(`/alumnos/detalle / ${ id }`, {
+    const response = await fetchWithAuth(`/alumnos/detalle/${ id }`, {
       method: "GET",
     });
 

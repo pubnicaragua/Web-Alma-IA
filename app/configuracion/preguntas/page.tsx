@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { AppLayout } from "@/components/layout/app-layout"
-import { DataTable } from "@/components/data-table(2)"
+import { DataTable } from "@/components/data-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { AddQuestionModal } from "@/components/question/add-question-modal"
@@ -28,11 +28,6 @@ export default function QuestionsPage() {
     } catch (err) {
       console.error("Error al cargar preguntas:", err)
       setError("No se pudieron cargar las preguntas. Por favor, intenta de nuevo.")
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar las preguntas. Se están mostrando datos de ejemplo.",
-        variant: "destructive",
-      })
     } finally {
       setLoading(false)
     }

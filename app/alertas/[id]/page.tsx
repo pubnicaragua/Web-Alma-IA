@@ -22,17 +22,15 @@ interface Action {
 }
 
 export interface Alert {
-  id: string
+  id: number
   student: {
     name: string
-    course: string
     image: string
   }
   generationDate: string
   generationTime: string
   responsible: {
     name: string
-    role: string
     image: string
   }
   isAnonymous: boolean
@@ -41,58 +39,7 @@ export interface Alert {
 }
 
 // Datos de ejemplo
-const mockAlert: Alert = {
-  id: '10000',
-  student: {
-    name: "Matías Ignacio Díaz",
-    course: "7°A",
-    image: "/young-man-city.png",
-  },
-  generationDate: "08/04/2025",
-  generationTime: "08:10",
-  responsible: {
-    name: "Marcela Vidal",
-    role: "Psicóloga Escolar",
-    image: "/smiling-woman-garden.png",
-  },
-  isAnonymous: false,
-  description:
-    "El alumno indicó sentir enojo persistente durante su ingreso los últimos 3 días consecutivos. Señaló además una situación de conflicto no resuelta con un compañero de curso.",
-  actions: [
-    {
-      fecha: "08/04/2025",
-      hora: "08:12 AM",
-      usuarioResponsable: "Prof. J. Rivera",
-      accionRealizada: "Derivación a psicóloga escolar",
-      fechaCompromiso: "09/04/2025",
-      observaciones: "Se solicitó seguimiento a psicóloga",
-    },
-    {
-      fecha: "08/04/2025",
-      hora: "10:00 AM",
-      usuarioResponsable: "Psic. Marcela Vidal",
-      accionRealizada: "Primera revisión de alerta",
-      fechaCompromiso: "10/04/2025",
-      observaciones: "Agendada sesión para el día siguiente",
-    },
-    {
-      fecha: "09/04/2025",
-      hora: "08:45 AM",
-      usuarioResponsable: "Psic. Marcela Vidal",
-      accionRealizada: "Confirmación de asistencia a sesión",
-      fechaCompromiso: "-",
-      observaciones: "Alumno asistirá a las 10:30",
-    },
-    {
-      fecha: "10/04/2025",
-      hora: "11:30 AM",
-      usuarioResponsable: "Psic. Marcela Vidal",
-      accionRealizada: "Sesión realizada",
-      fechaCompromiso: "-",
-      observaciones: "Se acordó realizar seguimiento semanal",
-    },
-  ],
-}
+
 
 export default function AlertDetailPage() {
   const { id } = useParams()
@@ -227,15 +174,15 @@ export default function AlertDetailPage() {
               <div className="flex items-center">
                 <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
                   <Image
-                    src={alert.responsible.image || "/placeholder.svg"}
-                    alt={alert.responsible.name}
+                    src={alert.responsible?.image?.trim() || "/placeholder.svg"}
+                    alt={alert.responsible?.name?.trim() || "No disponible"}
                     fill
                     sizes="40px"
                     className="object-cover"
                   />
                 </div>
                 <span className="text-gray-700">
-                  {alert.responsible.role} - {alert.responsible.name}
+                  {alert.responsible?.name?.trim() || "No disponible"}
                 </span>
               </div>
               {!alert.isAnonymous && (
@@ -274,16 +221,24 @@ export default function AlertDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {alert.actions.map((action, index) => (
-                    <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm">{action.fecha}</td>
-                      <td className="px-4 py-3 text-sm">{action.hora}</td>
-                      <td className="px-4 py-3 text-sm">{action.usuarioResponsable}</td>
-                      <td className="px-4 py-3 text-sm">{action.accionRealizada}</td>
-                      <td className="px-4 py-3 text-sm">{action.fechaCompromiso}</td>
-                      <td className="px-4 py-3 text-sm">{action.observaciones}</td>
+                  {alert.actions.length > 0 ? (
+                    alert.actions.map((action, index) => (
+                      <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm">{action.fecha}</td>
+                        <td className="px-4 py-3 text-sm">{action.hora}</td>
+                        <td className="px-4 py-3 text-sm">{action.usuarioResponsable}</td>
+                        <td className="px-4 py-3 text-sm">{action.accionRealizada}</td>
+                        <td className="px-4 py-3 text-sm">{action.fechaCompromiso}</td>
+                        <td className="px-4 py-3 text-sm">{action.observaciones}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-6 text-center text-gray-500">
+                        No hay acciones registradas para esta alerta
+                      </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>

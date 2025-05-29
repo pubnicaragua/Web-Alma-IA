@@ -186,17 +186,16 @@ export async function fetchReports(): Promise<APIReportGeneral[]> {
 }
 
 // Función para obtener un informe específico por ID
-export async function fetchReportById(id: string): Promise<Report | null> {
+export async function fetchReportById(id: string): Promise<APIReportGeneral | null> {
   try {
     // Intentar obtener todos los informes
     const reports = await fetchReports()
     // Buscar el informe con el ID especificado
-    const report = reports.find((r) => r.id === id)
+    const report = reports.find((r) => r.informe_id === Number(id))
     return report || null
   } catch (error) {
     console.error(`Error al obtener informe con ID ${id}:`, error)
     // En caso de error, buscar en los datos de ejemplo
-    const sampleReport = sampleReports.find((r) => r.id === id)
-    return sampleReport || null
+   throw error
   }
 }

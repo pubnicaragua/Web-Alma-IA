@@ -5,11 +5,12 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { AppLayout } from "@/components/layout/app-layout"
 import { FilterDropdown } from "@/components/filter-dropdown"
-import { DataTable } from "@/components/data-table(2)"
+import { DataTable } from "@/components/data-table"
 import { Pagination } from "@/components/pagination"
-import { AddTeacherModal } from "@/components/teacher/add-teacher-modal"
+import { AddTeacherModal, AddTeacherModalProps } from "@/components/teacher/add-teacher-modal"
 import { type Teacher, getAllTeachers } from "@/services/teachers-service"
-import TeacherDetailSkeleton from "@/components/teacher/teacher-detail-skeleton"
+import { TeachersListSkeleton } from "@/components/teacher/teachers-list-skeleton"
+import { equalsIgnoreCase } from "@/lib/utils"
 
 export default function TeachersPage() {
   const router = useRouter()
@@ -20,15 +21,13 @@ export default function TeachersPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Estados para los filtros
-  const [levelFilter, setLevelFilter] = useState<string>("Todos")
-  const [courseFilter, setCourseFilter] = useState<string>("Todos")
+  const [nameFilter, setNameFilter] = useState<string>("")
   const [subjectFilter, setSubjectFilter] = useState<string>("Todos")
-  const [typeFilter, setTypeFilter] = useState<string>("Todos")
   const [statusFilter, setStatusFilter] = useState<string>("Todos")
 
   // Estado para la paginación
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 4
+  const itemsPerPage = 25
 
   // Cargar datos de docentes
   useEffect(() => {
@@ -50,24 +49,17 @@ export default function TeachersPage() {
     fetchTeachers()
   }, [])
 
-  // Opciones para los filtros
-  const levelOptions = ["Todos", "Cuartos básicos", "Quintos básicos", "Sextos básicos"]
-  const courseOptions = ["Todos", "A", "B", "C", "D"]
-
   // Generar opciones de filtro dinámicamente basadas en los datos
-  const subjectOptions = ["Todos", ...Array.from(new Set(teachersData.map((teacher) => teacher.subject)))]
-  const typeOptions = ["Todos", "Principal", "No asignado"]
-  const statusOptions = ["Todos", ...Array.from(new Set(teachersData.map((teacher) => teacher.status)))]
+  const subjectOptions = ["Todos", ...new Set(teachersData.map((teacher) => teacher.subject).filter(Boolean))]
+  const statusOptions = ["Todos", ...new Set(teachersData.map((teacher) => teacher.status).filter(Boolean))]
 
   // Filtrar los datos según los filtros seleccionados
   const filteredTeachers = teachersData.filter((teacher) => {
-    return (
-      (levelFilter === "Todos" || teacher.level === levelFilter) &&
-      (courseFilter === "Todos" || teacher.course === courseFilter) &&
-      (subjectFilter === "Todos" || teacher.subject === subjectFilter) &&
-      (typeFilter === "Todos" || teacher.type === typeFilter) &&
-      (statusFilter === "Todos" || teacher.status === statusFilter)
-    )
+    const matchesName = teacher.name.toLowerCase().includes(nameFilter.toLowerCase())
+    const matchesSubject = subjectFilter === "Todos" || teacher.subject === subjectFilter
+    const matchesStatus = statusFilter === "Todos" || teacher.status === statusFilter
+    
+    return matchesName && matchesSubject && matchesStatus
   })
 
   // Calcular el total de páginas
@@ -82,7 +74,6 @@ export default function TeachersPage() {
     { key: "subject", title: "Especialidad" },
     { key: "school", title: "Colegio" },
     { key: "status", title: "Estado" },
-    { key: "document", title: "Documento" },
   ]
 
   // Función para navegar a la vista detallada del docente
@@ -115,54 +106,20 @@ export default function TeachersPage() {
         return (
           <span
             className={`px-2 py-1 rounded-full text-xs font-medium ${
-              teacher.status === "Activo" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+              equalsIgnoreCase(teacher.status, "Activo") ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
             }`}
           >
-            {teacher.status}
+            {teacher.status.toLowerCase()}
           </span>
         )
-      case "document":
-        return `${teacher.documentType}: ${teacher.document}`
       default:
         return teacher[column.key as keyof Teacher] || "-"
     }
   }
 
   // Función para agregar un nuevo docente
-  const handleAddTeacher = (teacherData: {
-    name: string
-    rut: string
-    email: string
-    phone: string
-    birthDate: string
-    position: string
-    subject: string
-    tutorCourse: string
-    type: string
-    courses: string
-  }) => {
-    // En un caso real, aquí se enviaría la información al servidor
-    // y luego se actualizaría el estado con la respuesta
-
-    // Para este ejemplo, creamos un nuevo docente con datos simulados
-    const newTeacher: Teacher = {
-      id: (teachersData.length + 1).toString(),
-      name: teacherData.name,
-      subject: teacherData.subject,
-      status: "Activo",
-      document: teacherData.rut,
-      documentType: "RUT",
-      school: "Colegio Horizonte",
-      schoolType: "Privado",
-      level: "Cuartos básicos", // Valor por defecto
-      course: teacherData.tutorCourse || "A", // Usar el curso que tutoriza o un valor por defecto
-      type: teacherData.type || "No asignado",
-      age: calculateAge(teacherData.birthDate) || 30, // Calcular edad o usar valor por defecto
-      image: "/young-man-city.png", // Imagen por defecto
-      email: teacherData.email,
-    }
-
-    setTeachersData([...teachersData, newTeacher])
+  const handleAddTeacher: AddTeacherModalProps['onAddTeacher'] = (teacher) => {
+    console.log("Docente agregado:", teacher)
   }
 
   // Función para calcular la edad a partir de la fecha de nacimiento
@@ -189,7 +146,7 @@ export default function TeachersPage() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Docentes</h2>
           </div>
-          <TeacherDetailSkeleton />
+          <TeachersListSkeleton />
         </div>
       </AppLayout>
     )
@@ -223,36 +180,58 @@ export default function TeachersPage() {
         </div>
 
         {/* Filtros */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-          <FilterDropdown label="Nivel" options={levelOptions} value={levelFilter} onChange={setLevelFilter} />
-          <FilterDropdown label="Curso" options={courseOptions} value={courseFilter} onChange={setCourseFilter} />
-          <FilterDropdown
-            label="Especialidad"
-            options={subjectOptions}
-            value={subjectFilter}
-            onChange={setSubjectFilter}
-          />
-          <FilterDropdown label="Tipo" options={typeOptions} value={typeFilter} onChange={setTypeFilter} />
-          <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="space-y-1">
+            <label htmlFor="nameFilter" className="block text-sm font-medium text-gray-700 mb-1">
+              Buscar por nombre
+            </label>
+            <input
+              id="nameFilter"
+              type="text"
+              placeholder="Buscar docente..."
+              value={nameFilter}
+              onChange={(e) => setNameFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Especialidad
+            </label>
+            <FilterDropdown
+              label="Especialidad"
+              options={subjectOptions}
+              value={subjectFilter}
+              onChange={setSubjectFilter}
+              className="w-full"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Estado
+            </label>
+            <FilterDropdown
+              label="Estado"
+              options={statusOptions}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              className="w-full"
+            />
+          </div>
         </div>
 
         {/* Mensaje si no hay docentes */}
-        {filteredTeachers.length === 0 && (
+        {filteredTeachers.length === 0 ? (
           <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded mb-6">
             No se encontraron docentes con los filtros seleccionados.
           </div>
-        )}
-
-        {/* Tabla de docentes */}
-        {filteredTeachers.length > 0 && (
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
-            <DataTable columns={columns} data={paginatedTeachers} renderCell={renderCell} />
-          </div>
-        )}
-
-        {/* Paginación */}
-        {filteredTeachers.length > 0 && (
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+        ) : (
+          <>
+            {/* Tabla de docentes */}
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+              <DataTable columns={columns} data={paginatedTeachers} pageSize={itemsPerPage} renderCell={renderCell} />
+            </div>
+          </>
         )}
       </div>
     </AppLayout>

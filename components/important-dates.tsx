@@ -36,12 +36,6 @@ export function ImportantDates({ title = "Fechas importantes", initialData }: Im
         if (!data || !Array.isArray(data) || data.length === 0) {
           console.log("No se recibieron datos válidos")
           setDates([])
-
-          toast({
-            title: "No hay fechas importantes",
-            description: "No se encontraron fechas importantes para mostrar.",
-            variant: "warning",
-          })
         } else {
           setDates(data)
           console.log("Fechas importantes cargadas correctamente:", data)
@@ -128,7 +122,9 @@ export function ImportantDates({ title = "Fechas importantes", initialData }: Im
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-gray-500 text-center py-10">No hay fechas importantes disponibles.</div>
+          <div className="bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-100 text-lg font-medium text-center py-6 px-4 rounded-md">
+            No hay fechas importantes disponibles.
+          </div>
         </CardContent>
       </Card>
     )

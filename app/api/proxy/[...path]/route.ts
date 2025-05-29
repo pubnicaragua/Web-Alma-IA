@@ -1,11 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
-
+// import fetch from 'node-fetch';
+// import { HttpsProxyAgent } from 'https-proxy-agent';
+// const proxyAgent = new HttpsProxyAgent('http://localhost:62607');
+// const agent = proxyAgent;
 // API base URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api-almaia.onrender.com/api/v1"
 
 // Función auxiliar para normalizar la URL
-const getApiUrl = (path: string[]) => {
-  const pathStr = path.join("/")
+const getApiUrl = (path: string[] | string) => {
+  const pathStr = Array.isArray(path) ? path.join("/") : path
   const baseUrl = API_BASE_URL.endsWith("/") ? API_BASE_URL.slice(0, -1) : API_BASE_URL
   return `${baseUrl}/${pathStr}`
 }
@@ -33,8 +36,14 @@ const handleApiError = (error: unknown, path: string) => {
 
 export async function GET(request: NextRequest, { params }: { params: { path: string[] } }) {
   try {
+    const searchParams = request.nextUrl.searchParams
     const path = (await params).path
-    const apiUrl = getApiUrl(path)
+    let apiUrl = getApiUrl(path)
+
+    if (searchParams && searchParams.size > 0)
+      searchParams.keys().forEach((key) => {
+        apiUrl += `?${key}=${searchParams.get(key)}`
+      })
     console.log(`Proxy GET request to: ${apiUrl}`)
 
     // Obtener el token de autorización de la solicitud
@@ -43,6 +52,8 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     // Preparar headers para la solicitud a la API externa
     const headers: HeadersInit = {
       "Content-Type": "application/json",
+      'Cache-Control': 'no-store, max-age=0'
+
     }
 
     // Añadir el header de autorización si existe
@@ -60,6 +71,7 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     console.log(`Realizando solicitud a: ${apiUrl}`)
     const response = await fetch(apiUrl, {
       method: "GET",
+      // agent,
       headers,
       // Añadir un timeout para evitar que la solicitud se quede colgada
       signal: AbortSignal.timeout(10000), // 10 segundos de timeout
@@ -139,6 +151,7 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
     console.log(`Realizando solicitud a: ${apiUrl}`)
     const response = await fetch(apiUrl, {
       method: "POST",
+      // agent,
       headers,
       body: JSON.stringify(body),
       // Añadir un timeout para evitar que la solicitud se quede colgada
@@ -252,8 +265,8 @@ export async function PUT(request: NextRequest, { params }: { params: { path: st
 
 export async function DELETE(request: NextRequest, { params }: { params: { path: string[] } }) {
   try {
-    const path = params.path.join("/")
-    const apiUrl = getApiUrl(params.path)
+    const path = (await params).path.join("/")
+    const apiUrl = getApiUrl(path)
     console.log(`Proxy DELETE request to: ${apiUrl}`)
 
     // Obtener el token de autorización de la solicitud
@@ -276,6 +289,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { path:
     console.log(`Realizando solicitud a: ${apiUrl}`)
     const response = await fetch(apiUrl, {
       method: "DELETE",
+      // agent,
       headers,
       signal: AbortSignal.timeout(10000),
     })

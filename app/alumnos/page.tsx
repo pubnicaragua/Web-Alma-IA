@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { RefreshCw } from 'lucide-react'
 import { Header } from "@/components/header"
 import { NavigationMenu } from "@/components/navigation-menu"
 import { FilterDropdown } from "@/components/filter-dropdown"
-import { DataTable } from "@/components/data-table(2)"
+import { DataTable } from "@/components/data-table"
 import { fetchStudents, type Student } from "@/services/students-service"
 import { useToast } from "@/hooks/use-toast"
 import { MobileSidebar } from "@/components/mobile-sidebar"
@@ -32,6 +32,7 @@ export default function StudentsPage() {
   const [courseOptions, setCourseOptions] = useState<string[]>(["Todos"])
   const [ageOptions, setAgeOptions] = useState<string[]>(["Todos"])
   const [statusOptions, setStatusOptions] = useState<string[]>(["Todos"])
+  const [currentPage, setCurrentPage] = useState(1)
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
@@ -80,14 +81,19 @@ export default function StudentsPage() {
   }
 
   // Filtrar los datos según los filtros seleccionados
-  const filteredStudents = students.filter((student) => {
-    return (
-      (levelFilter === "Todos" || student.level === levelFilter) &&
-      (courseFilter === "Todos" || student.course === courseFilter) &&
-      (ageFilter === "Todos" || student.age.toString() === ageFilter) &&
-      (statusFilter === "Todos" || student.status === statusFilter)
-    )
-  })
+  const filteredStudents = useMemo(() => {
+    // Restablecer a la primera página cuando cambian los filtros
+    setCurrentPage(1);
+    
+    return students.filter((student) => {
+      return (
+        (levelFilter === "Todos" || student.level === levelFilter) &&
+        (courseFilter === "Todos" || student.course === courseFilter) &&
+        (ageFilter === "Todos" || student.age.toString() === ageFilter) &&
+        (statusFilter === "Todos" || student.status === statusFilter)
+      )
+    });
+  }, [students, levelFilter, courseFilter, ageFilter, statusFilter]);
 
   // Columnas para la tabla
   const columns = [
@@ -191,10 +197,18 @@ export default function StudentsPage() {
                 renderSkeleton()
               ) : error ? (
                 renderError()
-              ) : students.length === 0 ? (
+              ) : filteredStudents.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">No hay alumnos disponibles</div>
               ) : (
-                <DataTable columns={columns} data={filteredStudents} renderCell={renderCell} />
+                <DataTable 
+                  columns={columns} 
+                  data={filteredStudents} 
+                  renderCell={renderCell}
+                  currentPage={currentPage}
+                  onPageChange={setCurrentPage}
+                  pageSize={25}
+                  className="mt-4"
+                />
               )}
             </div>
           </div>

@@ -8,7 +8,18 @@ import { Button } from "@/components/ui/button"
 import { Mail, Phone, Calendar, BookOpen, School, Clock, Users, ToggleLeft, ToggleRight } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import TeacherDetailSkeleton from "@/components/teacher/teacher-detail-skeleton"
-import { type Teacher, getTeacherById } from "@/services/teachers-service"
+import { type Teacher, TeacherApiResponse, deleteTeacher, getTeacherById } from "@/services/teachers-service"
+import { useToast } from "@/components/ui/use-toast"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface TeacherCourseInfo {
   curso: string
@@ -39,7 +50,7 @@ interface TeacherDetail extends Teacher {
 export default function TeacherDetailPage() {
   const { id } = useParams()
   const router = useRouter()
-  const [teacher, setTeacher] = useState<TeacherDetail | null>(null)
+  const [teacher, setTeacher] = useState<TeacherApiResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const isMobile = useIsMobile()
@@ -61,48 +72,48 @@ export default function TeacherDetailPage() {
         }
 
         // Enriquecer los datos del docente con información adicional para la vista detallada
-        const enhancedTeacher: TeacherDetail = {
-          ...teacherData,
-          fullName: teacherData.name,
-          phone: "+56 9 8765 4321", // Datos de ejemplo
-          position: `Docente de ${teacherData.subject}`,
-          additionalRole: "Profesora Tutora del 1°A - 2°A",
-          yearsInSchool: 3,
-          availability: "Lunes a viernes, 08:00-16:30",
-          currentCourses: "1°A - 2°A",
-          subjects: teacherData.subject,
-          isActive: teacherData.status === "Activo",
-          coursesInfo: [
-            {
-              curso: "4°A",
-              numAlumnos: 32,
-              alertasActivas: 5,
-              ultimaAlerta: "12/04/2025",
-            },
-            {
-              curso: "2°A",
-              numAlumnos: 32,
-              alertasActivas: 5,
-              ultimaAlerta: "12/04/2025",
-            },
-          ],
-          recentActivities: [
-            {
-              fecha: "12/04/2025",
-              accionRealizada: "Ingresó a vista de alertas activas",
-            },
-            {
-              fecha: "11/04/2025",
-              accionRealizada: "Exportó el informe mensual del 1°A",
-            },
-            {
-              fecha: "09/04/2025",
-              accionRealizada: "Revisó las alertas del 1°A",
-            },
-          ],
-        }
+        // const enhancedTeacher: TeacherDetail = {
+        //   ...teacherData,
+        //   fullName: teacherData.name,
+        //   phone: "+56 9 8765 4321", // Datos de ejemplo
+        //   position: `Docente de ${teacherData.subject}`,
+        //   additionalRole: "Profesora Tutora del 1°A - 2°A",
+        //   yearsInSchool: 3,
+        //   availability: "Lunes a viernes, 08:00-16:30",
+        //   currentCourses: "1°A - 2°A",
+        //   subjects: teacherData.subject,
+        //   isActive: teacherData.status === "Activo",
+        //   coursesInfo: [
+        //     {
+        //       curso: "4°A",
+        //       numAlumnos: 32,
+        //       alertasActivas: 5,
+        //       ultimaAlerta: "12/04/2025",
+        //     },
+        //     {
+        //       curso: "2°A",
+        //       numAlumnos: 32,
+        //       alertasActivas: 5,
+        //       ultimaAlerta: "12/04/2025",
+        //     },
+        //   ],
+        //   recentActivities: [
+        //     {
+        //       fecha: "12/04/2025",
+        //       accionRealizada: "Ingresó a vista de alertas activas",
+        //     },
+        //     {
+        //       fecha: "11/04/2025",
+        //       accionRealizada: "Exportó el informe mensual del 1°A",
+        //     },
+        //     {
+        //       fecha: "09/04/2025",
+        //       accionRealizada: "Revisó las alertas del 1°A",
+        //     },
+        //   ],
+        // }
 
-        setTeacher(enhancedTeacher)
+        setTeacher(teacherData)
       } catch (err) {
         console.error("Error al cargar docente:", err)
         setError(
@@ -117,18 +128,45 @@ export default function TeacherDetailPage() {
     fetchTeacher()
   }, [id])
 
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+
   const handleToggleTeacherStatus = () => {
     if (!teacher) return
+    setShowConfirmDialog(true)
+  }
 
-    const action = teacher.isActive ? "desactivar" : "activar"
-    if (confirm(`¿Estás seguro de que deseas ${action} a este docente?`)) {
-      // En un caso real, aquí se haría una petición a la API para cambiar el estado del docente
-      setTeacher({
-        ...teacher,
-        isActive: !teacher.isActive,
-        status: teacher.isActive ? "Inactivo" : "Activo",
+  const { toast } = useToast()
+
+  const confirmStatusChange = async () => {
+    if (!teacher) return
+    
+    try {
+      const success = await deleteTeacher(id as string)
+      
+      if (success) {
+        toast({
+          title: "¡Éxito!",
+          description: `El docente ${teacher.personas.nombres} ha sido eliminado correctamente.`,
+          variant: "default",
+        })
+      } else {
+        throw new Error("No se pudo eliminar el docente")
+      }
+      
+      router.push("/administrativo/docentes")
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al intentar eliminar el docente. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
       })
+    } finally {
+      setShowConfirmDialog(false)
     }
+  }
+
+  const cancelStatusChange = () => {
+    setShowConfirmDialog(false)
   }
 
   if (isLoading) {
@@ -171,6 +209,25 @@ export default function TeacherDetailPage() {
 
   return (
     <AppLayout>
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar cambio de estado</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas {teacher?.estado === 'activo' ? 'desactivar' : 'activar'} a este docente?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelStatusChange}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmStatusChange}
+              className={teacher?.estado === 'activo' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}
+            >
+              {teacher?.estado === 'activo' ? 'Desactivar' : 'Activar'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className="container mx-auto px-3 sm:px-6 py-8">
         {/* Zona 1: Información principal del docente */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
@@ -178,39 +235,39 @@ export default function TeacherDetailPage() {
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
               <div className="relative w-32 h-32 rounded-full overflow-hidden flex-shrink-0 border-4 border-blue-100">
                 <Image
-                  src={teacher.image || "/placeholder.svg"}
-                  alt={teacher.name}
+                  src={"/young-man-city.png"}
+                  alt={teacher.personas.nombres}
                   fill
                   sizes="128px"
                   className="object-cover"
                 />
               </div>
               <div className="flex flex-col items-center md:items-start">
-                <h1 className="text-3xl font-bold text-gray-800">{teacher.name}</h1>
-                <p className="text-xl text-gray-600 mb-2">{teacher.position}</p>
+                <h1 className="text-3xl font-bold text-gray-800">{teacher.personas.nombres}</h1>
+                <p className="text-xl text-gray-600 mb-2">{teacher.personas.apellidos}</p>
                 <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {teacher.additionalRole}
+                  {teacher.especialidad}
                 </div>
               </div>
             </div>
             <Button
               onClick={handleToggleTeacherStatus}
-              className={`${teacher.isActive ? "bg-amber-500 hover:bg-amber-600" : "bg-green-500 hover:bg-green-600"} self-start`}
+              className={`${teacher.estado === 'activo' ? "bg-amber-500 hover:bg-amber-600" : "bg-green-500 hover:bg-green-600"} self-start`}
             >
               {isMobile ? (
-                teacher.isActive ? (
+                teacher.estado === 'activo' ? (
                   <ToggleRight className="h-5 w-5" />
                 ) : (
                   <ToggleLeft className="h-5 w-5" />
                 )
               ) : (
                 <>
-                  {teacher.isActive ? (
+                  {teacher.estado === 'activo' ? (
                     <ToggleRight className="h-5 w-5 mr-2" />
                   ) : (
                     <ToggleLeft className="h-5 w-5 mr-2" />
                   )}
-                  {teacher.isActive ? "Desactivar docente" : "Activar docente"}
+                  {teacher.estado === 'activo' ? "Desactivar docente" : "Activar docente"}
                 </>
               )}
             </Button>
@@ -227,20 +284,20 @@ export default function TeacherDetailPage() {
             <div className="space-y-4">
               <div className="flex flex-col">
                 <span className="text-sm text-gray-500 mb-1">Nombre completo:</span>
-                <span className="text-gray-800 font-medium">{teacher.fullName}</span>
+                <span className="text-gray-800 font-medium">{teacher.personas.nombres + " " + teacher.personas.apellidos}</span>
               </div>
-              <div className="flex flex-col">
+              {/* <div className="flex flex-col">
                 <span className="text-sm text-gray-500 mb-1">Edad:</span>
                 <span className="text-gray-800 font-medium">
-                  {teacher.age ? `${teacher.age} años` : "No disponible"}
+                  {teacher?.age ? `${teacher.age} años` : "No disponible"}
                 </span>
-              </div>
-              <div className="flex flex-col">
+              </div> */}
+              {/* <div className="flex flex-col">
                 <span className="text-sm text-gray-500 mb-1">Documento:</span>
                 <span className="text-gray-800 font-medium">
                   {teacher.documentType}: {teacher.document}
                 </span>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -250,7 +307,7 @@ export default function TeacherDetailPage() {
               <Mail className="mr-2 h-5 w-5 text-blue-500" />
               Información de contacto
             </h2>
-            <div className="space-y-4">
+            {/* <div className="space-y-4">
               <div className="flex items-center p-3 bg-gray-50 rounded-lg">
                 <Mail className="h-5 w-5 text-blue-500 mr-3" />
                 <div className="flex flex-col">
@@ -262,7 +319,7 @@ export default function TeacherDetailPage() {
                 <Phone className="h-5 w-5 text-blue-500 mr-3" />
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Teléfono:</span>
-                  <span className="text-gray-800 font-medium">{teacher.phone || "No disponible"}</span>
+                  <span className="text-gray-800 font-medium">{teacher?.phone || "No disponible"}</span>
                 </div>
               </div>
             </div>
@@ -281,32 +338,32 @@ export default function TeacherDetailPage() {
                 <School className="h-5 w-5 text-blue-500 mr-3" />
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Cargo:</span>
-                  <span className="text-gray-800 font-medium">{teacher.position}</span>
+                  <span className="text-gray-800 font-medium">{teacher?.especialidad || "No disponible"}</span>
                 </div>
               </div>
               <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <Users className="h-5 w-5 text-blue-500 mr-3" />
-                <div className="flex flex-col">
+                {/* <Users className="h-5 w-5 text-blue-500 mr-3" /> */}
+                {/* <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Rol adicional:</span>
-                  <span className="text-gray-800 font-medium">{teacher.additionalRole}</span>
-                </div>
+                  <span className="text-gray-800 font-medium">{teacher?.additionalRole || "No disponible"}</span>
+                </div> */}
               </div>
               <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <Calendar className="h-5 w-5 text-blue-500 mr-3" />
-                <div className="flex flex-col">
+                {/* <Calendar className="h-5 w-5 text-blue-500 mr-3" /> */}
+                {/* <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Años en el colegio:</span>
-                  <span className="text-gray-800 font-medium">{teacher.yearsInSchool} años</span>
-                </div>
+                  <span className="text-gray-800 font-medium">{teacher?.yearsInSchool || "No disponible"} años</span>
+                </div> */}
               </div>
               <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                 <div
-                  className={`h-5 w-5 rounded-full ${teacher.isActive ? "bg-green-500" : "bg-amber-500"} text-white flex items-center justify-center text-xs mr-3`}
+                  className={`h-5 w-5 rounded-full ${teacher?.estado === "activo" ? "bg-green-500" : "bg-amber-500"} text-white flex items-center justify-center text-xs mr-3`}
                 >
-                  {teacher.isActive ? "A" : "I"}
+                  {teacher?.estado === "activo" ? "A" : "I"}
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Estado:</span>
-                  <span className="text-gray-800 font-medium">{teacher.status}</span>
+                  <span className="text-gray-800 font-medium">{teacher.estado}</span>
                 </div>
               </div>
             </div>
@@ -319,25 +376,25 @@ export default function TeacherDetailPage() {
               Horario y cursos
             </h2>
             <div className="space-y-4">
-              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+              {/* <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                 <Clock className="h-5 w-5 text-blue-500 mr-3" />
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Disponibilidad:</span>
                   <span className="text-gray-800 font-medium">{teacher.availability}</span>
                 </div>
-              </div>
-              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
+              </div> */}
+              {/* <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                 <School className="h-5 w-5 text-blue-500 mr-3" />
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Cursos actuales:</span>
-                  <span className="text-gray-800 font-medium">{teacher.currentCourses}</span>
+                  <span className="text-gray-800 font-medium">{teacher?.currentCourses || "No disponible"}</span>
                 </div>
-              </div>
+              </div> */}
               <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                 <BookOpen className="h-5 w-5 text-blue-500 mr-3" />
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Especialidad:</span>
-                  <span className="text-gray-800 font-medium">{teacher.subject}</span>
+                  <span className="text-gray-800 font-medium">{teacher.especialidad}</span>
                 </div>
               </div>
               <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
@@ -345,7 +402,7 @@ export default function TeacherDetailPage() {
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Colegio:</span>
                   <span className="text-gray-800 font-medium">
-                    {teacher.school} ({teacher.schoolType})
+                    {teacher.colegios.nombre}
                   </span>
                 </div>
               </div>
@@ -354,7 +411,7 @@ export default function TeacherDetailPage() {
         </div>
 
         {/* Zona 6: Panel de resumen del curso */}
-        {teacher.coursesInfo && teacher.coursesInfo.length > 0 && (
+        {/* {teacher.coursesInfo && teacher.coursesInfo.length > 0 && (
           <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
               <Users className="mr-2 h-5 w-5 text-blue-500" />
@@ -399,10 +456,10 @@ export default function TeacherDetailPage() {
               </table>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Zona 7: Actividades recientes */}
-        {teacher.recentActivities && teacher.recentActivities.length > 0 && (
+        {/* {teacher.recentActivities && teacher.recentActivities.length > 0 && (
           <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
               <Clock className="mr-2 h-5 w-5 text-blue-500" />
@@ -419,8 +476,9 @@ export default function TeacherDetailPage() {
               ))}
             </div>
           </div>
-        )}
+        )} */}
       </div>
+    </div>
     </AppLayout>
   )
 }

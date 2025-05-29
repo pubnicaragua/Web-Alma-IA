@@ -16,6 +16,7 @@ import { RecentAlertsSkeleton } from "@/components/recent-alerts-skeleton"
 import { isAuthenticated, removeAuthToken, fetchWithAuth } from "@/lib/api-config"
 import { type CardData, fetchCardData } from "@/services/home-service"
 import { useToast } from "@/hooks/use-toast"
+import { getSchoolById } from "@/services/school-service"
 
 export default function Home() {
   const router = useRouter()
@@ -85,26 +86,27 @@ export default function Home() {
     }
 
     // Verificar si hay un colegio seleccionado
-    const selectedSchool = localStorage.getItem("selectedSchool")
+    const loadSchool = async()=>{
+      const selectedSchool = localStorage.getItem("selectedSchool")
+      console.log("Home: Colegio seleccionado:", selectedSchool)
     if (!selectedSchool) {
       console.log("Home: No hay colegio seleccionado, redirigiendo a /select-school")
       router.push("/select-school")
       return
     }
 
-    // Cargar el nombre del colegio según el ID seleccionado
-    if (selectedSchool === "1") {
-      setSchoolName("Colegio San Pedro")
-    } else if (selectedSchool === "2") {
-      setSchoolName("Colegio San Luis")
-    } else if (selectedSchool === "3") {
-      setSchoolName("Colegio San Ignacio")
-    } else if (selectedSchool === "4") {
-      setSchoolName("Colegio San Rafael")
-    } else if (selectedSchool === "5") {
-      setSchoolName("Colegio San Carlos")
+    // cargar colegio seleccionado
+    const school = await getSchoolById(selectedSchool)
+    if (school) {
+      setSchoolName(school.name)
+    }
+    else {
+      console.log("Home: No se encontró el colegio seleccionado")
+      router.push("/select-school")
+      return
     }
 
+    }
     // Cargar datos de las tarjetas
     const loadCardData = async () => {
       try {
@@ -131,6 +133,7 @@ export default function Home() {
       }
     }
 
+    loadSchool()
     loadCardData()
     console.log("Home: Página principal inicializada correctamente")
   }, [router, toast]) // Dependencias: router y toast

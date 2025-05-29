@@ -119,35 +119,33 @@ export function AddQuestionModal({ onAddQuestion, isMobile = false }: AddQuestio
             </div>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
-            <div className="flex justify-between items-start gap-4">
-              <div className="flex-1">
-                <Label htmlFor="pregunta" className="text-gray-700">
-                  Pregunta
-                </Label>
-                <Input
-                  id="pregunta"
-                  value={pregunta}
-                  onChange={(e) => setPregunta(e.target.value)}
-                  placeholder="Escribe la pregunta"
-                  required
-                  className="border-gray-300 mt-1"
-                />
-              </div>
-              <div className="w-48">
-                <Label htmlFor="tipoRespuesta" className="text-gray-700">
-                  Tipo de respuesta
-                </Label>
-                <Select value={tipoRespuesta} onValueChange={setTipoRespuesta}>
-                  <SelectTrigger className="w-full mt-1">
-                    <SelectValue placeholder="Seleccionar tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="opcion_multiple">Opción múltiple</SelectItem>
-                    <SelectItem value="texto_libre">Texto libre</SelectItem>
-                    <SelectItem value="si_no">Sí/No</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="pregunta" className="text-gray-700">
+                Pregunta
+              </Label>
+              <Input
+                id="pregunta"
+                value={pregunta}
+                onChange={(e) => setPregunta(e.target.value)}
+                placeholder="Escribe la pregunta"
+                required
+                className="border-gray-300 w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tipoRespuesta" className="text-gray-700">
+                Tipo de respuesta
+              </Label>
+              <Select value={tipoRespuesta} onValueChange={setTipoRespuesta}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="opcion_multiple">Opción múltiple</SelectItem>
+                  <SelectItem value="texto_libre">Texto libre</SelectItem>
+                  <SelectItem value="si_no">Sí/No</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Opciones de respuesta */}
@@ -194,53 +192,49 @@ export function AddQuestionModal({ onAddQuestion, isMobile = false }: AddQuestio
               />
             </div>
 
-            <div className="flex justify-between items-start gap-4">
-              <div className="flex-1">
-                <Label htmlFor="tipoDiagnostico" className="text-gray-700">
-                  Tipo de diagnóstico
-                </Label>
-                <Input
-                  id="tipoDiagnostico"
-                  value={tipoDiagnostico}
-                  onChange={(e) => setTipoDiagnostico(e.target.value)}
-                  placeholder="Selecciona el tipo de diagnóstico"
-                  required
-                  className="border-gray-300 mt-1"
-                />
-              </div>
-              <div className="w-48">
-                <Label htmlFor="prioridad" className="text-gray-700 flex items-center">
-                  <Clock className="h-4 w-4 mr-1" />
-                  Prioridad
-                </Label>
-                <Select value={prioridad} onValueChange={setPrioridad}>
-                  <SelectTrigger className="w-full mt-1">
-                    <SelectValue placeholder="Seleccionar prioridad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="baja">Baja</SelectItem>
-                    <SelectItem value="normal">Normal</SelectItem>
-                    <SelectItem value="alta">Alta</SelectItem>
-                    <SelectItem value="urgente">Urgente</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="tipoDiagnostico" className="text-gray-700">
+                Tipo de diagnóstico
+              </Label>
+              <Input
+                id="tipoDiagnostico"
+                value={tipoDiagnostico}
+                onChange={(e) => setTipoDiagnostico(e.target.value)}
+                placeholder="Ej: Ansiedad, Depresión, etc."
+                required
+                className="border-gray-300 w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="prioridad" className="text-gray-700">
+                Prioridad
+              </Label>
+              <Select value={prioridad} onValueChange={setPrioridad}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="baja">Baja</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
+                  <SelectItem value="alta">Alta</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="sintomas" className="text-gray-700">
-                Síntomas
+                Síntomas asociados
               </Label>
               <Input
                 id="sintomas"
                 value={sintomas}
                 onChange={(e) => setSintomas(e.target.value)}
-                placeholder="Ingresa los síntomas relacionados"
-                className="border-gray-300 mt-1"
+                placeholder="Describa los síntomas"
+                className="border-gray-300 w-full"
               />
             </div>
 
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="palabrasClave" className="text-gray-700">
                 Palabras clave
               </Label>
@@ -248,14 +242,19 @@ export function AddQuestionModal({ onAddQuestion, isMobile = false }: AddQuestio
                 id="palabrasClave"
                 value={palabrasClave}
                 onChange={(e) => setPalabrasClave(e.target.value)}
-                placeholder="Ingresa palabras clave separadas por comas"
-                className="border-gray-300 mt-1"
+                placeholder="Palabras clave separadas por comas"
+                className="border-gray-300 w-full"
               />
             </div>
 
-            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-md">
-              Agregar pregunta
-            </Button>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button type="submit" className="bg-blue-500 hover:bg-blue-600">
+                Guardar pregunta
+              </Button>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
