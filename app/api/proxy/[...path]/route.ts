@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-import fetch from 'node-fetch';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-const proxyAgent = new HttpsProxyAgent('http://127.0.0.1:62884');
-const agent = proxyAgent;
+// import fetch from 'node-fetch';
+// import { HttpsProxyAgent } from 'https-proxy-agent';
+// const proxyAgent = new HttpsProxyAgent('http://127.0.0.1:62884');
+// const agent = proxyAgent;
 // API base URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api-almaia.onrender.com/api/v1"
 
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     console.log(`Realizando solicitud a: ${apiUrl}`)
     const response = await fetch(apiUrl, {
       method: "GET",
-      agent,
+      // agent,
       headers,
       // Añadir un timeout para evitar que la solicitud se quede colgada
       signal: AbortSignal.timeout(10000), // 10 segundos de timeout
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
     console.log(`Realizando solicitud a: ${apiUrl}`)
     const response = await fetch(apiUrl, {
       method: "POST",
-      agent,
+      // agent,
       headers,
       body: JSON.stringify(body),
       // Añadir un timeout para evitar que la solicitud se quede colgada
@@ -236,7 +236,7 @@ export async function PUT(request: NextRequest, { params }: { params: { path: st
     const response = await fetch(apiUrl, {
       method: "PUT",
       headers,
-      agent,
+      // agent,
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(10000),
     })
@@ -303,7 +303,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { path:
     console.log(`Realizando solicitud a: ${apiUrl}`)
     const response = await fetch(apiUrl, {
       method: "DELETE",
-      agent,
+      // agent,
       headers,
       signal: AbortSignal.timeout(10000),
     })
