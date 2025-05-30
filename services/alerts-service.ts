@@ -394,7 +394,7 @@ export async function fetchTotalAlertsChartLine(): Promise<DataPoint[]> {
   }
 }
 
-interface CreateAccionAlertParams {
+export interface CreateAccionAlertParams {
   alumno_alerta_id: number
   alumno_id: number
   plan_accion: string

@@ -60,13 +60,13 @@ export default function ProfilePage() {
     if (!profileData?.usuario.usuario_id) {
       throw new Error('No se pudo identificar al usuario')
     }
-    
+
     try {
       const updatedProfile = await updateProfile(profileData?.usuario.usuario_id, data)
       setProfileData(updatedProfile)
       //cerrar el modal
       setIsEditModalOpen(false)
-      
+
       // Mostrar mensaje de éxito
       toast({
         title: "Perfil actualizado",
@@ -74,8 +74,8 @@ export default function ProfilePage() {
       })
     } catch (error) {
       console.error('Error al guardar el perfil:', error)
-        //cerrar el modal
-        setIsEditModalOpen(false)
+      //cerrar el modal
+      setIsEditModalOpen(false)
       toast({
         title: "Error",
         description: "No se pudo actualizar el perfil. Por favor, inténtalo de nuevo.",
@@ -101,15 +101,15 @@ export default function ProfilePage() {
     }
 
     return {
-      nombre_social: profileData.usuario.nombre_social || '',
-      email: profileData.usuario.email,
-      encripted_password: '',
-      nombres: profileData.persona.nombres,
-      apellidos: profileData.persona.apellidos,
-      fecha_nacimiento: profileData.persona.fecha_nacimiento || '',
-      numero_documento: profileData.persona.numero_documento,
-      telefono_contacto: profileData.persona.telefono_contacto || '',
-      url_foto_perfil: profileData.usuario.url_foto_perfil || ''
+      nombre_social: profileData.usuario?.nombre_social || '',
+      email: profileData.usuario?.email,
+      encripted_password: profileData.usuario?.encripted_password,
+      nombres: profileData.persona?.nombres,
+      apellidos: profileData.persona?.apellidos,
+      fecha_nacimiento: profileData.persona?.fecha_nacimiento || '',
+      numero_documento: profileData.persona?.numero_documento,
+      telefono_contacto: profileData.usuario?.telefono_contacto || '',
+      url_foto_perfil: profileData.usuario?.url_foto_perfil || ''
     } as ProfileData;
   }
 
@@ -175,13 +175,13 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative">
             <div className="relative w-32 h-32 rounded-full overflow-hidden mb-4 flex-shrink-0 border-4 border-blue-100">
               <Image
-                src={usuario.url_foto_perfil || "/confident-businessman.png"}
-                alt={`${persona.nombres} ${persona.apellidos}`}
+                src={usuario?.url_foto_perfil || "/confident-businessman.png"}
+                alt={`${persona?.nombres} ${persona?.apellidos}`}
                 width={128}
                 height={128}
                 className="w-full h-full object-cover"
               />
-              <button 
+              <button
                 onClick={() => setIsEditModalOpen(true)}
                 className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors"
                 aria-label="Editar foto de perfil"
@@ -194,17 +194,17 @@ export default function ProfilePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-3xl font-bold text-gray-800">
-                      {`${persona.nombres} ${persona.apellidos}`}
-                      {usuario.nombre_social && ` (${usuario.nombre_social})`}
+                      {`${persona?.nombres} ${persona?.apellidos}`}
+                      {usuario?.nombre_social && ` (${usuario.nombre_social})`}
                     </h1>
                   </div>
                   <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium mt-1">
-                    {rol.nombre}
+                    {rol?.nombre}
                   </div>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="ml-4"
                   onClick={() => setIsEditModalOpen(true)}
                 >
@@ -221,9 +221,9 @@ export default function ProfilePage() {
           <div className="bg-white rounded-lg shadow-md p-6 border border-blue-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Datos personales</h2>
             <div className="space-y-4">
-              <ProfileField label="Nombre completo" value={`${persona.nombres} ${persona.apellidos}`} />
-              <ProfileField label="Edad" value={`${calculateAge(persona.fecha_nacimiento)} años`} />
-              <ProfileField label={persona.tipo_documento} value={persona.numero_documento} />
+              <ProfileField label="Nombre completo" value={`${persona?.nombres} ${persona?.apellidos}`} />
+              <ProfileField label="Edad" value={`${calculateAge(persona?.fecha_nacimiento)} años`} />
+              <ProfileField label={persona?.tipo_documento} value={persona?.numero_documento} />
             </div>
           </div>
 
@@ -233,8 +233,8 @@ export default function ProfilePage() {
               Información de contacto
             </h2>
             <div className="space-y-4">
-              <ProfileField label="Correo institucional" value={usuario.email} />
-              <ProfileField label="Teléfono" value={usuario.telefono_contacto} />
+              <ProfileField label="Correo institucional" value={usuario?.email} />
+              <ProfileField label="Teléfono" value={usuario?.telefono_contacto} />
             </div>
           </div>
         </div>
@@ -245,15 +245,15 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-sm text-gray-500 mb-1">Rol institucional</h3>
-              <p className="font-medium">{rol.nombre}</p>
+              <p className="font-medium">{rol?.nombre}</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-sm text-gray-500 mb-1">Estado</h3>
-              <p className="font-medium">{usuario.estado_usuario || 'No disponible'}</p>
+              <p className="font-medium">{usuario?.estado_usuario || 'No disponible'}</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-sm text-gray-500 mb-1">Último inicio de sesión</h3>
-              <p className="font-medium">{formatDate(usuario.ultimo_inicio_sesion)}</p>
+              <p className="font-medium">{formatDate(usuario?.ultimo_inicio_sesion)}</p>
             </div>
           </div>
         </div>
@@ -264,12 +264,17 @@ export default function ProfilePage() {
           <div className="bg-white rounded-lg shadow-md p-6 border border-blue-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Funcionalidades</h2>
             <div className="space-y-1">
-              {funcionalidades.map((funcionalidad) => (
-                <div key={funcionalidad.funcionalidad_id} className="bg-green-50 p-3 rounded-md mb-2 flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-                  <span className="text-gray-800">{funcionalidad.nombre}</span>
-                </div>
-              ))}
+              {
+                funcionalidades && funcionalidades?.length > 0 ? funcionalidades.map((funcionalidad) => (
+                  <div key={funcionalidad.funcionalidad_id} className="bg-green-50 p-3 rounded-md mb-2 flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+                    <span className="text-gray-800">{funcionalidad.nombre}</span>
+                  </div>
+                )) :
+                  <div className="bg-white rounded-lg shadow-md p-6 mb-4">
+                    <p className="text-gray-600 text-center">No hay funcionalidades asignadas a este rol</p>
+                  </div>
+              }
             </div>
           </div>
 
@@ -277,12 +282,12 @@ export default function ProfilePage() {
           <div className="bg-white rounded-lg shadow-md p-6 border border-blue-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4 pb-2 border-b border-gray-200">Descripción del rol</h2>
             <div className="bg-blue-50 p-4 rounded-md">
-              <p className="text-gray-800">{rol.descripcion}</p>
+              <p className="text-gray-800">{rol?.descripcion}</p>
             </div>
             <div className="mt-4">
               <h3 className="font-medium text-gray-700 mb-2">Información adicional</h3>
               <div className="bg-gray-50 p-3 rounded-md">
-                <p className="text-sm text-gray-600">Fecha de creación: {formatDate(rol.fecha_creacion)}</p>
+                <p className="text-sm text-gray-600">Fecha de creación: {formatDate(rol?.fecha_creacion)}</p>
               </div>
             </div>
           </div>

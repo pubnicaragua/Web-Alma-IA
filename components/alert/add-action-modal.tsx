@@ -10,15 +10,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@
 import { Label } from "@/components/ui/label"
 import { useModal } from "@/lib/modal-utils"
 import { useToast } from "@/hooks/use-toast"
-import { createAccionAlert } from "@/services/alerts-service"
+import { createAccionAlert, CreateAccionAlertParams } from "@/services/alerts-service"
 
 interface AddActionModalProps {
   alumnoAlertaId: number
   alumnoId: number
+  addAccionBitacora: (data: CreateAccionAlertParams) => Promise<void>
   isMobile?: boolean
 }
 
-export function AddActionModal({ alumnoAlertaId, alumnoId, isMobile = false }: AddActionModalProps) {
+export function AddActionModal({ alumnoAlertaId, alumnoId, addAccionBitacora, isMobile = false }: AddActionModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false)
   const [planAccion, setPlanAccion] = useState("")
   const [fechaCompromiso, setFechaCompromiso] = useState("")
@@ -48,7 +49,7 @@ export function AddActionModal({ alumnoAlertaId, alumnoId, isMobile = false }: A
       const fechaRealizacionISO = new Date(fechaRealizacion || new Date()).toISOString()
 
       // Crear la acción de alerta
-      await createAccionAlert({
+      await addAccionBitacora({
         alumno_alerta_id: alumnoAlertaId,
         alumno_id: alumnoId,
         plan_accion: planAccion,
@@ -71,7 +72,6 @@ export function AddActionModal({ alumnoAlertaId, alumnoId, isMobile = false }: A
       
       // Cerrar modal y notificar al componente padre
       onClose()
-     
     } catch (error) {
       console.error("Error al crear la acción:", error)
       toast({

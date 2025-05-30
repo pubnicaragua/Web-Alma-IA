@@ -1,12 +1,14 @@
 "use client"
 
+export const dynamic = 'force-dynamic'
+
 import { AddActionModal } from "@/components/alert/add-action-modal"
 import { AlertDetailSkeleton } from "@/components/alert/alert-detail-skeleton"
 import { AppLayout } from "@/components/layout/app-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { AlertPage, changeLeida, fetchAlertById } from "@/services/alerts-service"
+import { AlertPage, changeLeida, createAccionAlert, CreateAccionAlertParams, fetchAlertById } from "@/services/alerts-service"
 import { ArrowLeft, Edit, Lock } from "lucide-react"
 import Image from "next/image"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
@@ -74,6 +76,11 @@ export default function AlertDetailPage() {
 
   const handleGoBack = () => {
     router.back()
+  }
+
+  const addAccionBitacora = async (data: CreateAccionAlertParams)=>{
+    await createAccionAlert(data)
+    await loadAlert(Number(id))
   }
 
   if (isLoading) {
@@ -183,7 +190,11 @@ export default function AlertDetailPage() {
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-xl">Bitácora de acciones</CardTitle>
             {/* PENDIENTE  DENREO DEL OBJETO STUDENT TENER EL ID DEL ESTUDIANTE*/}
-            <AddActionModal alumnoAlertaId={alert.id} alumnoId={alert.student.alumno_id} isMobile={isMobile} />
+            <AddActionModal 
+            alumnoAlertaId={alert.id} 
+            alumnoId={alert.student.alumno_id} 
+            addAccionBitacora={addAccionBitacora}
+            isMobile={isMobile} />
           </CardHeader>
           <CardContent>
             <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
