@@ -7,6 +7,7 @@ interface Report {
   tipo: string
   resumen: string
   url_reporte: string
+  activo: boolean
 }
 
 interface StudentReportsProps {
@@ -18,6 +19,7 @@ export function StudentReports({ reports }: StudentReportsProps) {
     { key: 'fecha', title: 'Fecha Generación', className: 'text-left' },
     { key: 'tipo', title: 'Tipo Informe', className: 'text-left' },
     { key: 'resumen', title: 'Resumen Informe', className: 'text-left' },
+    { key: 'activo', title: 'Activo', className: 'text-left' },
     { 
       key: 'accion', 
       title: 'Acción', 
@@ -31,6 +33,12 @@ export function StudentReports({ reports }: StudentReportsProps) {
         return (
           <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
             {report.tipo}
+          </span>
+        )
+      case 'activo':
+        return (
+          <span className={`${report.activo ? 'text-green-500 border-green-500' : 'text-red-500 border-red-500'} bg-white px-2 py-1 rounded-full text-xs font-medium border`}>
+            {report.activo ? 'Activo' : 'Inactivo'}
           </span>
         )
       case 'accion':

@@ -37,6 +37,7 @@ export interface ProfileResponse {
     genero_id: number
     estado_civil_id: number
     fecha_nacimiento: string
+    telefono_contacto?: string
   }
   rol: {
     creado_por: number
@@ -156,28 +157,53 @@ export async function fetchUserProfile(): Promise<ProfileResponse | null> {
   }
 }
 
-export async function fetchProfileData(): Promise<ProfileResponse> {
+export const fetchProfileData = async (): Promise<ProfileResponse> => {
   try {
-    console.log("Obteniendo datos de perfil...")
-    const response = await fetchWithAuth("/perfil/obtener", {
-      method: "GET",
+    const data = await fetchUserProfile()
+    if (!data) {
+      console.error("No se pudo cargar el perfil del usuario")
+      throw new Error("No se pudo cargar el perfil del usuario")
+    }
+    return data
+  } catch (error) {
+    console.error("Error en fetchProfileData:", error)
+    // En producción, podrías devolver datos de ejemplo o manejar el error de otra manera
+    throw error
+  }
+}
+
+export interface UpdateProfileData {
+  nombre_social: string
+  email: string
+  encripted_password: string
+  nombres: string
+  apellidos: string
+  fecha_nacimiento: string
+  numero_documento: string
+  telefono_contacto: string
+  url_foto_perfil: string
+}
+
+export type ProfileData = UpdateProfileData;
+
+export const updateProfile = async (userId: number, data: Partial<UpdateProfileData>): Promise<ProfileResponse> => {
+  try {
+    const response = await fetchWithAuth(`/alumnos/perfil/${userId}`, {
+      method: 'PUT',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify(data)
     })
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`Error al obtener datos de perfil: ${response.status} - ${errorText}`)
-      throw new Error(`Error al obtener datos de perfil: ${response.status} - ${errorText}`)
+      throw new Error('Error al actualizar el perfil')
     }
 
-    const data = await response.json()
-    console.log("Datos de perfil obtenidos:", data)
-    return data
+    // Devolver los datos actualizados del perfil
+    return await response.json()
   } catch (error) {
-    console.error("Error al obtener datos de perfil:", error)
-    console.log("Usando datos de ejemplo para perfil")
+    console.error('Error al actualizar el perfil:', error)
     throw error
   }
 }

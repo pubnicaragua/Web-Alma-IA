@@ -1,27 +1,37 @@
 import { fetchWithAuth } from "@/lib/api-config"
 
 // Interfaces para los datos de la API
+export interface Genero {
+  genero_id: number
+  nombre: string
+}
+
+export interface EstadoCivil {
+  estado_civil_id: number
+  nombre: string
+}
+
 export interface Persona {
+  activo: boolean
   persona_id: number
   nombres: string
   apellidos: string
-  tipo_documento?: string
-  numero_documento?: string
-  genero_id?: number
-  estado_civil_id?: number
+  genero_id: number
+  generos: Genero
+  tipo_documento: string
+  numero_documento: string
+  estado_civil_id: number
+  estados_civiles: EstadoCivil
+  fecha_nacimiento: string | null
+  creado_por: number
+  actualizado_por: number
+  fecha_creacion: string
+  fecha_actualizacion: string
 }
 
 export interface Colegio {
   colegio_id: number
   nombre: string
-  nombre_fantasia?: string
-  tipo_colegio?: string
-  direccion?: string
-  telefono_contacto?: string
-  correo_electronico?: string
-  comuna_id?: number
-  region_id?: number
-  pais_id?: number
 }
 
 export interface TeacherApiResponse {
@@ -35,15 +45,8 @@ export interface TeacherApiResponse {
   fecha_creacion: string
   fecha_actualizacion: string
   activo: boolean
-  personas: {
-    nombres: string
-    apellidos: string
-    persona_id: number
-  }
-  colegios: {
-    nombre: string
-    colegio_id: number
-  }
+  personas: Persona
+  colegios: Colegio
 }
 
 // Interfaz para los datos que usará la UI
@@ -64,41 +67,7 @@ export interface Teacher {
   email?: string
 }
 
-// Datos de ejemplo para usar como fallback
-// const exampleTeachers: Teacher[] = [
-//   {
-//     id: "1",
-//     name: "Palomina Gutierrez",
-//     level: "Cuartos básicos",
-//     course: "A",
-//     subject: "Matemáticas",
-//     type: "Principal",
-//     age: 28,
-//     image: "/smiling-woman-garden.png",
-//     status: "Activo",
-//     document: "12345678",
-//     documentType: "DNI",
-//     school: "Colegio Horizonte",
-//     schoolType: "Privado",
-//     email: "pgutierrez@colegiohorizonte.cl",
-//   },
-//   {
-//     id: "2",
-//     name: "Matías Ignacio Díaz",
-//     level: "Cuartos básicos",
-//     course: "B",
-//     subject: "Comunicación",
-//     type: "No asignado",
-//     age: 28,
-//     image: "/young-man-city.png",
-//     status: "Activo",
-//     document: "87654321",
-//     documentType: "DNI",
-//     school: "Colegio Horizonte",
-//     schoolType: "Privado",
-//     email: "mdiaz@colegiohorizonte.cl",
-//   },
-// ]
+
 
 // Función para mapear los datos de la API al formato que espera la UI
 const mapApiDataToTeachers = (apiData: TeacherApiResponse[]): Teacher[] => {
@@ -114,7 +83,6 @@ const mapApiDataToTeachers = (apiData: TeacherApiResponse[]): Teacher[] => {
     subject: item.especialidad,
     status: item.estado.toLowerCase(),
     school: item.colegios.nombre,
-    // Campos opcionales o que no vienen en la API
     level: "",
     course: "",
     type: "",
@@ -137,12 +105,9 @@ export const getAllTeachers = async (): Promise<Teacher[]> => {
     }
 
     const data: TeacherApiResponse[] = await response.json()
-    // console.log(`Se obtuvieron ${data.length} docentes de la API`)
-
     return mapApiDataToTeachers(data)
   } catch (error) {
     console.error("Error al obtener docentes:", error)
-    console.log("Usando datos de ejemplo como fallback")
     throw error
   }
 }

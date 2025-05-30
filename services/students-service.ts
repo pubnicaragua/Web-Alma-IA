@@ -163,6 +163,11 @@ export interface StudentDetailResponse {
       nombre: string
       alerta_severidad_id: number
     }
+    persona_responsable_actual: {
+      nombres: string
+      apellidos: string
+      persona_id: number
+    }
   }>
   informes: Array<{
     alumno_informe_id: number
@@ -204,10 +209,15 @@ export interface StudentDetailResponse {
       telefono_contacto2: string
     }
   }>
+  datosComparativa:Array<{
+    emocion: string,
+    alumno: number,
+    promedio: number
+  }>
 }
 
 // Función para transformar los datos de la API a nuestro modelo de Student
-function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
+export function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
   try {
     if (!Array.isArray(apiStudents)) {
       console.error("Error: apiStudents no es un array", apiStudents);

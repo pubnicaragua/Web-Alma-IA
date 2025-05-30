@@ -71,47 +71,7 @@ export default function TeacherDetailPage() {
           throw new Error("No se encontró el docente")
         }
 
-        // Enriquecer los datos del docente con información adicional para la vista detallada
-        // const enhancedTeacher: TeacherDetail = {
-        //   ...teacherData,
-        //   fullName: teacherData.name,
-        //   phone: "+56 9 8765 4321", // Datos de ejemplo
-        //   position: `Docente de ${teacherData.subject}`,
-        //   additionalRole: "Profesora Tutora del 1°A - 2°A",
-        //   yearsInSchool: 3,
-        //   availability: "Lunes a viernes, 08:00-16:30",
-        //   currentCourses: "1°A - 2°A",
-        //   subjects: teacherData.subject,
-        //   isActive: teacherData.status === "Activo",
-        //   coursesInfo: [
-        //     {
-        //       curso: "4°A",
-        //       numAlumnos: 32,
-        //       alertasActivas: 5,
-        //       ultimaAlerta: "12/04/2025",
-        //     },
-        //     {
-        //       curso: "2°A",
-        //       numAlumnos: 32,
-        //       alertasActivas: 5,
-        //       ultimaAlerta: "12/04/2025",
-        //     },
-        //   ],
-        //   recentActivities: [
-        //     {
-        //       fecha: "12/04/2025",
-        //       accionRealizada: "Ingresó a vista de alertas activas",
-        //     },
-        //     {
-        //       fecha: "11/04/2025",
-        //       accionRealizada: "Exportó el informe mensual del 1°A",
-        //     },
-        //     {
-        //       fecha: "09/04/2025",
-        //       accionRealizada: "Revisó las alertas del 1°A",
-        //     },
-        //   ],
-        // }
+       
 
         setTeacher(teacherData)
       } catch (err) {
@@ -286,18 +246,28 @@ export default function TeacherDetailPage() {
                 <span className="text-sm text-gray-500 mb-1">Nombre completo:</span>
                 <span className="text-gray-800 font-medium">{teacher.personas.nombres + " " + teacher.personas.apellidos}</span>
               </div>
-              {/* <div className="flex flex-col">
-                <span className="text-sm text-gray-500 mb-1">Edad:</span>
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500 mb-1">Fecha de Nacimiento:</span>
+                <span className="text-gray-800 font-medium">{teacher.personas.fecha_nacimiento || 'No disponible'}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500 mb-1">DNI:</span>
                 <span className="text-gray-800 font-medium">
-                  {teacher?.age ? `${teacher.age} años` : "No disponible"}
+                  {teacher?.personas.numero_documento}
                 </span>
-              </div> */}
-              {/* <div className="flex flex-col">
-                <span className="text-sm text-gray-500 mb-1">Documento:</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500 mb-1">Estado Civil :</span>
                 <span className="text-gray-800 font-medium">
-                  {teacher.documentType}: {teacher.document}
+                  {teacher?.personas.estados_civiles.nombre}
                 </span>
-              </div> */}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm text-gray-500 mb-1">Genero :</span>
+                <span className="text-gray-800 font-medium">
+                  {teacher?.personas.generos.nombre}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -337,24 +307,11 @@ export default function TeacherDetailPage() {
               <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                 <School className="h-5 w-5 text-blue-500 mr-3" />
                 <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Cargo:</span>
+                  <span className="text-sm text-gray-500">Especialdad:</span>
                   <span className="text-gray-800 font-medium">{teacher?.especialidad || "No disponible"}</span>
                 </div>
               </div>
-              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
-                {/* <Users className="h-5 w-5 text-blue-500 mr-3" /> */}
-                {/* <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Rol adicional:</span>
-                  <span className="text-gray-800 font-medium">{teacher?.additionalRole || "No disponible"}</span>
-                </div> */}
-              </div>
-              <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
-                {/* <Calendar className="h-5 w-5 text-blue-500 mr-3" /> */}
-                {/* <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Años en el colegio:</span>
-                  <span className="text-gray-800 font-medium">{teacher?.yearsInSchool || "No disponible"} años</span>
-                </div> */}
-              </div>
+             
               <div className="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
                 <div
                   className={`h-5 w-5 rounded-full ${teacher?.estado === "activo" ? "bg-green-500" : "bg-amber-500"} text-white flex items-center justify-center text-xs mr-3`}

@@ -7,6 +7,7 @@ import { Header } from "@/components/header"
 import { loadSchools, loadSchoolsByUsuario_id } from "@/services/school-service"
 import { Skeleton } from "@/components/ui/skeleton"
 import { SchoolCardSkeleton } from "@/components/school-card-skeleton"
+import { fetchProfileData } from "@/services/profile-service"
 
 interface School {
   id: string
@@ -43,7 +44,8 @@ export default function SelectSchoolPage() {
   const loadAllSchools = async () => {
     try {
       setIsLoading(true)
-      const schools = await loadSchoolsByUsuario_id()
+      const profile = await fetchProfileData()
+      const schools = await loadSchoolsByUsuario_id(profile.usuario.usuario_id)
       setSchools(schools)
     } catch (error) {
       console.error("Error al cargar colegios:", error)

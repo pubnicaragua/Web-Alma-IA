@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { APIReportGeneral, fetchReports, type Report } from "@/services/reports-service"
+import { APIReportGeneral, fetchReports, createReport, type Report } from "@/services/reports-service"
 import { ReportsList } from "@/components/report/reports-list"
 import { ReportsSkeleton } from "@/components/report/reports-skeleton"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,24 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
+
+  const handleCreateReport = async (reportData: any) => {
+    try {
+      await createReport(reportData)
+      toast({
+        title: "Informe creado",
+        description: "El informe se ha creado correctamente.",
+      })
+      await loadReports()
+    } catch (error) {
+      console.error('Error creating report:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo crear el informe. Intente nuevamente.",
+        variant: "destructive",
+      })
+    }
+  }
 
   const loadReports = async () => {
     setLoading(true)
@@ -47,16 +65,12 @@ export default function ReportsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold">Informes</h1>
-            <p className="text-gray-500 mt-1">Gestiona y visualiza los informes de los alumnos</p>
+            <p className="text-gray-500 mt-1">Gestiona y visualiza los informes generales</p>
           </div>
           <div className="flex gap-2 mt-4 sm:mt-0">
             <Button variant="outline" size="sm" onClick={loadReports} disabled={loading}>
               <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
               Actualizar
-            </Button>
-            <Button size="sm">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Nuevo informe
             </Button>
           </div>
         </div>

@@ -5,17 +5,19 @@ import Image from "next/image"
 import { AppLayout } from "@/components/layout/app-layout"
 import { ProfileField } from "@/components/profile-field"
 import { Button } from "@/components/ui/button"
-import { LogOut, AlertCircle } from "lucide-react"
+import { LogOut, AlertCircle, Edit } from "lucide-react"
 import { useAuth } from "@/components/auth-provider"
-import { fetchProfileData, type ProfileResponse, FALLBACK_PROFILE_DATA } from "@/services/profile-service"
+import { fetchProfileData, type ProfileResponse, updateProfile, type ProfileData } from "@/services/profile-service"
 import { ProfileSkeleton } from "@/components/profile-skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { formatDate } from "@/lib/utils"
+import { EditProfileModal } from "@/components/profile/edit-profile-modal"
 
 export default function ProfilePage() {
   const [profileData, setProfileData] = useState<ProfileResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const { logout } = useAuth()
   const { toast } = useToast()
 
@@ -52,6 +54,59 @@ export default function ProfilePage() {
     logout()
     // Redirección manual después del logout
     window.location.href = "/login"
+  }
+
+  const handleSaveProfile = async (data: ProfileData): Promise<void> => {
+    if (!profileData?.usuario.usuario_id) {
+      throw new Error('No se pudo identificar al usuario')
+    }
+    
+    try {
+      const updatedProfile = await updateProfile(profileData?.usuario.usuario_id, data)
+      setProfileData(updatedProfile)
+      
+      // Mostrar mensaje de éxito
+      toast({
+        title: "Perfil actualizado",
+        description: "Tus cambios se han guardado correctamente.",
+      })
+    } catch (error) {
+      console.error('Error al guardar el perfil:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el perfil. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      })
+      throw error
+    }
+  }
+
+  const getFormDataFromProfile = (): ProfileData => {
+    if (!profileData) {
+      return {
+        nombre_social: '',
+        email: '',
+        encripted_password: '',
+        nombres: '',
+        apellidos: '',
+        fecha_nacimiento: '',
+        numero_documento: '',
+        telefono_contacto: '',
+        url_foto_perfil: ''
+      } as ProfileData;
+    }
+
+    return {
+      nombre_social: profileData.usuario.nombre_social || '',
+      email: profileData.usuario.email,
+      encripted_password: '',
+      nombres: profileData.persona.nombres,
+      apellidos: profileData.persona.apellidos,
+      fecha_nacimiento: profileData.persona.fecha_nacimiento || '',
+      numero_documento: profileData.persona.numero_documento,
+      telefono_contacto: profileData.persona.telefono_contacto || '',
+      url_foto_perfil: profileData.usuario.url_foto_perfil || ''
+    } as ProfileData;
   }
 
   // Calcular edad a partir de la fecha de nacimiento
@@ -113,8 +168,8 @@ export default function ProfilePage() {
       <div className="container mx-auto px-3 sm:px-6 py-8">
         {/* Zona 1: Información de perfil principal */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-blue-200">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            <div className="w-32 h-32 rounded-full overflow-hidden mb-4 flex-shrink-0 border-4 border-blue-100">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative">
+            <div className="relative w-32 h-32 rounded-full overflow-hidden mb-4 flex-shrink-0 border-4 border-blue-100">
               <Image
                 src={usuario.url_foto_perfil || "/confident-businessman.png"}
                 alt={`${persona.nombres} ${persona.apellidos}`}
@@ -122,11 +177,36 @@ export default function ProfilePage() {
                 height={128}
                 className="w-full h-full object-cover"
               />
+              <button 
+                onClick={() => setIsEditModalOpen(true)}
+                className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-colors"
+                aria-label="Editar foto de perfil"
+              >
+                <Edit className="h-4 w-4" />
+              </button>
             </div>
-            <div className="flex flex-col items-center md:items-start">
-              <h1 className="text-3xl font-bold text-gray-800">{`${persona.nombres} ${persona.apellidos}`}</h1>
-              <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-                {rol.nombre}
+            <div className="flex-1 flex flex-col items-center md:items-start">
+              <div className="w-full flex justify-between items-start">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-3xl font-bold text-gray-800">
+                      {`${persona.nombres} ${persona.apellidos}`}
+                      {usuario.nombre_social && ` (${usuario.nombre_social})`}
+                    </h1>
+                  </div>
+                  <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium mt-1">
+                    {rol.nombre}
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="ml-4"
+                  onClick={() => setIsEditModalOpen(true)}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar perfil
+                </Button>
               </div>
             </div>
           </div>
@@ -212,6 +292,14 @@ export default function ProfilePage() {
           </Button>
         </div>
       </div>
+
+      {/* Modal de edición de perfil */}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        profileData={getFormDataFromProfile()}
+        onSave={handleSaveProfile}
+      />
     </AppLayout>
   )
 }

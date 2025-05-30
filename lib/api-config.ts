@@ -124,8 +124,14 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
   // Asegurar que el endpoint comience con /
   const selectedSchool = localStorage.getItem("selectedSchool")
   // console.log('api-config:colegio seleccionado',selectedSchool)
-  if (!endpoint.endsWith('/colegios') && !endpoint.includes('/preguntas')) {
-    if (selectedSchool) endpoint += `?colegio_id=${selectedSchool}`
+  if (!endpoint.endsWith('/colegios') && !endpoint.includes('/preguntas')
+  && !endpoint.includes('/colegios/usuarios_colegios?usuario_id')) {
+    if (selectedSchool) {
+      if(endpoint.includes('?'))
+      endpoint += `&colegio_id=${selectedSchool}`
+      else
+      endpoint += `?colegio_id=${selectedSchool}`
+    }
   }
   const normalizedEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`
 

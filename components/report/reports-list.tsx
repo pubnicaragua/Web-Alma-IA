@@ -18,7 +18,6 @@ interface ReportsListProps {
 // Columnas para la tabla
 const columns = [
   { key: "informe_id", title: "id" },
-  { key: "tipo", title: "Tipo" },
   { key: "nivel", title: "Nivel" },
   { key: "fecha_generacion", title: "Fecha de generación" },
   { key: "creado_por", title: "Generado por" },

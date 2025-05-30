@@ -257,6 +257,7 @@ export default function Home() {
             title="Media emocional General"
             selectedEmotions={selectedEmotionsGeneral}
             onToggleEmotion={handleToggleEmotionGeneral}
+            setSelectedEmotions={setSelectedEmotionsGeneral}
           />
         </div>
         {/* Gráficos y datos */}
@@ -265,6 +266,7 @@ export default function Home() {
             title="Emociones"
             selectedEmotions={selectedEmotions}
             onToggleEmotion={handleToggleEmotion}
+            setSelectedEmotions={setSelectedEmotions}
           />
           <DonutChart />
         </div>

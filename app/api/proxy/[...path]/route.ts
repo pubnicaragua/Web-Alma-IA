@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 // import fetch from 'node-fetch';
 // import { HttpsProxyAgent } from 'https-proxy-agent';
-// const proxyAgent = new HttpsProxyAgent('http://localhost:62607');
+// const proxyAgent = new HttpsProxyAgent('http://127.0.0.1:54739');
 // const agent = proxyAgent;
 // API base URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api-almaia.onrender.com/api/v1"

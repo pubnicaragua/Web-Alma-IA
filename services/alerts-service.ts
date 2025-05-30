@@ -265,20 +265,13 @@ export async function fetchAlerts(): Promise<Alert[]> {
     const apiAlerts: ApiAlert[] = await response.json()
     console.log("Datos reales de alertas obtenidos:", apiAlerts)
 
-    // Verificar que apiAlerts sea un array
-    // if (!Array.isArray(apiAlerts)) {
-    //   console.error("La respuesta de la API no es un array:", apiAlerts)
-    //   return FALLBACK_ALERTS
-    // }
-
     // Convertir los datos de la API al formato de la UI
     const alerts = mapApiAlertsToAlerts(apiAlerts)
     return alerts
   } catch (error) {
     console.error("Error al obtener alertas:", error)
     // Usar datos de ejemplo en caso de error
-    console.log("Usando datos de ejemplo debido a un error")
-    return FALLBACK_ALERTS
+    throw error
   }
 }
 
@@ -354,6 +347,49 @@ export async function fetchTotalAlertsChartLine(): Promise<DataPoint[]> {
     return data
   } catch (error) {
     console.error("Error al obtener emociones:", error)
+    throw error
+  }
+}
+
+interface CreateAccionAlertParams {
+  alumno_alerta_id: number
+  alumno_id: number
+  plan_accion: string
+  fecha_compromiso: string
+  fecha_realizacion: string
+  url_archivo?: string
+}
+
+/**
+ * Crea una nueva acción de alerta en la bitácora
+ * @param data Datos de la acción a crear
+ * @returns La acción creada
+ */
+export const createAccionAlert = async (data: CreateAccionAlertParams) => {
+  try {
+    const response = await fetchWithAuth('/alumnos/alertas_bitacoras', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        alumno_alerta_id: data.alumno_alerta_id,
+        alumno_id: data.alumno_id,
+        plan_accion: data.plan_accion,
+        fecha_compromiso: data.fecha_compromiso,
+        fecha_realizacion: data.fecha_realizacion,
+        url_archivo: data.url_archivo || '',
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Error al crear la acción de alerta')
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error en createAccionAlert:', error)
     throw error
   }
 }

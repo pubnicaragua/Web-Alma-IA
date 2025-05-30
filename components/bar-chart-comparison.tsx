@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Dispatch, SetStateAction } from "react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 import { Smile, RefreshCw, AlertCircle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +12,7 @@ interface BarChartComparisonProps {
   title: string
   selectedEmotions: string[]
   onToggleEmotion: (emotion: string) => void
+  setSelectedEmotions: Dispatch<SetStateAction<string[]>>
   initialData?: Emotion[]
   apiEmotions?: Array<{
     nombre: string
@@ -23,6 +24,7 @@ export function BarChartComparison({
   title,
   selectedEmotions,
   onToggleEmotion,
+  setSelectedEmotions,
   initialData,
   apiEmotions,
 }: BarChartComparisonProps) {
@@ -50,6 +52,7 @@ export function BarChartComparison({
       setIsLoading(true)
       setError(null)
       const emotionsData = await fetchEmotions()
+      setSelectedEmotions(emotionsData.map((emotion) => emotion.name))
       setData(emotionsData)
     } catch (err) {
       setError("No se pudieron cargar los datos de emociones. Intente nuevamente.")

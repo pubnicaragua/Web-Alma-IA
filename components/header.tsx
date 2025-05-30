@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { Bell, Mail, Menu } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
@@ -16,6 +17,7 @@ import { removeAuthToken } from "@/lib/api-config"
 import { useToast } from "@/hooks/use-toast"
 import { fetchProfileData, type ProfileResponse } from "@/services/profile-service"
 import { Skeleton } from "@/components/ui/skeleton"
+import { getNotificationCount, searchStudents, type StudentSearchResult } from "@/services/header-service"
 
 interface HeaderProps {
   toggleSidebar?: () => void
@@ -23,12 +25,44 @@ interface HeaderProps {
 
 export function Header({ toggleSidebar }: HeaderProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const { toast } = useToast()
   const [profileData, setProfileData] = useState<ProfileResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [notificationCount, setNotificationCount] = useState(() => {
+    // Inicializar desde localStorage si existe, de lo contrario 0
+    if (typeof window !== 'undefined') {
+      const storedCount = localStorage.getItem('notificationCount')
+      return storedCount ? parseInt(storedCount, 10) : 0
+    }
+    return 0
+  })
+  
+  const [searchTerm, setSearchTerm] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchResults, setSearchResults] = useState<StudentSearchResult[]>([])
+
+  const handleBellClick = () => {
+    if (notificationCount > 0) {
+      // Usamos window.location.pathname en lugar de usePathname
+      if (typeof window !== 'undefined' && window.location.pathname === '/alertas') {
+        // Si ya estamos en la ruta /alertas, solo reiniciamos el contador
+        setNotificationCount(0)
+        // Marcamos las notificaciones como leídas en el localStorage
+        localStorage.setItem('notificationsRead', 'true')
+      } else {
+        // Si no estamos en /alertas, navegamos y luego reiniciamos el contador
+        router.push('/alertas')
+        setNotificationCount(0)
+        // Marcamos las notificaciones como leídas en el localStorage
+        localStorage.removeItem('notificationsRead')
+      }
+    }
+  }
 
   useEffect(() => {
     loadUserProfile()
+    loadNotifications()
   }, [])
 
   const loadUserProfile = async () => {
@@ -46,6 +80,61 @@ export function Header({ toggleSidebar }: HeaderProps) {
     }
   }
 
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!searchTerm.trim()) return
+    
+    try {
+      setIsSearching(true)
+      const results = await searchStudents(searchTerm)
+      
+      if (results.length > 0) {
+        // Si hay resultados, redirigir a la página de resultados
+        const encodedResults = encodeURIComponent(JSON.stringify(results))
+        router.push(`/alumnos/buscar?results=${encodedResults}`)
+      } else {
+        // Si no hay resultados, mostrar toast informativo
+        toast({
+          title: "Búsqueda sin resultados",
+          description: `No se encontraron estudiantes que coincidan con "${searchTerm}"`,
+          variant: "default",
+        })
+      }
+      
+    } catch (error) {
+      console.error('Error en la búsqueda:', error)
+      toast({
+        title: "Error",
+        description: "No se pudo realizar la búsqueda. Por favor, intente nuevamente.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSearching(false)
+      setSearchTerm('')
+      setSearchResults([])
+    }
+  }
+
+  const loadNotifications = async () => {
+    try {
+      // Solo cargar notificaciones si no las hemos marcado como leídas
+      if (typeof window !== 'undefined' && !localStorage.getItem('notificationsRead')) {
+        const count = await getNotificationCount()
+        setNotificationCount(count)
+        if(count>0) localStorage.setItem('notificationsRead', 'false')
+        // console.log("Conteo de notificaciones cargado:", count)
+      } else {
+        setNotificationCount(0)
+      }
+    } catch (error) {
+      console.error('Failed to load notifications:', error)
+      setNotificationCount(0)
+    }
+  }
+
+  
+
   // Función para navegar al perfil del usuario
   const handleNavigateToProfile = () => {
     router.push("/perfil")
@@ -62,6 +151,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
     if (typeof window !== "undefined") {
       localStorage.removeItem("isAuthenticated")
       localStorage.removeItem("selectedSchool")
+      localStorage.removeItem("notificationsRead")
     }
 
     // Remove auth token
@@ -159,32 +249,77 @@ export function Header({ toggleSidebar }: HeaderProps) {
         </div>
 
         {/* Barra de búsqueda - ahora visible en móvil */}
-        <div className="relative w-40 sm:w-60 md:w-80">
-          <div className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </div>
+        <form onSubmit={handleSearch} className="relative w-40 sm:w-60 md:w-80">
+          <button 
+            type="submit" 
+            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"
+            disabled={isSearching}
+          >
+            {isSearching ? (
+              <div className="h-4 w-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            )}
+          </button>
           <Input
             type="text"
-            placeholder="Buscar"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar alumno..."
             className="pl-8 border bg-white/90 rounded-md h-7 md:h-8 text-xs md:text-sm"
+            disabled={isSearching}
           />
-        </div>
+          {/* Mostrar resultados de búsqueda en un dropdown */}
+          {searchResults.length > 0 && (
+            <div className="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto">
+              {searchResults.map((student) => (
+                <div 
+                  key={student.id} 
+                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                  onClick={() => {
+                    // Navegar al perfil del alumno o realizar otra acción
+                    console.log('Alumno seleccionado:', student)
+                    setSearchResults([])
+                    setSearchTerm('')
+                  }}
+                >
+                  {student.nombre} {student.apellido}
+                  {student.grado && student.seccion && (
+                    <span className="text-xs text-gray-500 ml-2">
+                      ({student.grado}° {student.seccion})
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </form>
 
         <div className="flex items-center space-x-4">
-          <Bell className="text-white h-5 w-5 hidden sm:block" />
+          <div 
+            className={`relative ${notificationCount > 0 ? 'cursor-pointer' : 'cursor-default'}`}
+            onClick={handleBellClick}
+          >
+            <Bell className="text-white h-7 w-7 hidden sm:block" />
+            {notificationCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {notificationCount}
+              </span>
+            )}
+          </div>
           {/* <Mail className="text-white h-5 w-5 hidden sm:block" /> */}
 
           <DropdownMenu>

@@ -6,8 +6,9 @@ import { StudentAlerts } from "@/components/student/student-alerts"
 import { StudentReports } from "@/components/student/student-reports"
 import { StudentSkeleton } from "@/components/student/student-skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DataTable } from "@/components/data-table"
 import { fetchStudentDetails, type StudentDetailResponse } from "@/services/students-service"
-import { AlertTriangle, Bell, FileText, Mail, Phone, Smile, User, Users } from "lucide-react"
+import { AlertTriangle, ArrowUpRight, Bell, FileText, Mail, Phone, Smile, User, Users } from "lucide-react"
 import Image from "next/image"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -95,7 +96,7 @@ export default function StudentDetailPage() {
   }
 
   // Extraer datos del estudiante
-  const { alumno, ficha, alertas, informes, emociones, apoderados } = studentDetails
+  const { alumno, ficha, alertas, informes, emociones, apoderados, datosComparativa } = studentDetails
 
   // Generar nombre del estudiante (en un caso real vendría de la API)
   // const studentName = generateNameFromEmail(alumno.email)
@@ -104,11 +105,13 @@ export default function StudentDetailPage() {
   const studentLastName = alumno.personas.apellidos
 
   // Convertir emociones al formato esperado por el componente StudentEmotions
-  const emotionData = emociones.map((emotion) => ({
-    name: emotion.nombre,
-    value: Math.round(emotion.valor / 100), // Normalizar para el componente
-    color: getEmotionColor(emotion.nombre),
+  const comparisonData = datosComparativa.map((data) => ({
+    emocion: data.emocion,
+    alumno: data.alumno,
+    promedio: data.promedio,
   }))
+
+  
 
   // Convertir alertas al formato esperado por el componente
   const alertsData = alertas.map((alerta) => ({
@@ -117,7 +120,7 @@ export default function StudentDetailPage() {
     tipo: getTipoAlerta(alerta.alertas_tipo_alerta_tipo_id),
     estado: alerta.estado,
     prioridad: getPrioridad(alerta.prioridad_id),
-    responsable: `ID: ${alerta.responsable_actual_id}`,
+    responsable: alerta.persona_responsable_actual.nombres + " " + alerta.persona_responsable_actual.apellidos,
   }))
 
   // Convertir informes al formato esperado por el componente
@@ -126,6 +129,7 @@ export default function StudentDetailPage() {
     tipo: "Informe General",
     resumen: `Informe ${formatDate(informe.fecha)}`,
     url_reporte: informe.url_reporte,
+    activo: informe.activo,
   }))
   console.log('reportData',reportsData)
 
@@ -484,48 +488,43 @@ export default function StudentDetailPage() {
 
                       {/* Tabla de comparación */}
                       <div className="overflow-x-auto">
-                        <table className="w-full border-collapse">
-                          <thead>
-                            <tr className="border-b border-gray-200">
-                              <th className="py-2 text-left font-medium">Emoción</th>
-                              <th className="py-2 text-center font-medium text-blue-500">Alumno</th>
-                              <th className="py-2 text-center font-medium text-gray-500">Promedio</th>
-                              <th className="py-2 text-center font-medium">Dif.</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr className="border-b border-gray-100">
-                              <td className="py-2">Feliz</td>
-                              <td className="py-2 text-center text-blue-500 font-medium">4.5</td>
-                              <td className="py-2 text-center text-gray-500">3.2</td>
-                              <td className="py-2 text-center font-medium text-green-500">+1.3</td>
-                            </tr>
-                            <tr className="border-b border-gray-100">
-                              <td className="py-2">Triste</td>
-                              <td className="py-2 text-center text-blue-500 font-medium">3.8</td>
-                              <td className="py-2 text-center text-gray-500">2.8</td>
-                              <td className="py-2 text-center font-medium text-green-500">+1.0</td>
-                            </tr>
-                            <tr className="border-b border-gray-100">
-                              <td className="py-2">Estresada</td>
-                              <td className="py-2 text-center text-blue-500 font-medium">2.5</td>
-                              <td className="py-2 text-center text-gray-500">3.5</td>
-                              <td className="py-2 text-center font-medium text-red-500">-1.0</td>
-                            </tr>
-                            <tr className="border-b border-gray-100">
-                              <td className="py-2">Enojada</td>
-                              <td className="py-2 text-center text-blue-500 font-medium">4.2</td>
-                              <td className="py-2 text-center text-gray-500">3.0</td>
-                              <td className="py-2 text-center font-medium text-green-500">+1.2</td>
-                            </tr>
-                            <tr>
-                              <td className="py-2">Ansiosa</td>
-                              <td className="py-2 text-center text-blue-500 font-medium">3.9</td>
-                              <td className="py-2 text-center text-gray-500">2.7</td>
-                              <td className="py-2 text-center font-medium text-green-500">+1.2</td>
-                            </tr>
-                          </tbody>
-                        </table>
+                        <DataTable
+                          columns={[
+                            { key: 'emocion', title: 'Emoción', className: 'text-left' },
+                            { key: 'alumno', title: 'Alumno', className: 'text-center text-blue-500' },
+                            { key: 'promedio', title: 'Promedio', className: 'text-center text-gray-500' },
+                            { 
+                              key: 'diferencia', 
+                              title: 'Dif.', 
+                              className: 'text-center',
+                            },
+                          ]}
+                          data={comparisonData.map(item => ({
+                            emocion: item.emocion,
+                            alumno: item.alumno,
+                            promedio: item.promedio,
+                            diferencia: item.alumno - item.promedio,
+                          }))}
+                          renderCell={(row, column) => {
+                            if (column.key === 'diferencia') {
+                              const diff = row[column.key] as number;
+                              const isPositive = diff > 0;
+                              return (
+                                <div className={`text-center font-medium ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                                  {isPositive ? '+' : ''}{diff.toFixed(1)}
+                                </div>
+                              );
+                            }
+                            if (column.key === 'alumno') {
+                              return <div className="text-center font-medium text-blue-500">{row[column.key]}</div>;
+                            }
+                            if (column.key === 'promedio') {
+                              return <div className="text-center text-gray-500">{row[column.key]}</div>;
+                            }
+                            if (column.key === 'emocion') 
+                              return <div className="text-center">{row[column.key]}</div>;
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -563,6 +562,8 @@ function getEmotionColor(emotion: string): string {
   }
   return colors[emotion] || "#6c757d"
 }
+
+
 
 function getTipoAlerta(tipoId: number): string {
   const tipos: Record<number, string> = {

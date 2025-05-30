@@ -90,11 +90,10 @@ export async function loadSchools(): Promise<School[]> {
 
 
 
-  export async function loadSchoolsByUsuario_id(): Promise<School[]> {
+  export async function loadSchoolsByUsuario_id(usuario_id:number): Promise<School[]> {
     try {
 
-      const {usuario} = await fetchProfileData()
-      const response = await fetchWithAuth(`/colegios/usuarios_colegios?usuario_id=${usuario.usuario_id}`, {
+      const response = await fetchWithAuth(`/colegios/usuarios_colegios?usuario_id=${usuario_id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

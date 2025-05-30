@@ -1,6 +1,17 @@
 import { fetchWithAuth } from "@/lib/api-config"
 
 // Interfaces para la API
+export interface CreateReportData {
+  fecha: string
+  url_reporte: string
+  tipo: string
+  periodo_evaluado: string
+  url_anexos: string[]
+  observaciones: string
+  estado: string
+  creado_por: string
+}
+
 export interface ApiReport {
   alumno_informe_id: number
   alumno_id: number
@@ -188,14 +199,34 @@ export async function fetchReports(): Promise<APIReportGeneral[]> {
 // Función para obtener un informe específico por ID
 export async function fetchReportById(id: string): Promise<APIReportGeneral | null> {
   try {
-    // Intentar obtener todos los informes
-    const reports = await fetchReports()
-    // Buscar el informe con el ID especificado
-    const report = reports.find((r) => r.informe_id === Number(id))
-    return report || null
+    const response = await fetchWithAuth(`/alumnos/informes/${id}`)
+    const data = await response.json()
+    return data.data || null
   } catch (error) {
-    console.error(`Error al obtener informe con ID ${id}:`, error)
-    // En caso de error, buscar en los datos de ejemplo
-   throw error
+    console.error('Error fetching report by ID:', error)
+    return null
+  }
+}
+
+export async function createReport(reportData: CreateReportData): Promise<ApiReport> {
+  try {
+    const response = await fetchWithAuth('/alumnos/informes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reportData),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Error al crear el informe')
+    }
+
+    const data = await response.json()
+    return data.data
+  } catch (error) {
+    console.error('Error creating report:', error)
+    throw error
   }
 }

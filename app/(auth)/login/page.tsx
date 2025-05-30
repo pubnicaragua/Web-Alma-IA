@@ -87,11 +87,13 @@ export default function LoginPage() {
             variant: "destructive",
           })
           removeAuthToken()
+          localStorage.setItem("isAuthenticated", "false")
           // form reset
           return
         } 
        } catch (error) {
         removeAuthToken()
+          localStorage.setItem("isAuthenticated", "false")
         return
        }
 
