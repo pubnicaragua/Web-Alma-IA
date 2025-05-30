@@ -1,5 +1,5 @@
 "use client"
-
+export const dynamic = 'force-dynamic'
 import { DataTable } from "@/components/data-table"
 import { FilterDropdown } from "@/components/filter-dropdown"
 import { AppLayout } from "@/components/layout/app-layout"

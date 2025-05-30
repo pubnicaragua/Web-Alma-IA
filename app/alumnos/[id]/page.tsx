@@ -377,6 +377,7 @@ export default function StudentDetailPage() {
                       selectedEmotions={selectedEmotions}
                       onToggleEmotion={handleToggleEmotion}
                       apiEmotions={emociones}
+                      setSelectedEmotions={setSelectedEmotions}
                     />
 
                     {/* Segunda gráfica: Comparativa (nueva versión con pentágono regular) */}
