@@ -50,12 +50,14 @@ export function Header({ toggleSidebar }: HeaderProps) {
         setNotificationCount(0)
         // Marcamos las notificaciones como leídas en el localStorage
         localStorage.setItem('notificationsRead', 'true')
+        localStorage.setItem('notificationCount', '0')
       } else {
         // Si no estamos en /alertas, navegamos y luego reiniciamos el contador
         router.push('/alertas')
         setNotificationCount(0)
         // Marcamos las notificaciones como leídas en el localStorage
-        localStorage.removeItem('notificationsRead')
+        localStorage.setItem('notificationsRead', 'true')
+        localStorage.setItem('notificationCount', '0')
       }
     }
   }
@@ -122,10 +124,11 @@ export function Header({ toggleSidebar }: HeaderProps) {
       if (typeof window !== 'undefined' && !localStorage.getItem('notificationsRead')) {
         const count = await getNotificationCount()
         setNotificationCount(count)
-        if(count>0) localStorage.setItem('notificationsRead', 'false')
+        if(count>0) {
+          localStorage.setItem('notificationsRead', 'false')
+          localStorage.setItem('notificationCount', count.toString())
+        }
         // console.log("Conteo de notificaciones cargado:", count)
-      } else {
-        setNotificationCount(0)
       }
     } catch (error) {
       console.error('Failed to load notifications:', error)
@@ -152,6 +155,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
       localStorage.removeItem("isAuthenticated")
       localStorage.removeItem("selectedSchool")
       localStorage.removeItem("notificationsRead")
+      localStorage.removeItem("notificationCount")
     }
 
     // Remove auth token
