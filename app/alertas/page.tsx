@@ -5,13 +5,14 @@ import { FilterDropdown } from "@/components/filter-dropdown"
 import { AppLayout } from "@/components/layout/app-layout"
 import { Badge } from "@/components/ui/badge"
 import { useState, useEffect, useMemo } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import { AlertCircle, RefreshCw } from "lucide-react"
 import { type Alert, fetchAlerts } from "@/services/alerts-service"
 
 export default function AlertsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams() // para la campanita: importante
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -29,7 +30,11 @@ export default function AlertsPage() {
       try {
         setIsLoading(true)
         setError(null)
-        const data = await fetchAlerts()
+        let data = await fetchAlerts()
+        const params = Object.fromEntries(searchParams.entries())
+        if(params?.notifications){
+          data = data.filter(alert => alert.status === "Pendiente")
+        }
         setAlerts(data)
       } catch (err) {
         console.error("Error al cargar alertas:", err)
@@ -137,7 +142,7 @@ export default function AlertsPage() {
 
   // Función para navegar a la vista detallada de la alerta
   const handleAlertClick = (alert: Alert) => {
-    router.push(`/alertas/${alert.id}`)
+    router.push(`/alertas/${alert.id}${searchParams.get('notifications') ? '?notifications=true' : ''}`)
   }
 
   // Renderizar celdas de la tabla

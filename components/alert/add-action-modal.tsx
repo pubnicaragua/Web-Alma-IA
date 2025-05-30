@@ -15,11 +15,10 @@ import { createAccionAlert } from "@/services/alerts-service"
 interface AddActionModalProps {
   alumnoAlertaId: number
   alumnoId: number
-  onActionAdded?: () => void
   isMobile?: boolean
 }
 
-export function AddActionModal({ alumnoAlertaId, alumnoId, onActionAdded, isMobile = false }: AddActionModalProps) {
+export function AddActionModal({ alumnoAlertaId, alumnoId, isMobile = false }: AddActionModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false)
   const [planAccion, setPlanAccion] = useState("")
   const [fechaCompromiso, setFechaCompromiso] = useState("")
@@ -72,9 +71,7 @@ export function AddActionModal({ alumnoAlertaId, alumnoId, onActionAdded, isMobi
       
       // Cerrar modal y notificar al componente padre
       onClose()
-      if (onActionAdded) {
-        onActionAdded()
-      }
+     
     } catch (error) {
       console.error("Error al crear la acción:", error)
       toast({

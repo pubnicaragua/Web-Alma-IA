@@ -136,7 +136,6 @@ export const fetchWithAuth = async (endpoint: string, options: RequestInit = {})
   const normalizedEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`
 
   console.log(`api-config:Enviando solicitud ${method} a ${API_BASE_URL}${normalizedEndpoint}`)
-
   try {
     const response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
       ...options,

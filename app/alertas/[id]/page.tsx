@@ -6,54 +6,43 @@ import { AppLayout } from "@/components/layout/app-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { fetchAlertById } from "@/services/alerts-service"
-import { ArrowLeft, Lock } from "lucide-react"
+import { AlertPage, changeLeida, fetchAlertById } from "@/services/alerts-service"
+import { ArrowLeft, Edit, Lock } from "lucide-react"
 import Image from "next/image"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
+import { EditAlertModal } from "@/components/edit-alert-modal"
 
 interface Action {
-  fecha: string
-  hora: string
-  usuarioResponsable: string
-  accionRealizada: string
-  fechaCompromiso: string
-  observaciones: string
+  plan_accion: string,
+  fecha_compromiso: string,
+  fecha_realizacion: string,
+  url_archivo: string
 }
-
-export interface Alert {
-  id: number
-  student: {
-    name: string
-    image: string
-  }
-  generationDate: string
-  generationTime: string
-  responsible: {
-    name: string
-    image: string
-  }
-  isAnonymous: boolean
-  description: string
-  actions: Action[]
-}
-
-// Datos de ejemplo
-
 
 export default function AlertDetailPage() {
   const { id } = useParams()
   const router = useRouter()
-  const [alert, setAlert] = useState<Alert | null>(null)
+  const [alert, setAlert] = useState<AlertPage | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const isMobile = useIsMobile()
+  const searchParams = useSearchParams()
 
-  const loadAlert = useCallback(async (id: string) => {
+  const loadAlert = useCallback(async (id: number) => {
     try {
       setIsLoading(true)
       setError(null)
       const data = await fetchAlertById(id)
+     if(searchParams.get('notifications')){
+      try {
+        await changeLeida(id)
+        console.log('change leida bien')
+      } catch (error) {
+        console.log('Error al marcar alerta como leida',error) //no se propaga el error
+      }
+     }
       setAlert(data)
     } catch (err) {
       console.error("Error al cargar alertas:", err)
@@ -64,38 +53,23 @@ export default function AlertDetailPage() {
   }, [id])
 
   useEffect(() => {
-    loadAlert(id as string)
+    loadAlert(Number(id))
   }, [loadAlert])
 
-  const handleAddAction = (newAction: {
-    accionRealizada: string
-    fechaCompromiso: string
-    observaciones: string
-  }) => {
+  const handleEditClick = () => {
+    setIsEditModalOpen(true)
+  }
+
+  const handleSaveChanges = async (data: any) => {
     if (!alert) return
-
-    const currentDate = new Date()
-    const formattedDate = `${currentDate.getDate().toString().padStart(2, "0")}/${(currentDate.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}/${currentDate.getFullYear()}`
-    const formattedTime = `${currentDate.getHours().toString().padStart(2, "0")}:${currentDate
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")} ${currentDate.getHours() >= 12 ? "PM" : "AM"}`
-
-    const action: Action = {
-      fecha: formattedDate,
-      hora: formattedTime,
-      usuarioResponsable: "Psic. Marcela Vidal", // En un caso real, sería el usuario actual
-      accionRealizada: newAction.accionRealizada,
-      fechaCompromiso: newAction.fechaCompromiso || "-",
-      observaciones: newAction.observaciones || "-",
+    
+    try {
+      // await updateAlert(alert.id, data)
+      await loadAlert(alert.id)
+      setIsEditModalOpen(false)
+    } catch (error) {
+      console.error('Error updating alert:', error)
     }
-
-    setAlert({
-      ...alert,
-      actions: [...alert.actions, action],
-    })
   }
 
   const handleGoBack = () => {
@@ -152,7 +126,7 @@ export default function AlertDetailPage() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-800">{alert.student.name}</h1>
-                  <p className="text-xl text-gray-600">{alert.student.course}</p>
+                  {/* <p className="text-xl text-gray-600">{alert.student.course}</p> */}
                   <p className="text-sm text-gray-500">
                     Fecha de generación: {alert.generationDate} - {alert.generationTime}
                   </p>
@@ -164,8 +138,11 @@ export default function AlertDetailPage() {
 
         {/* Card de detalles de la alerta */}
         <Card className="mb-6">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xl">Detalles de la Alerta</CardTitle>
+          <CardHeader className="flex justify-end w-full space-y-0 pb-2">
+            <Button variant="outline" size="sm" className="w-fit" onClick={handleEditClick}>
+              <Edit className="h-4 w-4" />
+              Editar
+            </Button>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Responsable actual */}
@@ -205,7 +182,8 @@ export default function AlertDetailPage() {
         <Card className="mb-6">
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
             <CardTitle className="text-xl">Bitácora de acciones</CardTitle>
-            <AddActionModal onAddAction={handleAddAction} isMobile={isMobile} />
+            {/* PENDIENTE  DENREO DEL OBJETO STUDENT TENER EL ID DEL ESTUDIANTE*/}
+            <AddActionModal alumnoAlertaId={alert.id} alumnoId={alert.student.alumno_id} isMobile={isMobile} />
           </CardHeader>
           <CardContent>
             <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
@@ -245,6 +223,13 @@ export default function AlertDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      <EditAlertModal 
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        alert={alert}
+        onSave={handleSaveChanges}
+      />
     </AppLayout> : null}
   </>)
 }

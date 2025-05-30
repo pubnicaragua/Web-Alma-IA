@@ -64,6 +64,8 @@ export default function ProfilePage() {
     try {
       const updatedProfile = await updateProfile(profileData?.usuario.usuario_id, data)
       setProfileData(updatedProfile)
+      //cerrar el modal
+      setIsEditModalOpen(false)
       
       // Mostrar mensaje de éxito
       toast({
@@ -72,6 +74,8 @@ export default function ProfilePage() {
       })
     } catch (error) {
       console.error('Error al guardar el perfil:', error)
+        //cerrar el modal
+        setIsEditModalOpen(false)
       toast({
         title: "Error",
         description: "No se pudo actualizar el perfil. Por favor, inténtalo de nuevo.",
@@ -245,7 +249,7 @@ export default function ProfilePage() {
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-sm text-gray-500 mb-1">Estado</h3>
-              <p className="font-medium">{usuario.estado_usuario}</p>
+              <p className="font-medium">{usuario.estado_usuario || 'No disponible'}</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-sm text-gray-500 mb-1">Último inicio de sesión</h3>

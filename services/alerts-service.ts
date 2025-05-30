@@ -1,5 +1,4 @@
 import { fetchWithAuth } from "@/lib/api-config"
-import { Alert as AlertPage } from '@/app/alertas/[id]/page'
 import { DataPoint } from "@/components/line-chart-comparison"
 
 // Interfaces para los datos de la API según la estructura real
@@ -42,6 +41,24 @@ interface ApiAlertPriority {
 interface ApiAlertType {
   nombre: string
   alerta_tipo_id: number
+}
+
+export interface AlertPage {
+  id: number
+  student: {
+    name: string
+    image: string
+    alumno_id:number
+  }
+  generationDate: string
+  generationTime: string
+  responsible?: {
+    name: string
+    image: string
+  }
+  isAnonymous: boolean
+  description: string
+  actions: any[]
 }
 
 export interface ApiAlert {
@@ -92,53 +109,53 @@ export interface Alert {
 }
 
 // Datos de ejemplo para cuando la API no está disponible
-export const FALLBACK_ALERTS: Alert[] = [
-  {
-    id: "1",
-    title: "SOS Alma",
-    description: "Alerta generada por bajo rendimiento académico",
-    date: "08/04/2025",
-    time: "10:00",
-    status: "Pendiente",
-    priority: "Alta",
-    type: "SOS Alma",
-    student: {
-      id: "101",
-      name: "Carolina Espina",
-      avatar: "/smiling-woman-garden.png",
-    },
-  },
-  {
-    id: "2",
-    title: "Amarilla",
-    description: "Alerta generada por inasistencias",
-    date: "08/04/2025",
-    time: "10:00",
-    status: "En curso",
-    priority: "Media",
-    type: "Amarilla",
-    student: {
-      id: "102",
-      name: "Jorge Mendez",
-      avatar: "/young-man-city.png",
-    },
-  },
-  {
-    id: "3",
-    title: "Denuncia",
-    description: "Alerta generada por comportamiento",
-    date: "07/04/2025",
-    time: "10:00",
-    status: "Resuelta",
-    priority: "Alta",
-    type: "Denuncia",
-    student: {
-      id: "103",
-      name: "Bruno Garay",
-      avatar: "/young-man-city.png",
-    },
-  },
-]
+// export const FALLBACK_ALERTS: Alert[] = [
+//   {
+//     id: "1",
+//     title: "SOS Alma",
+//     description: "Alerta generada por bajo rendimiento académico",
+//     date: "08/04/2025",
+//     time: "10:00",
+//     status: "Pendiente",
+//     priority: "Alta",
+//     type: "SOS Alma",
+//     student: {
+//       id: "101",
+//       name: "Carolina Espina",
+//       avatar: "/smiling-woman-garden.png",
+//     },
+//   },
+//   {
+//     id: "2",
+//     title: "Amarilla",
+//     description: "Alerta generada por inasistencias",
+//     date: "08/04/2025",
+//     time: "10:00",
+//     status: "En curso",
+//     priority: "Media",
+//     type: "Amarilla",
+//     student: {
+//       id: "102",
+//       name: "Jorge Mendez",
+//       avatar: "/young-man-city.png",
+//     },
+//   },
+//   {
+//     id: "3",
+//     title: "Denuncia",
+//     description: "Alerta generada por comportamiento",
+//     date: "07/04/2025",
+//     time: "10:00",
+//     status: "Resuelta",
+//     priority: "Alta",
+//     type: "Denuncia",
+//     student: {
+//       id: "103",
+//       name: "Bruno Garay",
+//       avatar: "/young-man-city.png",
+//     },
+//   },
+// ]
 
 // Función para convertir el formato de la API al formato de la UI
 function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
@@ -276,7 +293,7 @@ export async function fetchAlerts(): Promise<Alert[]> {
 }
 
 // Función para obtener una alerta por ID
-export async function fetchAlertById(id: string): Promise<AlertPage | null> {
+export async function fetchAlertById(id: number): Promise<AlertPage | null> {
   try {
     console.log(`Obteniendo alerta con ID ${id}...`)
 
@@ -322,6 +339,32 @@ export async function fetchRecentAlerts(): Promise<Alert[]> {
   } catch (error) {
     console.error("Error in fetchRecentAlerts:", error)
     throw error
+  }
+}
+
+/**
+ * Marks an alert as read by its ID
+ * @param alertId The ID of the alert to mark as read
+ * @returns Promise that resolves to true if successful
+ */
+export async function changeLeida(alertId: string | number): Promise<boolean> {
+  try {
+    const response = await fetchWithAuth(`/alumnos/alertas/${alertId}?cambiar_lectura=true`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ leida: true })
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al actualizar el estado de la alerta');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error en changeLeida:', error);
+    throw error;
   }
 }
 

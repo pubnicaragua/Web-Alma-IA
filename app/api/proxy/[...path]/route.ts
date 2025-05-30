@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 // import fetch from 'node-fetch';
 // import { HttpsProxyAgent } from 'https-proxy-agent';
-// const proxyAgent = new HttpsProxyAgent('http://127.0.0.1:54739');
+// const proxyAgent = new HttpsProxyAgent('http://127.0.0.1:62884');
 // const agent = proxyAgent;
 // API base URL
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://api-almaia.onrender.com/api/v1"
@@ -115,10 +115,18 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
 
 export async function POST(request: NextRequest, { params }: { params: { path: string[] } }) {
   try {
-    const path = params.path.join("/")
+    const pathLogin = params.path.join("/")
+    const searchParams = request.nextUrl.searchParams
+    const path = (await params).path
+    let apiUrl = getApiUrl(path)
+    if (searchParams && searchParams.size > 0)
+      searchParams.keys().forEach((key) => {
+        apiUrl += `?${key}=${searchParams.get(key)}`
+      })
+
 
     // Verificar si es una solicitud de login
-    const isLoginRequest = path === "auth/login"
+    const isLoginRequest = pathLogin === "auth/login"
 
     // Obtener el cuerpo de la solicitud
     const body = await request.json().catch((e) => {
@@ -126,7 +134,6 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
       return {}
     })
 
-    const apiUrl = getApiUrl(params.path)
     console.log(`Proxy POST request to: ${apiUrl}`, body)
 
     // Obtener el token de autorización de la solicitud (excepto para login)
@@ -196,9 +203,15 @@ export async function POST(request: NextRequest, { params }: { params: { path: s
 
 export async function PUT(request: NextRequest, { params }: { params: { path: string[] } }) {
   try {
-    const path = params.path.join("/")
+    const searchParams = request.nextUrl.searchParams
+    const path = (await params).path
+    let apiUrl = getApiUrl(path)
+
+    if (searchParams && searchParams.size > 0)
+      searchParams.keys().forEach((key) => {
+        apiUrl += `?${key}=${searchParams.get(key)}`
+      })
     const body = await request.json().catch(() => ({}))
-    const apiUrl = getApiUrl(params.path)
 
     console.log(`Proxy PUT request to: ${apiUrl}`, body)
 
@@ -223,6 +236,7 @@ export async function PUT(request: NextRequest, { params }: { params: { path: st
     const response = await fetch(apiUrl, {
       method: "PUT",
       headers,
+      // agent,
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(10000),
     })

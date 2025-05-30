@@ -44,21 +44,22 @@ export function Header({ toggleSidebar }: HeaderProps) {
 
   const handleBellClick = () => {
     if (notificationCount > 0) {
+      router.push('/alertas?notifications=true')
       // Usamos window.location.pathname en lugar de usePathname
-      if (typeof window !== 'undefined' && window.location.pathname === '/alertas') {
-        // Si ya estamos en la ruta /alertas, solo reiniciamos el contador
-        setNotificationCount(0)
-        // Marcamos las notificaciones como leídas en el localStorage
-        localStorage.setItem('notificationsRead', 'true')
-        localStorage.setItem('notificationCount', '0')
-      } else {
-        // Si no estamos en /alertas, navegamos y luego reiniciamos el contador
-        router.push('/alertas')
-        setNotificationCount(0)
-        // Marcamos las notificaciones como leídas en el localStorage
-        localStorage.setItem('notificationsRead', 'true')
-        localStorage.setItem('notificationCount', '0')
-      }
+      // if (typeof window !== 'undefined' && window.location.pathname === '/alertas') {
+      //   // Si ya estamos en la ruta /alertas, solo reiniciamos el contador
+      //   setNotificationCount(0)
+      //   // Marcamos las notificaciones como leídas en el localStorage
+      //   localStorage.setItem('notificationsRead', 'true')
+      //   localStorage.setItem('notificationCount', '0')
+      // } else {
+      //   // Si no estamos en /alertas, navegamos y luego reiniciamos el contador
+      //   router.push('/alertas')
+      //   setNotificationCount(0)
+      //   // Marcamos las notificaciones como leídas en el localStorage
+      //   localStorage.setItem('notificationsRead', 'true')
+      //   localStorage.setItem('notificationCount', '0')
+      // }
     }
   }
 
@@ -123,6 +124,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
       // Solo cargar notificaciones si no las hemos marcado como leídas
       if (typeof window !== 'undefined' && !localStorage.getItem('notificationsRead')) {
         const count = await getNotificationCount()
+        console.log("Conteo de notificaciones cargado:", count)
         setNotificationCount(count)
         if(count>0) {
           localStorage.setItem('notificationsRead', 'false')

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { RefreshCw } from 'lucide-react'
 import { Header } from "@/components/header"
 import { NavigationMenu } from "@/components/navigation-menu"
@@ -47,7 +47,6 @@ export default function StudentsPage() {
     try {
       setIsLoading(true)
       setError(null)
-
       // Obtener datos de estudiantes desde la API
       const data = await fetchStudents()
       console.log("Datos de estudiantes obtenidos:", data)

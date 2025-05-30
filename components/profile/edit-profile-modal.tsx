@@ -13,10 +13,10 @@ import { cn } from "@/lib/utils"
 interface FormErrors {
   nombres?: string
   apellidos?: string
-  email?: string
-  fecha_nacimiento?: string
-  telefono_contacto?: string
-  url_foto_perfil?: string
+  // email?: string
+  // fecha_nacimiento?: string
+  // telefono_contacto?: string
+  // url_foto_perfil?: string
 }
 
 interface EditProfileModalProps {
@@ -45,28 +45,28 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
       case 'apellidos':
         if (!value.trim()) error = 'Este campo es requerido'
         break
-      case 'email':
-        if (!value) {
-          error = 'El correo es requerido'
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-          error = 'Correo electrónico inválido'
-        }
-        break
-      case 'fecha_nacimiento':
-        if (!value) error = 'La fecha de nacimiento es requerida'
-        break
-      case 'telefono_contacto':
-        if (!value) {
-          error = 'El teléfono es requerido'
-        } else if (!/^[0-9+\-\s()]+$/.test(value)) {
-          error = 'Formato de teléfono inválido'
-        }
-        break
-      case 'url_foto_perfil':
-        if (value && !/^https?:\/\//.test(value)) {
-          error = 'La URL debe comenzar con http:// o https://'
-        }
-        break
+      // case 'email':
+      //   if (!value) {
+      //     error = 'El correo es requerido'
+      //   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      //     error = 'Correo electrónico inválido'
+      //   }
+      //   break
+      // case 'fecha_nacimiento':
+      //   if (!value) error = 'La fecha de nacimiento es requerida'
+      //   break
+      // case 'telefono_contacto':
+      //   if (!value) {
+      //     error = 'El teléfono es requerido'
+      //   } else if (!/^[0-9+\-\s()]+$/.test(value)) {
+      //     error = 'Formato de teléfono inválido'
+      //   }
+      //   break
+      // case 'url_foto_perfil':
+      //   if (value && !/^https?:\/\//.test(value)) {
+      //     error = 'La URL debe comenzar con http:// o https://'
+      //   }
+      //   break
     }
 
     return error
@@ -106,23 +106,23 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
       isValid = false
     }
 
-    if (!formData.email) {
-      newErrors.email = 'El correo es requerido'
-      isValid = false
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Correo electrónico inválido'
-      isValid = false
-    }
+    // if (!formData.email) {
+    //   newErrors.email = 'El correo es requerido'
+    //   isValid = false
+    // } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    //   newErrors.email = 'Correo electrónico inválido'
+    //   isValid = false
+    // }
 
-    if (!formData.fecha_nacimiento) {
-      newErrors.fecha_nacimiento = 'La fecha de nacimiento es requerida'
-      isValid = false
-    }
+    // if (!formData.fecha_nacimiento) {
+    //   newErrors.fecha_nacimiento = 'La fecha de nacimiento es requerida'
+    //   isValid = false
+    // }
 
-    if (formData.url_foto_perfil && !/^https?:\/\//.test(formData.url_foto_perfil)) {
-      newErrors.url_foto_perfil = 'La URL debe comenzar con http:// o https://'
-      isValid = false
-    }
+    // if (formData.url_foto_perfil && !/^https?:\/\//.test(formData.url_foto_perfil)) {
+    //   newErrors.url_foto_perfil = 'La URL debe comenzar con http:// o https://'
+    //   isValid = false
+    // }
 
     setErrors(newErrors)
     return isValid
@@ -218,9 +218,9 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="email">Correo electrónico</Label>
-                  {errors.email && (
+                  {/* {errors.email && (
                     <span className="text-xs text-red-500">{errors.email}</span>
-                  )}
+                  )} */}
                 </div>
                 <Input
                   id="email"
@@ -228,11 +228,11 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  onBlur={(e) => {
-                    const error = validateField(e.target.name, e.target.value)
-                    setErrors(prev => ({ ...prev, email: error }))
-                  }}
-                  className={cn(errors.email && 'border-red-500 focus-visible:ring-red-500')}
+                  // onBlur={(e) => {
+                  //   const error = validateField(e.target.name, e.target.value)
+                  //   setErrors(prev => ({ ...prev, email: error }))
+                  // }}
+                  // className={cn(errors.email && 'border-red-500 focus-visible:ring-red-500')}
                 />
               </div>
             </div>
@@ -241,9 +241,9 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="fecha_nacimiento">Fecha de nacimiento</Label>
-                  {errors.fecha_nacimiento && (
+                  {/* {errors.fecha_nacimiento && (
                     <span className="text-xs text-red-500">{errors.fecha_nacimiento}</span>
-                  )}
+                  )} */}
                 </div>
                 <Input
                   id="fecha_nacimiento"
@@ -251,19 +251,19 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                   type="date"
                   value={formData.fecha_nacimiento}
                   onChange={handleChange}
-                  onBlur={(e) => {
-                    const error = validateField(e.target.name, e.target.value)
-                    setErrors(prev => ({ ...prev, fecha_nacimiento: error }))
-                  }}
-                  className={cn(errors.fecha_nacimiento && 'border-red-500 focus-visible:ring-red-500')}
+                  // onBlur={(e) => {
+                  //   const error = validateField(e.target.name, e.target.value)
+                  //   setErrors(prev => ({ ...prev, fecha_nacimiento: error }))
+                  // }}
+                  // className={cn(errors.fecha_nacimiento && 'border-red-500 focus-visible:ring-red-500')}
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="telefono_contacto">Teléfono de contacto</Label>
-                  {errors.telefono_contacto && (
+                  {/* {errors.telefono_contacto && (
                     <span className="text-xs text-red-500">{errors.telefono_contacto}</span>
-                  )}
+                  )} */}
                 </div>
                 <Input
                   id="telefono_contacto"
@@ -271,11 +271,11 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                   type="tel"
                   value={formData.telefono_contacto}
                   onChange={handleChange}
-                  onBlur={(e) => {
-                    const error = validateField(e.target.name, e.target.value)
-                    setErrors(prev => ({ ...prev, telefono_contacto: error }))
-                  }}
-                  className={cn(errors.telefono_contacto && 'border-red-500 focus-visible:ring-red-500')}
+                  // onBlur={(e) => {
+                  //   const error = validateField(e.target.name, e.target.value)
+                  //   setErrors(prev => ({ ...prev, telefono_contacto: error }))
+                  // }}
+                  // className={cn(errors.telefono_contacto && 'border-red-500 focus-visible:ring-red-500')}
                 />
               </div>
             </div>
@@ -283,9 +283,9 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <Label htmlFor="url_foto_perfil">URL de la foto de perfil (opcional)</Label>
-                {errors.url_foto_perfil && (
+                {/* {errors.url_foto_perfil && (
                   <span className="text-xs text-red-500">{errors.url_foto_perfil}</span>
-                )}
+                )} */}
               </div>
               <Input
                 id="url_foto_perfil"
@@ -293,12 +293,12 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                 type="url"
                 value={formData.url_foto_perfil || ''}
                 onChange={handleChange}
-                onBlur={(e) => {
-                  const error = validateField(e.target.name, e.target.value)
-                  setErrors(prev => ({ ...prev, url_foto_perfil: error }))
-                }}
-                placeholder="https://ejemplo.com/foto.jpg"
-                className={cn(errors.url_foto_perfil && 'border-red-500 focus-visible:ring-red-500')}
+                // onBlur={(e) => {
+                //   const error = validateField(e.target.name, e.target.value)
+                //   setErrors(prev => ({ ...prev, url_foto_perfil: error }))
+                // }}
+                // placeholder="https://ejemplo.com/foto.jpg"
+                // className={cn(errors.url_foto_perfil && 'border-red-500 focus-visible:ring-red-500')}
               />
             </div>
 
