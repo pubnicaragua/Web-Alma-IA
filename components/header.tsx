@@ -17,7 +17,7 @@ import { removeAuthToken } from "@/lib/api-config"
 import { useToast } from "@/hooks/use-toast"
 import { fetchProfileData, type ProfileResponse } from "@/services/profile-service"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getNotificationCount, searchStudents, type StudentSearchResult } from "@/services/header-service"
+import { getNotificationCount } from "@/services/header-service"
 
 interface HeaderProps {
   toggleSidebar?: () => void
@@ -37,10 +37,9 @@ export function Header({ toggleSidebar }: HeaderProps) {
     }
     return 0
   })
-  
+
   const [searchTerm, setSearchTerm] = useState('')
   const [isSearching, setIsSearching] = useState(false)
-  const [searchResults, setSearchResults] = useState<StudentSearchResult[]>([])
 
   const handleBellClick = () => {
     if (notificationCount > 0) {
@@ -87,24 +86,15 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!searchTerm.trim()) return
-    
+
     try {
-      setIsSearching(true)
-      const results = await searchStudents(searchTerm)
-      
-      if (results.length > 0) {
-        // Si hay resultados, redirigir a la página de resultados
-        const encodedResults = encodeURIComponent(JSON.stringify(results))
-        router.push(`/alumnos/buscar?results=${encodedResults}`)
-      } else {
-        // Si no hay resultados, mostrar toast informativo
-        toast({
-          title: "Búsqueda sin resultados",
-          description: `No se encontraron estudiantes que coincidan con "${searchTerm}"`,
-          variant: "default",
-        })
-      }
-      
+
+      if (pathname !== '/alumnos' && pathname !== '/select-school')
+        router.push(`/alumnos?search=${searchTerm}`)
+      else
+        setIsSearching(true)
+
+
     } catch (error) {
       console.error('Error en la búsqueda:', error)
       toast({
@@ -115,7 +105,6 @@ export function Header({ toggleSidebar }: HeaderProps) {
     } finally {
       setIsSearching(false)
       setSearchTerm('')
-      setSearchResults([])
     }
   }
 
@@ -126,7 +115,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
         const count = await getNotificationCount()
         console.log("Conteo de notificaciones cargado:", count)
         setNotificationCount(count)
-        if(count>0) {
+        if (count > 0) {
           localStorage.setItem('notificationsRead', 'false')
           localStorage.setItem('notificationCount', count.toString())
         }
@@ -138,7 +127,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
     }
   }
 
-  
+
 
   // Función para navegar al perfil del usuario
   const handleNavigateToProfile = () => {
@@ -256,8 +245,8 @@ export function Header({ toggleSidebar }: HeaderProps) {
 
         {/* Barra de búsqueda - ahora visible en móvil */}
         <form onSubmit={handleSearch} className="relative w-40 sm:w-60 md:w-80">
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"
             disabled={isSearching}
           >
@@ -288,34 +277,11 @@ export function Header({ toggleSidebar }: HeaderProps) {
             className="pl-8 border bg-white/90 rounded-md h-7 md:h-8 text-xs md:text-sm"
             disabled={isSearching}
           />
-          {/* Mostrar resultados de búsqueda en un dropdown */}
-          {searchResults.length > 0 && (
-            <div className="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto">
-              {searchResults.map((student) => (
-                <div 
-                  key={student.id} 
-                  className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => {
-                    // Navegar al perfil del alumno o realizar otra acción
-                    console.log('Alumno seleccionado:', student)
-                    setSearchResults([])
-                    setSearchTerm('')
-                  }}
-                >
-                  {student.nombre} {student.apellido}
-                  {student.grado && student.seccion && (
-                    <span className="text-xs text-gray-500 ml-2">
-                      ({student.grado}° {student.seccion})
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+
         </form>
 
         <div className="flex items-center space-x-4">
-          <div 
+          <div
             className={`relative ${notificationCount > 0 ? 'cursor-pointer' : 'cursor-default'}`}
             onClick={handleBellClick}
           >

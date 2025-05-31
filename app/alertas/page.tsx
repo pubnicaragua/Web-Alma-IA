@@ -141,7 +141,7 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
 
   // Función para navegar a la vista detallada de la alerta
   const handleAlertClick = (alert: Alert) => {
-    router.push(`/alertas/${alert.id}${searchParams.get('notifications') ? '?notifications=true' : ''}`)
+    router.push(`/alertas/${alert.id}`)
   }
 
   // Renderizar celdas de la tabla

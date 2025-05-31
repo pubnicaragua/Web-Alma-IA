@@ -14,8 +14,10 @@ import { useToast } from "@/hooks/use-toast"
 import { MobileSidebar } from "@/components/mobile-sidebar"
 import { AndroidNavMenu } from "@/components/android-nav-menu"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { getSearchParam } from "@/lib/search-params"
+import { searchStudents } from "@/services/header-service"
 
-export default function StudentsPage() {
+export default function StudentsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const router = useRouter()
   const { toast } = useToast()
   const [students, setStudents] = useState<Student[]>([])
@@ -49,7 +51,13 @@ export default function StudentsPage() {
       setIsLoading(true)
       setError(null)
       // Obtener datos de estudiantes desde la API
-      const data = await fetchStudents()
+      let data
+      const searchParam = getSearchParam(searchParams, 'search');
+      console.log('searchParam', searchParam)
+      if (searchParam)
+        data = await searchStudents(searchParam)
+      else
+        data = await fetchStudents()
       console.log("Datos de estudiantes obtenidos:", data)
 
       // Extraer opciones únicas para los filtros y añadir "Todos" al principio
@@ -84,7 +92,7 @@ export default function StudentsPage() {
   const filteredStudents = useMemo(() => {
     // Restablecer a la primera página cuando cambian los filtros
     setCurrentPage(1);
-    
+
     return students.filter((student) => {
       return (
         (levelFilter === "Todos" || student.level === levelFilter) &&
@@ -106,7 +114,7 @@ export default function StudentsPage() {
 
   // Función para navegar a la vista detallada del alumno
   const handleStudentClick = (student: Student) => {
-    router.push(`/alumnos/${ student.id }`)
+    router.push(`/alumnos/${student.id}`)
   }
 
   // Renderizar celdas de la tabla
@@ -131,7 +139,7 @@ export default function StudentsPage() {
           </div>
         )
       case "age":
-        return `${ student.age } años`
+        return `${student.age} años`
       default:
         return student[column.key as keyof Student]
     }
@@ -200,9 +208,9 @@ export default function StudentsPage() {
               ) : filteredStudents.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">No hay alumnos disponibles</div>
               ) : (
-                <DataTable 
-                  columns={columns} 
-                  data={filteredStudents} 
+                <DataTable
+                  columns={columns}
+                  data={filteredStudents}
                   renderCell={renderCell}
                   currentPage={currentPage}
                   onPageChange={setCurrentPage}
