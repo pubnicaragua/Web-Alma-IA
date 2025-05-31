@@ -53,7 +53,6 @@ export default function StudentsPage({ searchParams }: { searchParams: { [key: s
       // Obtener datos de estudiantes desde la API
       let data
       const searchParam = getSearchParam(searchParams, 'search');
-      console.log('searchParam', searchParam)
       if (searchParam)
         data = await searchStudents(searchParam)
       else

@@ -33,7 +33,7 @@ export default function RootLayout({
             <AuthProvider>
               {children}
               <Toaster />
-              {/* <SessionTimeout /> */}
+              <SessionTimeout />
             </AuthProvider>
           </ThemeColorsProvider>
         </ThemeProvider>

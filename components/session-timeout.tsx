@@ -18,9 +18,7 @@ const INACTIVITY_TIMEOUT = 60; // 1 minute in seconds
 export function SessionTimeout() {
   const router = useRouter();
   const { logout, isAuthenticated } = useAuth();
-  const [showCountdown, setShowCountdown] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(INACTIVITY_TIMEOUT);
-  const [showModal, setShowModal] = useState<boolean>(false);
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
   const [isExtended, setIsExtended] = useState<boolean>(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,19 +47,8 @@ export function SessionTimeout() {
       confirmationTimerRef.current = null;
     }
     setTimeLeft(INACTIVITY_TIMEOUT);
-    setShowModal(false);
     setShowConfirmation(false);
     setIsExtended(false);
-  }, []);
-
-  const handleExtendSession = useCallback(() => {
-    setTimeLeft(INACTIVITY_TIMEOUT);
-    setShowConfirmation(false);
-    setIsExtended(true);
-    if (confirmationTimerRef.current) {
-      clearTimeout(confirmationTimerRef.current);
-      confirmationTimerRef.current = null;
-    }
   }, []);
 
   const handleConfirmLogout = useCallback(() => {
@@ -121,48 +108,31 @@ export function SessionTimeout() {
     }
   }, []);
 
-  // Handle logout
-  const handleLogout = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    if (confirmationTimerRef.current) {
-      clearTimeout(confirmationTimerRef.current);
-      confirmationTimerRef.current = null;
-    }
-    logout();
-    router.push('/login');
-  }, [logout, router]);
+  // Calculate remaining time for the confirmation dialog (30 seconds total)
+  const [confirmationTimeLeft, setConfirmationTimeLeft] = useState(30);
 
-  // Handle logout from confirmation
-  const handleConfirmLogout = useCallback(() => {
-    handleLogout();
-  }, [handleLogout]);
-
-  // Reset timer on user activity
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!showConfirmation) {
+      setConfirmationTimeLeft(30);
+      return;
+    }
 
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
-    
-    const handleActivity = () => {
-      if (timeLeft > 0) {
-        resetTimer();
-      }
-    };
-
-    events.forEach(event => {
-      window.addEventListener(event, handleActivity);
-    });
-
-    return () => {
-      events.forEach(event => {
-        window.removeEventListener(event, handleActivity);
+    const timer = setInterval(() => {
+      setConfirmationTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
       });
-    };
-  }, [timeLeft, isAuthenticated, resetTimer]);
+    }, 1000);
 
+    return () => clearInterval(timer);
+  }, [showConfirmation]);
+
+  
+
+  
   // Clean up timers on unmount
   useEffect(() => {
     return () => {
@@ -178,34 +148,36 @@ export function SessionTimeout() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Don't show anything if user is not authenticated
-  if (!isAuthenticated) return null;
-
-  // Update countdown visibility
+  // Show confirmation when time is up
   useEffect(() => {
-    if (timeLeft > 30 && showCountdown) {
-      setShowCountdown(false);
-    } else if (timeLeft <= 30 && timeLeft > 0 && !showCountdown) {
-      setShowCountdown(true);
+    if (isAuthenticated && timeLeft <= 0) {
+      showSessionExpirationModal();
     }
-  }, [timeLeft, showCountdown]);
+  }, [timeLeft, isAuthenticated, showSessionExpirationModal]);
+
+  // Don't render anything if user is not authenticated
+  if (!isAuthenticated) return null;
 
   return (
     <>
-      {/* Time left indicator in header */}
-      {showCountdown && (
-        <div className="fixed top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-md text-sm font-medium z-50">
-          Tiempo restante: {formatTime(timeLeft)}
-        </div>
-      )}
-
       {/* Session timeout confirmation modal */}
       <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>¿Deseas continuar con tu sesión?</DialogTitle>
             <DialogDescription>
-              Tu sesión ha expirado por inactividad. ¿Deseas continuar?
+              Tu sesión está a punto de expirar. ¿Deseas continuar?
+              <div className="mt-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  La sesión se cerrará en: <span className="font-semibold">{confirmationTimeLeft} segundos</span>
+                </p>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                  <div 
+                    className="bg-yellow-500 h-2.5 rounded-full" 
+                    style={{ width: `${(confirmationTimeLeft / 30) * 100}%` }}
+                  />
+                </div>
+              </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -214,23 +186,6 @@ export function SessionTimeout() {
             </Button>
             <Button onClick={handleExtendSession}>
               Continuar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Session expired modal */}
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Sesión expirada</DialogTitle>
-            <DialogDescription>
-              Tu sesión ha expirado por inactividad. Serás redirigido a la página de inicio de sesión.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={handleLogout} className="w-full">
-              Aceptar
             </Button>
           </DialogFooter>
         </DialogContent>
