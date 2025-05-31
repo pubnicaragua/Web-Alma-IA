@@ -1,6 +1,5 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
 
 import { AddActionModal } from "@/components/alert/add-action-modal"
 import { AlertDetailSkeleton } from "@/components/alert/alert-detail-skeleton"
@@ -11,9 +10,10 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { AlertPage, changeLeida, createAccionAlert, CreateAccionAlertParams, fetchAlertById } from "@/services/alerts-service"
 import { ArrowLeft, Edit, Lock } from "lucide-react"
 import Image from "next/image"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 import { EditAlertModal } from "@/components/edit-alert-modal"
+import { hasSearchParam } from "@/lib/search-params"
 
 interface Action {
   plan_accion: string,
@@ -22,7 +22,7 @@ interface Action {
   url_archivo: string
 }
 
-export default function AlertDetailPage() {
+export default function AlertDetailPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const { id } = useParams()
   const router = useRouter()
   const [alert, setAlert] = useState<AlertPage | null>(null)
@@ -30,14 +30,15 @@ export default function AlertDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const isMobile = useIsMobile()
-  const searchParams = useSearchParams()
 
   const loadAlert = useCallback(async (id: number) => {
     try {
       setIsLoading(true)
       setError(null)
       const data = await fetchAlertById(id)
-     if(searchParams.get('notifications')){
+      
+      // Verificar si hay una notificación pendiente
+      if (hasSearchParam(searchParams, 'notifications')) {
       try {
         await changeLeida(id)
         console.log('change leida bien')

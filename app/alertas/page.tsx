@@ -1,18 +1,17 @@
 "use client"
-export const dynamic = 'force-dynamic'
 import { DataTable } from "@/components/data-table"
 import { FilterDropdown } from "@/components/filter-dropdown"
 import { AppLayout } from "@/components/layout/app-layout"
 import { Badge } from "@/components/ui/badge"
 import { useState, useEffect, useMemo } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { AlertCircle, RefreshCw } from "lucide-react"
 import { type Alert, fetchAlerts } from "@/services/alerts-service"
+import { getSearchParam } from "@/lib/search-params"
 
-export default function AlertsPage() {
+export default function AlertsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const router = useRouter()
-  const searchParams = useSearchParams() // para la campanita: importante
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -31,8 +30,8 @@ export default function AlertsPage() {
         setIsLoading(true)
         setError(null)
         let data = await fetchAlerts()
-        const params = Object.fromEntries(searchParams.entries())
-        if(params?.notifications){
+        const params = getSearchParam(searchParams, 'notifications')
+        if(params){
           data = data.filter(alert => alert.status === "Pendiente")
         }
         setAlerts(data)

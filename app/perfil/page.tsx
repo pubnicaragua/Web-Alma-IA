@@ -28,7 +28,6 @@ export default function ProfilePage() {
         setError(null)
         const data = await fetchProfileData()
         setProfileData(data)
-        console.log(data)
       } catch (err) {
         console.error("Error al cargar datos de perfil:", err)
         setError("No se pudieron cargar los datos del perfil. Por favor, intenta de nuevo más tarde.")
@@ -62,8 +61,9 @@ export default function ProfilePage() {
     }
 
     try {
-      const updatedProfile = await updateProfile(profileData?.usuario.usuario_id, data)
-      setProfileData(updatedProfile)
+      await updateProfile(profileData?.usuario.usuario_id, data)
+      const profile = await fetchProfileData()
+      setProfileData(profile)
       //cerrar el modal
       setIsEditModalOpen(false)
 

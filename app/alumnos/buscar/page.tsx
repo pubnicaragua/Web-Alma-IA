@@ -1,11 +1,10 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
-
 import { useState, useEffect, useMemo } from "react"
 import Image from "next/image"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { RefreshCw } from 'lucide-react'
+import { getSearchParam } from "@/lib/search-params"
 import { Header } from "@/components/header"
 import { NavigationMenu } from "@/components/navigation-menu"
 import { FilterDropdown } from "@/components/filter-dropdown"
@@ -19,9 +18,8 @@ import { AppLayout } from "@/components/layout/app-layout"
 
 
 
-export default function SearchPage() {
+export default function SearchPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const { toast } = useToast()
   const [searchResults, setSearchResults] = useState<Student[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -41,8 +39,8 @@ export default function SearchPage() {
 
   // Convertir los resultados de búsqueda de la URL a un array de estudiantes
   useEffect(() => {
-    const resultsParam = searchParams.get('results')
-
+    const resultsParam = getSearchParam(searchParams, 'results');
+    
     if (resultsParam) {
       try {
         const decodedResults = decodeURIComponent(resultsParam)

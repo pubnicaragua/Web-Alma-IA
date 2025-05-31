@@ -1,10 +1,9 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useMemo } from "react"
 import Image from "next/image"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { RefreshCw } from 'lucide-react'
 import { Header } from "@/components/header"
 import { NavigationMenu } from "@/components/navigation-menu"
