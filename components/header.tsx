@@ -89,7 +89,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
 
     try {
 
-      if (pathname !== '/alumnos' && pathname !== '/select-school')
+      if (pathname !== '/select-school')
         router.push(`/alumnos?search=${searchTerm}`)
       else
         setIsSearching(true)

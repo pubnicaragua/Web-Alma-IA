@@ -44,7 +44,7 @@ export default function StudentsPage({ searchParams }: { searchParams: { [key: s
   // Cargar datos de estudiantes
   useEffect(() => {
     loadStudents()
-  }, [])
+  }, [searchParams])
 
   const loadStudents = async () => {
     try {
