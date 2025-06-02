@@ -7,7 +7,6 @@ Este documento lista las tareas pendientes en el frontend de React, organizadas 
 ### 1.1. Login  
   
 *   **Necesario:**  
-    *   [ ] **Revisar si "Recuérdame" está funcionando**   
     *   [ ] **Olvidaste contraseña**  
         *   **Archivos involucrados:** `app/(auth)/login/page.tsx`  
         *   **Acción:** Implementar la funcionalidad completa de "Olvidaste contraseña" y la página asociada en `/forgot-password`.
@@ -50,15 +49,6 @@ Este documento lista las tareas pendientes en el frontend de React, organizadas 
         *   **Acción:** Asegurarse de que `fetchRecentAlerts` reciba el `colegio_id` y lo incluya en la solicitud al backend.  
   /* HENRY */
 
-
-*   **Importantes:**  
-    *   [ ] **Popup y finalizar sesión (revisar completo)**  
-        *   **Archivos involucrados:** `components/session-timeout.tsx`  
-        *   **Acción:**  
-            *   [ ] **Aumentar timeout a 1 min:** Ya se propuso aumentar a 30 minutos (`INACTIVITY_TIMEOUT = 1800`) y tiempo de advertencia de 2 minutos (`WARNING_TIME = 120`).  
-            *   [ ] **Si sale el popup del timeout. e indico cerrar sesión. y vuelvo a autenticarme.. sigue saliendo el popup del termino de sesión:** Asegurar que el estado del `SessionTimeout` se resetea completamente al cerrar sesión o al volver a autenticarse.  
-            *   [ ] **Si dejo pasar los 30 seg. y llega a cero. la sesión sigue activa. debe salirse al Login:** Verificar la invalidación del token en el backend o la función `logout()` del frontend.  
-            *   [ ] **Si el usuario No está activo (No mueve el mouse, No toca la pantalla, o NO escribe), no deberías forzar un cierre:** La detección de actividad y el `throttle` ya están implementados.  
   
 *   **Deseable:**  
     *   [ ] **Sección Fechas Importantes: colocar desde la fecha de hoy en adelante**  
