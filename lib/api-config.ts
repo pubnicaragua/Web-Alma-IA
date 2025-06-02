@@ -1,3 +1,4 @@
+// lib/api-config.ts  
 import { dispatchAuthChangeEvent } from "./auth-events"  
   
 // API base URL para el proxy local  
@@ -27,22 +28,28 @@ export const getAuthTokenFromCookie = (): string | null => {
 }  
   
 // Function to set the auth token  
-export const setAuthToken = (token: string): void => {  
+export const setAuthToken = (token: string, rememberMe: boolean = false): void => { // Añadir parámetro rememberMe  
   if (typeof window !== "undefined") {  
     try {  
       // Guardar en localStorage  
       localStorage.setItem("auth_token", token)  
   
       // Guardar en cookies para que el middleware pueda detectarlo  
-      // Usar una fecha de expiración explícita en lugar de max-age para mayor compatibilidad  
-      const expirationDate = new Date()  
-      expirationDate.setDate(expirationDate.getDate() + 30) // 30 días  
-  
-      document.cookie = `auth_token=${token}; path=/; expires=${expirationDate.toUTCString()}; SameSite=Lax`  
+      // Si rememberMe es true, la cookie dura 30 días, de lo contrario, es una cookie de sesión  
+      let cookieString = `auth_token=${token}; path=/; SameSite=Lax`  
+      if (rememberMe) {  
+        const expirationDate = new Date()  
+        expirationDate.setDate(expirationDate.getDate() + 15) // 15 días  
+        cookieString += `; expires=${expirationDate.toUTCString()}`  
+      } else {  
+        // Para que la cookie sea de sesión y expire al cerrar el navegador  
+        // No se añade 'expires' ni 'max-age'  
+      }  
+      document.cookie = cookieString  
   
       console.log("Token guardado correctamente:")  
       console.log("- En localStorage:", token.substring(0, 10) + "...")  
-      console.log("- En cookie con expiración:", expirationDate.toUTCString())  
+      console.log("- En cookie:", rememberMe ? `con expiración: ${expirationDate.toUTCString()}` : "de sesión")  
   
       // Verificar que se haya guardado correctamente  
       const storedToken = localStorage.getItem("auth_token")  

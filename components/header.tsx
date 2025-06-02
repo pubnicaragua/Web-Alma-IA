@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"  
 import { useRouter } from "next/navigation"  
 import { usePathname } from "next/navigation"  
-import { Bell, Mail, Menu } from "lucide-react"  
+import { Bell, Mail, Menu, Search } from "lucide-react"  
 import { Input } from "@/components/ui/input"  
 import {  
   DropdownMenu,  
@@ -225,7 +225,8 @@ const getUserImageUrl = () => {
         </div>  
   
         {/* Barra de búsqueda - ahora visible en móvil */}  
-        <form onSubmit={handleSearch} className="relative w-40 sm:w-60 md:w-80">  
+                {/* Barra de búsqueda - ahora visible en móvil */}  
+                <form onSubmit={handleSearch} className="relative w-40 sm:w-60 md:w-80">  
           <button  
             type="submit"  
             className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"  
@@ -234,20 +235,7 @@ const getUserImageUrl = () => {
             {isSearching ? (  
               <div className="h-4 w-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>  
             ) : (  
-              <svg  
-                xmlns="http://www.w3.org/2000/svg"  
-                width="14"  
-                height="14"  
-                viewBox="0 0 24 24"  
-                fill="none"  
-                stroke="currentColor"  
-                strokeWidth="2"  
-                strokeLinecap="round"  
-                strokeLinejoin="round"  
-              >  
-                <circle cx="11" cy="11" r="8"></circle>  
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>  
-              </svg>  
+              <Search size={14} /> // Usar el ícono de Search importado  
             )}  
           </button>  
           <Input  

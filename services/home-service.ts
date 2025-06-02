@@ -349,43 +349,48 @@ export async function fetchCardData(): Promise<CardData> {
   }
 }
 
-export async function fetchRecentAlerts(): Promise<RecentAlert[]> {
-  try {
-    console.log("Fetching recent alerts from API...")
-
-    try {
-      const response = await fetchWithAuth("/home/alertas/recientes", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-
-      if (!response.ok) {
-        console.error(`Error en respuesta API (home/alertas/recientes): ${response.status} ${response.statusText}`)
-        // console.log("Usando datos de ejemplo para alertas recientes")
-        throw new Error('No se pudo obtener las alertas recientes, inténtelo más tarde')
-      }
-
-      const data = await response.json()
-      console.log("Recent alerts data:", data)
-
-      // Verificar si los datos tienen la estructura esperada
-      if (Array.isArray(data) && data.length > 0) {
-        return data
-      } else {
-        // console.log("Datos de API vacíos o con formato incorrecto, usando datos de ejemplo")
-        throw new Error('No se pudo obtener las alertas recientes, inténtelo más tarde')
-      }
-    } catch (error) {
-      console.error("Error al obtener alertas recientes:", error)
-      // console.log("Usando datos de ejemplo para alertas recientes")
-      throw new Error('No se pudo obtener las alertas recientes, inténtelo más tarde')
-    }
-  } catch (error) {
-    console.error("Error in fetchRecentAlerts:", error)
-    throw error
-  }
+export async function fetchRecentAlerts(estado?: string): Promise<RecentAlert[]> { // Añadir parámetro estado  
+  try {  
+    console.log("Fetching recent alerts from API...")  
+  
+    try {  
+      let endpoint = "/home/alertas/recientes"  
+      if (estado) {  
+        endpoint += `?estado=${estado}` // Añadir el parámetro de estado a la URL  
+      }  
+  
+      const response = await fetchWithAuth(endpoint, { // Usar el endpoint modificado  
+        method: "GET",  
+        headers: {  
+          "Content-Type": "application/json",  
+        },  
+      })  
+  
+      if (!response.ok) {  
+        console.error(`Error en respuesta API (home/alertas/recientes): ${response.status} ${response.statusText}`)  
+        console.log("Usando datos de ejemplo para alertas recientes")  
+        return FALLBACK_RECENT_ALERTS  
+      }  
+  
+      const data = await response.json()  
+      console.log("Recent alerts data:", data)  
+  
+      // Verificar si los datos tienen la estructura esperada  
+      if (Array.isArray(data) && data.length > 0) {  
+        return data  
+      } else {  
+        console.log("Datos de API vacíos o con formato incorrecto, usando datos de ejemplo")  
+        return FALLBACK_RECENT_ALERTS  
+      }  
+    } catch (error) {  
+      console.error("Error al obtener alertas recientes:", error)  
+      console.log("Usando datos de ejemplo para alertas recientes")  
+      return FALLBACK_RECENT_ALERTS  
+    }  
+  } catch (error) {  
+    console.error("Error in fetchRecentAlerts:", error)  
+    throw error  
+  }  
 }
 
 export async function fetchImportantDates(): Promise<ImportantDate[]> {
