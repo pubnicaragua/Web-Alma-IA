@@ -41,17 +41,19 @@ export default function SelectSchoolPage() {
     loadAllSchools()
   }, [router]);
 
-  const loadAllSchools = async () => {
-    try {
-      setIsLoading(true)
-      const profile = await fetchProfileData()
-      const schools = await loadSchoolsByUsuario_id(profile.usuario.usuario_id)
-      setSchools(schools)
-    } catch (error) {
-      console.error("Error al cargar colegios:", error)
-    } finally {
-      setIsLoading(false)
-    }
+  const loadAllSchools = async () => {  
+    try {  
+      setIsLoading(true)  
+      const profile = await fetchProfileData()  
+      const schools = await loadSchoolsByUsuario_id(profile.usuario.usuario_id)  
+      setSchools(schools)  
+    } catch (error) {  
+      console.error("Error al cargar colegios:", error)  
+      // Mostrar mensaje de error al usuario  
+      setError("No se pudieron cargar los colegios. Por favor, intente nuevamente.")  
+    } finally {  
+      setIsLoading(false)  
+    }  
   };
 
  

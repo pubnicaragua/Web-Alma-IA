@@ -1,188 +1,242 @@
-import { fetchWithAuth } from "@/lib/api-config"
-import { fetchProfileData } from "./profile-service"
+import { fetchWithAuth } from "@/lib/api-config";  
+import { fetchProfileData } from "./profile-service";  
 
-// Interfaces para los datos de la API según la estructura real
-export interface ApiSchool {
-  colegio_id: number
-  nombre: string
-  nombre_fantasia: string
-  tipo_colegio: string
-  dependencia: string
-  sitio_web: string
-  direccion: string
-  telefono_contacto: string
-  correo_electronico: string
-  creado_por: number
-  actualizado_por: number | null
-  fecha_creacion: string
-  fecha_actualizacion: string | null
-  activo: boolean
-  comuna_id: number
-  region_id: number
-  pais_id: number,
-  alerts: number
-  students: number
+// Interfaces para los datos de la API según la estructura real  
+export interface ApiSchool {  
+  colegio_id: number;  
+  nombre: string;  
+  nombre_fantasia: string;  
+  tipo_colegio: string;  
+  dependencia: string;  
+  sitio_web: string;  
+  direccion: string;  
+  telefono_contacto: string;  
+  correo_electronico: string;  
+  creado_por: number;  
+  actualizado_por: number | null;  
+  fecha_creacion: string;  
+  fecha_actualizacion: string | null;  
+  activo: boolean;  
+  comuna_id: number;  
+  region_id: number;  
+  pais_id: number;  
+  alerts: number;  
+  students: number;  
+}  
+
+// Nueva interface para la respuesta del endpoint usuarios_colegios  
+export interface ApiUsuarioColegioRelation {  
+  usuarios_colegio_id: number;  
+  usuario_id: number;  
+  colegio_id: number;  
+  rol_id: number;  
+  fecha_asignacion: string;  
+  usuario: {  
+    usuario_id: number;  
+    nombre_social: string;  
+    email: string;  
+  };  
+  colegio: {  
+    colegio_id: number;  
+    nombre: string;  
+    codigo: string;  
+  };  
+  rol: {  
+    rol_id: number;  
+    nombre: string;  
+    descripcion: string;  
+  };  
+}  
+
+// Interface para el componente  
+export interface School {  
+  id: string;  
+  name: string;  
+  fantasyName: string;  
+  type: string;  
+  dependency: string;  
+  website: string;  
+  address: string;  
+  contactPhone: string;  
+  email: string;  
+  alerts: number;  
+  students: number;  
+  color: string;  
+  isActive: boolean;  
+  communeId: number;  
+  regionId: number;  
+  countryId: number;  
+}  
+
+export async function loadSchools(): Promise<School[]> {  
+  try {  
+    const response = await fetchWithAuth(`/colegios`, {  
+      method: "GET",  
+      headers: {  
+        "Content-Type": "application/json",  
+      }  
+    });  
+
+    if (!response.ok) {  
+      const errorText = await response.text();  
+      console.error(`Error al obtener colegios: ${response.status} - ${errorText}`);  
+      throw new Error(`Error al obtener colegios: ${response.status} - ${errorText}`);  
+    }  
+
+    const apiSchools = (await response.json()) as ApiSchool[];  
+    console.log("Colegios obtenidos correctamente:", apiSchools);  
+    
+    // Verificación para asegurar que siempre haya datos
+    if (!apiSchools || apiSchools.length === 0) {
+      console.error("No se encontraron colegios.");
+      return [];
+    }
+
+    // Transformar la respuesta de la API al formato que espera el componente  
+    return apiSchools.map(school => ({  
+      id: school.colegio_id.toString(),  
+      name: school.nombre,  
+      fantasyName: school.nombre_fantasia,  
+      type: school.tipo_colegio || "No especificado",  
+      dependency: school.dependencia || "No especificado",  
+      website: school.sitio_web || "",  
+      address: school.direccion || "",  
+      contactPhone: school.telefono_contacto || "",  
+      email: school.correo_electronico || "",  
+      alerts: school.alerts || 0,  
+      students: school.students || 0,  
+      color: "bg-gray-500",  
+      isActive: school.activo,  
+      communeId: school.comuna_id,  
+      regionId: school.region_id,  
+      countryId: school.pais_id  
+    }));  
+  } catch (error) {  
+    console.error("Error en loadSchools:", error);  
+    throw error;  
+  }  
+}  
+
+// Función corregida para obtener colegios por usuario    
+export async function loadSchoolsByUsuario_id(usuario_id: number): Promise<School[]> {  
+  try {  
+    // El endpoint ya devuelve los colegios filtrados por usuario  
+    const response = await fetchWithAuth(`/colegios/usuarios_colegios`, {  
+      method: "GET",  
+      headers: {  
+        "Content-Type": "application/json",  
+      }  
+    });  
+  
+    if (!response.ok) {  
+      const errorText = await response.text();  
+      console.error(`Error al obtener colegios del usuario: ${response.status} - ${errorText}`);  
+      throw new Error(`Error al obtener colegios del usuario: ${response.status} - ${errorText}`);  
+    }  
+  
+    // El backend devuelve directamente ApiSchool[], no ApiUsuarioColegioRelation[]  
+    const apiSchools = (await response.json()) as ApiSchool[];  
+    console.log("Colegios del usuario obtenidos correctamente:", apiSchools);  
+      
+    // Verificación para asegurar que siempre haya datos  
+    if (!apiSchools || apiSchools.length === 0) {  
+      console.log("No se encontraron colegios para el usuario.");  
+      return [];  
+    }  
+  
+    // Eliminar duplicados basados en colegio_id y mantener solo los activos  
+    const uniqueSchools = apiSchools.reduce((acc, school) => {  
+      const existingSchool = acc.find(s => s.colegio_id === school.colegio_id);  
+      if (!existingSchool) {  
+        // Solo agregar si está activo  
+        if (school.activo) {  
+          acc.push(school);  
+        }  
+      } else {  
+        // Si ya existe, mantener el más reciente y activo  
+        if (school.activo && new Date(school.fecha_actualizacion || school.fecha_creacion) >   
+            new Date(existingSchool.fecha_actualizacion || existingSchool.fecha_creacion)) {  
+          const index = acc.findIndex(s => s.colegio_id === school.colegio_id);  
+          acc[index] = school;  
+        }  
+      }  
+      return acc;  
+    }, [] as ApiSchool[]);  
+  
+    // Transformar al formato School  
+    return uniqueSchools.map(school => ({  
+      id: school.colegio_id.toString(),  
+      name: school.nombre,  
+      fantasyName: school.nombre_fantasia,  
+      type: school.tipo_colegio || "No especificado",  
+      dependency: school.dependencia || "No especificado",  
+      website: school.sitio_web || "",  
+      address: school.direccion || "",  
+      contactPhone: school.telefono_contacto || "",  
+      email: school.correo_electronico || "",  
+      alerts: school.alerts || 0,  
+      students: school.students || 0,  
+      color: "bg-blue-500",  
+      isActive: school.activo,  
+      communeId: school.comuna_id,  
+      regionId: school.region_id,  
+      countryId: school.pais_id  
+    }));  
+  } catch (error) {  
+    console.error("Error en loadSchoolsByUsuario_id:", error);  
+    throw error;  
+  }  
 }
 
+/**  
+ * Obtiene un colegio por su ID  
+ * @param id ID del colegio a buscar  
+ * @returns El colegio encontrado o null si no existe  
+ */  
+export async function getSchoolById(id: string | number): Promise<School | null> {  
+  try {  
+    const response = await fetchWithAuth(`/colegios`, {  
+      method: "GET",  
+      headers: {  
+        "Content-Type": "application/json",  
+      }  
+    });  
 
-// Interface para el componente
-export interface School {
-  id: string
-  name: string
-  fantasyName: string
-  type: string
-  dependency: string
-  website: string
-  address: string
-  contactPhone: string
-  email: string
-  alerts: number
-  students: number
-  color: string
-  isActive: boolean
-  communeId: number
-  regionId: number
-  countryId: number
+    if (!response.ok) {  
+      if (response.status === 404) {  
+        return null;  
+      }  
+      const errorText = await response.text();  
+      console.error(`Error al obtener el colegio: ${response.status} - ${errorText}`);  
+      throw new Error(`Error al obtener el colegio: ${response.status} - ${errorText}`);  
+    }  
+
+    const apiSchools = (await response.json()) as ApiSchool[];  
+    const apiSchool = apiSchools.find((school) => school.colegio_id == id);  
+    if (!apiSchool) {  
+      return null;  
+    }  
+    // Transformar la respuesta de la API al formato que espera el componente  
+    return {  
+      id: apiSchool.colegio_id.toString(),  
+      name: apiSchool.nombre,  
+      fantasyName: apiSchool.nombre_fantasia,  
+      type: apiSchool.tipo_colegio,  
+      dependency: apiSchool.dependencia,  
+      website: apiSchool.sitio_web,  
+      address: apiSchool.direccion,  
+      contactPhone: apiSchool.telefono_contacto,  
+      email: apiSchool.correo_electronico,  
+      alerts: apiSchool.alerts || 0,   
+      students: apiSchool.students || 0,   
+      color: "bg-gray-500",   
+      isActive: apiSchool.activo,  
+      communeId: apiSchool.comuna_id,  
+      regionId: apiSchool.region_id,  
+      countryId: apiSchool.pais_id  
+    };  
+  } catch (error) {  
+    console.error(`Error en getSchoolById (ID: ${id}):`, error);  
+    throw error;  
+  }  
 }
-
-export async function loadSchools(): Promise<School[]> {
-    try {
-      const response = await fetchWithAuth(`/colegios`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error al obtener colegios: ${response.status} - ${errorText}`);
-        throw new Error(`Error al obtener colegios: ${response.status} - ${errorText}`);
-      }
-
-      const apiSchools = (await response.json()) as ApiSchool[];
-      console.log("Colegios obtenidos correctamente:", apiSchools);
-      
-      // Transformar la respuesta de la API al formato que espera el componente
-      return apiSchools.map(school => ({
-        id: school.colegio_id.toString(),
-        name: school.nombre,
-        fantasyName: school.nombre_fantasia,
-        type: school.tipo_colegio,
-        dependency: school.dependencia,
-        website: school.sitio_web,
-        address: school.direccion,
-        contactPhone: school.telefono_contacto,
-        email: school.correo_electronico,
-        alerts: 0, // Valor por defecto
-        students: 0, // Valor por defecto
-        color: "bg-gray-500", // Valor por defecto
-        isActive: school.activo,
-        communeId: school.comuna_id,
-        regionId: school.region_id,
-        countryId: school.pais_id
-      }));
-    } catch (error) {
-      console.error("Error en loadSchools:", error);
-      throw error;
-    }
-  }
-
-
-
-  export async function loadSchoolsByUsuario_id(usuario_id:number): Promise<School[]> {
-    try {
-
-      const response = await fetchWithAuth(`/colegios/usuarios_colegios?usuario_id=${usuario_id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error al obtener colegios: ${response.status} - ${errorText}`);
-        throw new Error(`Error al obtener colegios: ${response.status} - ${errorText}`);
-      }
-
-      const apiSchools = (await response.json()) as ApiSchool[];
-      console.log("Colegios de usuarios obtenidos correctamente:", apiSchools);
-      
-      // Transformar la respuesta de la API al formato que espera el componente
-      return apiSchools.map(school => ({
-        id: school.colegio_id.toString(),
-        name: school.nombre,
-        fantasyName: school.nombre_fantasia,
-        type: school.tipo_colegio,
-        dependency: school.dependencia,
-        website: school.sitio_web,
-        address: school.direccion,
-        contactPhone: school.telefono_contacto,
-        email: school.correo_electronico,
-        alerts: school.alerts || 0, 
-        students: school.students || 0, 
-        color: "bg-gray-500", 
-        isActive: school.activo,
-        communeId: school.comuna_id,
-        regionId: school.region_id,
-        countryId: school.pais_id
-      }));
-    } catch (error) {
-      console.error("Error en loadSchools:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Obtiene un colegio por su ID
-   * @param id ID del colegio a buscar
-   * @returns El colegio encontrado o null si no existe
-   */
-  export async function getSchoolById(id: string | number): Promise<School | null> {
-    try {
-      const response = await fetchWithAuth(`/colegios`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        }
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null; // Colegio no encontrado
-        }
-        const errorText = await response.text();
-        console.error(`Error al obtener el colegio: ${response.status} - ${errorText}`);
-        throw new Error(`Error al obtener el colegio: ${response.status} - ${errorText}`);
-      }
-
-      const apiSchools = (await response.json()) as ApiSchool[];
-      const apiSchool = apiSchools.find((school) => school.colegio_id == id);
-      if (!apiSchool) {
-        return null; // Colegio no encontrado
-      }
-      // Transformar la respuesta de la API al formato que espera el componente
-      return {
-        id: apiSchool.colegio_id.toString(),
-        name: apiSchool.nombre,
-        fantasyName: apiSchool.nombre_fantasia,
-        type: apiSchool.tipo_colegio,
-        dependency: apiSchool.dependencia,
-        website: apiSchool.sitio_web,
-        address: apiSchool.direccion,
-        contactPhone: apiSchool.telefono_contacto,
-        email: apiSchool.correo_electronico,
-        alerts: apiSchool.alerts || 0, 
-        students: apiSchool.students || 0, 
-        color: "bg-gray-500", 
-        isActive: apiSchool.activo,
-        communeId: apiSchool.comuna_id,
-        regionId: apiSchool.region_id,
-        countryId: apiSchool.pais_id
-      };
-    } catch (error) {
-      console.error(`Error en getSchoolById (ID: ${id}):`, error);
-      throw error;
-    }
-  }

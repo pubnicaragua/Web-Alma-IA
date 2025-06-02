@@ -436,3 +436,179 @@ export const createAccionAlert = async (data: CreateAccionAlertParams) => {
     throw error
   }
 }
+
+// Interfaces para bitácora de alertas  
+export interface AlumnoAlertaBitacora {  
+  alumno_alerta_id: number  
+  alumno_id: number  
+  plan_accion: string // OBLIGATORIO  
+  fecha_compromiso?: string  
+  fecha_realizacion?: string  
+  url_archivo?: string  
+  // observaciones?: string // ELIMINAR ESTA LÍNEA  
+}
+  
+export interface BitacoraResponse {  
+  alumno_alerta_bitacora_id: number  
+  alumno_alerta_id: number  
+  alumno_id: number  
+  plan_accion: string  
+  fecha_compromiso: string  
+  fecha_realizacion: string | null  
+  url_archivo: string | null  
+  observaciones: string  
+  estado_seguimiento: string  
+  alumno: {  
+    alumno_id: number  
+    nombre: string  
+    curso_actual: string  
+  }  
+  alerta: {  
+    alumno_alerta_id: number  
+    tipo_alerta: string  
+    estado: string  
+    severidad: string  
+  }  
+}  
+  
+export interface AlertDetailResponse {  
+  alumno_alerta_id: number  
+  alumno_id: number  
+  alerta_regla_id: number  
+  fecha_generada: string  
+  fecha_resolucion: string | null  
+  alerta_origen_id: number  
+  prioridad_id: number  
+  severidad_id: number  
+  accion_tomada: string | null  
+  leida: boolean  
+  responsable_actual_id: number  
+  estado: string  
+  creado_por: number  
+  actualizado_por: number  
+  fecha_creacion: string  
+  fecha_actualizacion: string  
+  activo: boolean  
+  alertas_tipo_alerta_tipo_id: number  
+  alumnos: {  
+    personas: {  
+      nombres: string  
+      apellidos: string  
+      persona_id: number  
+    }  
+    alumno_id: number  
+    url_foto_perfil: string  
+  }  
+  alertas_reglas: {  
+    nombre: string  
+    alerta_regla_id: number  
+  }  
+  alertas_origenes: {  
+    nombre: string  
+    alerta_origen_id: number  
+  }  
+  alertas_severidades: {  
+    nombre: string  
+    alerta_severidad_id: number  
+  }  
+  alertas_prioridades: {  
+    nombre: string  
+    alerta_prioridad_id: number  
+  }  
+  alertas_tipos: {  
+    nombre: string  
+    alerta_tipo_id: number  
+  }  
+}  
+  
+// Crear nueva bitácora  
+export async function createAlertBitacora(bitacoraData: AlumnoAlertaBitacora): Promise<BitacoraResponse> {  
+  const response = await fetchWithAuth("/alumnos/alertas_bitacoras", {  
+    method: "POST",  
+    headers: {  
+      "Content-Type": "application/json",  
+    },  
+    body: JSON.stringify(bitacoraData),  
+  })  
+  
+  if (!response.ok) {  
+    const errorText = await response.text()  
+    throw new Error(`Error al crear bitácora: ${response.status} - ${errorText}`)  
+  }  
+  
+  return await response.json()  
+}  
+  
+// Obtener bitácoras de una alerta  
+export async function fetchAlertBitacoras(alertaId?: number): Promise<BitacoraResponse[]> {  
+  let endpoint = "/alumnos/alertas_bitacoras"  
+  if (alertaId) {  
+    endpoint += `?alerta_id=${alertaId}`  
+  }  
+  
+  const response = await fetchWithAuth(endpoint, {  
+    method: "GET",  
+    headers: {  
+      "Content-Type": "application/json",  
+    },  
+  })  
+  
+  if (!response.ok) {  
+    const errorText = await response.text()  
+    throw new Error(`Error al obtener bitácoras: ${response.status} - ${errorText}`)  
+  }  
+  
+  return await response.json()  
+}  
+  
+// Obtener detalle de alerta  
+export async function fetchAlertDetail(alertaId: number): Promise<AlertDetailResponse> {  
+  const response = await fetchWithAuth(`/alumnos/alertas/${alertaId}`, {  
+    method: "GET",  
+    headers: {  
+      "Content-Type": "application/json",  
+    },  
+  })  
+  
+  if (!response.ok) {  
+    const errorText = await response.text()  
+    throw new Error(`Error al obtener detalle de alerta: ${response.status} - ${errorText}`)  
+  }  
+  
+  const data = await response.json()  
+  // El backend retorna un array, tomamos el primer elemento  
+  return Array.isArray(data) ? data[0] : data  
+}  
+  
+// Actualizar bitácora  
+export async function updateAlertBitacora(bitacoraId: number, bitacoraData: Partial<AlumnoAlertaBitacora>): Promise<BitacoraResponse> {  
+  const response = await fetchWithAuth(`/alumnos/alertas_bitacoras/${bitacoraId}`, {  
+    method: "PUT",  
+    headers: {  
+      "Content-Type": "application/json",  
+    },  
+    body: JSON.stringify(bitacoraData),  
+  })  
+  
+  if (!response.ok) {  
+    const errorText = await response.text()  
+    throw new Error(`Error al actualizar bitácora: ${response.status} - ${errorText}`)  
+  }  
+  
+  return await response.json()  
+}  
+  
+// Eliminar bitácora (soft delete - marca como inactivo)  
+export async function deleteAlertBitacora(bitacoraId: number): Promise<void> {  
+  const response = await fetchWithAuth(`/alumnos/alertas_bitacoras/${bitacoraId}`, {  
+    method: "DELETE",  
+    headers: {  
+      "Content-Type": "application/json",  
+    },  
+  })  
+  
+  if (!response.ok) {  
+    const errorText = await response.text()  
+    throw new Error(`Error al eliminar bitácora: ${response.status} - ${errorText}`)  
+  }  
+}

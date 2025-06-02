@@ -157,19 +157,28 @@ export async function fetchUserProfile(): Promise<ProfileResponse | null> {
   }
 }
 
-export const fetchProfileData = async (): Promise<ProfileResponse> => {
-  try {
-    const data = await fetchUserProfile()
-    if (!data) {
-      console.error("No se pudo cargar el perfil del usuario")
-      throw new Error("No se pudo cargar el perfil del usuario")
-    }
-    return data
-  } catch (error) {
-    console.error("Error en fetchProfileData:", error)
-    // En producción, podrías devolver datos de ejemplo o manejar el error de otra manera
-    throw error
-  }
+export const fetchProfileData = async (): Promise<ProfileResponse> => {  
+  try {  
+    console.log("Obteniendo datos de perfil...")  
+    const response = await fetchWithAuth("/perfil/obtener", {  
+      method: "GET",  
+      headers: {  
+        "Content-Type": "application/json",  
+      },  
+    })  
+  
+    if (!response.ok) {  
+      const errorText = await response.text()  
+      console.error(`Error al obtener datos de perfil: ${response.status} - ${errorText}`)  
+      throw new Error(`Error al obtener datos de perfil: ${response.status} - ${errorText}`)  
+    }  
+  
+    const data = await response.json()  
+    return data  
+  } catch (error) {  
+    console.error("Error al obtener datos de perfil:", error)  
+    throw error  
+  }  
 }
 
 export interface UpdateProfileData {

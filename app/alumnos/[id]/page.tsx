@@ -13,6 +13,7 @@ import Image from "next/image"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 
+
 export default function StudentDetailPage() {
   const { id } = useParams()
   const [studentDetails, setStudentDetails] = useState<StudentDetailResponse | null>(null)
