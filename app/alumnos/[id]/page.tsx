@@ -116,6 +116,7 @@ export default function StudentDetailPage() {
 
   // Convertir alertas al formato esperado por el componente
   const alertsData = alertas.map((alerta) => ({
+    alumno_alerta_id: alerta.alumno_alerta_id,
     fecha: formatDate(alerta.fecha_generada),
     hora: formatTime(alerta.fecha_generada),
     tipo: getTipoAlerta(alerta.alertas_tipo_alerta_tipo_id),
@@ -123,7 +124,6 @@ export default function StudentDetailPage() {
     prioridad: getPrioridad(alerta.prioridad_id),
     responsable: alerta.persona_responsable_actual.nombres + " " + alerta.persona_responsable_actual.apellidos,
   }))
-
   // Convertir informes al formato esperado por el componente
   const reportsData = informes.map((informe) => ({
     fecha: formatDate(informe.fecha),

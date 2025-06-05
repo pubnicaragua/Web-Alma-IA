@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation" // Importar useRouter
 import Image from "next/image"  
   
 interface Alert {  
-  id: string // Asegúrate de que la alerta tenga un ID para la navegación  
+  alumno_alerta_id: number // Asegúrate de que la alerta tenga un ID para la navegación  
   fecha: string  
   hora: string  
   tipo: string  
@@ -25,7 +25,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
   const [alerts, setAlerts] = useState<Alert[]>(initialAlerts)  
   const router = useRouter() // Inicializar useRouter  
   
-  const handleAddAlert = (newAlert: { tipo: string; descripcion: string; fecha: string }) => {  
+  const handleAddAlert = (newAlert: {alumno_alerta_id:number, tipo: string; descripcion: string; fecha: string }) => {  
     // En un caso real, aquí se enviaría la alerta al servidor  
     // y luego se actualizaría el estado con la respuesta  
   
@@ -34,7 +34,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
     const hora = `${currentDate.getHours().toString().padStart(2, "0")}:${currentDate.getMinutes().toString().padStart(2, "0")} ${currentDate.getHours() >= 12 ? "PM" : "AM"}`  
   
     const alert: Alert = {  
-      id: (alerts.length + 1).toString(), // Asignar un ID simulado  
+      alumno_alerta_id:newAlert.alumno_alerta_id, // Asignar un ID simulado  
       fecha: newAlert.fecha,  
       hora: hora,  
       tipo: newAlert.tipo,  
@@ -42,12 +42,12 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
       prioridad: "Alta",  
       responsable: "Enc. Convivencia",  
     }  
-  
     setAlerts([alert, ...alerts])  
   }  
   
   // Nueva función para manejar el clic en la fila de la alerta  
   const handleAlertClick = (alertId: string) => {  
+    console.log(alertId)
     router.push(`/alertas/${alertId}`)  
   }  
   
@@ -75,7 +75,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
               <tr   
                 key={index}   
                 className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" // Añadir cursor-pointer  
-                onClick={() => handleAlertClick(alert.id)} // Añadir onClick  
+                onClick={() => handleAlertClick(alert.alumno_alerta_id)} // Añadir onClick  
               >  
                 <td className="px-4 py-3 text-sm text-center">{alert.fecha}</td>  
                 <td className="px-4 py-3 text-sm text-center">{alert.hora}</td>  

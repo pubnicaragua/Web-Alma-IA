@@ -15,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 
 interface AddAlertModalProps {
   onAddAlert: (alert: {
+    alumno_alerta_id:number
     tipo: string
     descripcion: string
     fecha: string
