@@ -6,11 +6,6 @@ Este documento lista las tareas pendientes en el frontend de React, organizadas 
 
 ## 🔺 PRIORIDAD ALTA
 
-### 1.4 Alumnos
-- [ ] **Ir a opción Alertas: al pinchar la alerta para ir al detalle se cae**
-  - Archivos: `app/alumnos/[id]/page.tsx`, `components/student/student-alerts.tsx`
-  - Acción: Asegurar que el `alumno_alerta_id` del backend se mapee correctamente a la propiedad `id` de la interfaz `Alert` en `alertsData` antes de pasarlo a `StudentAlerts`.
-
 ### 1.5 Comparativo
 - [ ] **Falta gráfico de líneas al final**
   - Archivos: `app/comparativo/page.tsx`, servicios de datos comparativos
