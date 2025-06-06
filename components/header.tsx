@@ -219,7 +219,7 @@ const getUserImageUrl = () => {
   
           <Link href="/" className="flex items-center">  
             <div className="h-10 w-auto mr-2">  
-              <Image src="/almaiaa.svg" alt="AlmaIA Logo" width={128} height={40} className="h-full w-auto" />  
+              <Image src="/logotipo.png" alt="AlmaIA Logo" width={128} height={40} className="h-full w-auto" />  
             </div>  
           </Link>  
         </div>  

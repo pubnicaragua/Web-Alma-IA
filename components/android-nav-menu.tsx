@@ -62,7 +62,7 @@ export function AndroidNavMenu({ isOpen, onClose }: AndroidNavMenuProps) {
         <div className="flex items-center justify-between p-4 border-b bg-primary">
           <div className="flex items-center">
             <div className="h-8 w-auto">
-              <Image src="/almaiaa.svg" alt="AlmaIA Logo" width={100} height={32} className="h-full w-auto" />
+              <Image src="/logotipo.png" alt="AlmaIA Logo" width={100} height={32} className="h-full w-auto" />
             </div>
           </div>
           <button

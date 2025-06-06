@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* Logo */}
       <div className="flex justify-center mt-12 mb-8">
         <div className="h-10 w-auto mr-2">
-          <Image src="/almaiaa.svg" alt="AlmaIA Logo" width={128} height={40} className="h-full w-auto" />
+          <Image src="/logotipo.png" alt="AlmaIA Logo" width={128} height={40} className="h-full w-auto" />
         </div>
       </div>
 

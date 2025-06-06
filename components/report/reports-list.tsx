@@ -21,7 +21,7 @@ const columns = [
   { key: "nivel", title: "Nivel" },
   { key: "fecha_generacion", title: "Fecha de generación" },
   { key: "creado_por", title: "Generado por" },
-  { key: "url_reporte", title: "Descargar Informe" },
+  { key: "url_reporte", title: "Informe" },
 ]
 
 export function ReportsList({ reports = [] }: ReportsListProps) {
