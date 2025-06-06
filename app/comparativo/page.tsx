@@ -2,6 +2,7 @@
 
 import { BarChartComparison } from "@/components/bar-chart-comparison";
 import { BarChartComparisonCategory } from "@/components/bar-chart-comparison-category";
+import { BarChartComparisonPatologie } from "@/components/bar-chart-comparison-patologie";
 import { FilterDropdown } from "@/components/filter-dropdown";
 import { FilterDropdownObject } from "@/components/filter-dropdown-object";
 import { AppLayout } from "@/components/layout/app-layout";
@@ -190,16 +191,11 @@ const [levelFilter, setLevelFilter] = useState<Grade>({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <BarChartComparisonCategory
             title="Emociones"
-            initialData={emotionsDataCourseA}
-            selectedEmotions={selectedEmotionsCourseA}
-            onToggleEmotion={handleToggleEmotionCourseA}
             grado={levelFilter?.grado_id}
           />
-          <BarChartComparison
-            title="Curso B"
-            initialData={emotionsDataCourseB}
-            selectedEmotions={selectedEmotionsCourseB}
-            onToggleEmotion={handleToggleEmotionCourseB}
+          <BarChartComparisonPatologie
+            title="Patologias"
+            grado={levelFilter?.grado_id}
           />
         </div>
 

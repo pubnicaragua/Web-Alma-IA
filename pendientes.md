@@ -6,11 +6,6 @@ Este documento lista las tareas pendientes en el frontend de React, organizadas 
 
 ## 🔺 PRIORIDAD ALTA
 
-### 1.5 Comparativo
-- [ ] **Falta gráfico de líneas al final**
-  - Archivos: `app/comparativo/page.tsx`, servicios de datos comparativos
-  - Acción: Conectar los componentes de gráfico (`BarChartComparison`, `LineChartComparison`) a endpoints reales y agregar el gráfico de líneas si falta.
-
 ### 1.8 Alertas (Grilla y Creación)
 - [ ] **Grilla debe estar ordenada por fecha y hora descendente**
   - Archivos: `app/alertas/page.tsx`, `components/data-table.tsx`

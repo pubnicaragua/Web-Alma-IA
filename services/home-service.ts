@@ -505,3 +505,28 @@ export async function fetchEmotionsForGrade(grado_id:number): Promise<Emotion[]>
     throw error
   }
 }
+export async function fetchPatologieForGrade(grado_id:number): Promise<Emotion[]> {
+  try {
+    console.log("Obteniendo emociones por grado...")
+    console.log("grado", grado_id)
+    const response = await fetchWithAuth("/comparativa/patologias/grado?grado_id="+grado_id, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`Error al obtener emociones: ${response.status} - ${errorText}`)
+      throw new Error(`Error al obtener emociones: ${response.status} - ${errorText}`)
+    }
+
+    const data = await response.json()
+    console.log("Emociones obtenidas:", data)
+    return data
+  } catch (error) {
+    console.error("Error al obtener emociones:", error)
+    throw error
+  }
+}

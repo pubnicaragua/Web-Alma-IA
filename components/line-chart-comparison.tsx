@@ -10,8 +10,8 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 
 export interface DataPoint {
   month: string
-  courseA: number
-  courseB: number
+  vencidas: number
+  atendidas: number
 }
 
 interface LineChartComparisonProps {
@@ -24,13 +24,13 @@ interface LineChartComparisonProps {
 // Datos para el gráfico de líneas
 
 const alertsData = [
-  { month: "Ene", courseA: 1200, courseB: 1500 },
-  { month: "Feb", courseA: 900, courseB: 1200 },
-  { month: "Mar", courseA: 1500, courseB: 1000 },
-  { month: "Abr", courseA: 2000, courseB: 1800 },
-  { month: "May", courseA: 3000, courseB: 2500 },
-  { month: "Jun", courseA: 2500, courseB: 2800 },
-  { month: "Jul", courseA: 2800, courseB: 3200 },
+  { month: "Ene", vencidas: 1200, atendidas: 1500 },
+  { month: "Feb", vencidas: 900, atendidas: 1200 },
+  { month: "Mar", vencidas: 1500, atendidas: 1000 },
+  { month: "Abr", vencidas: 2000, atendidas: 1800 },
+  { month: "May", vencidas: 3000, atendidas: 2500 },
+  { month: "Jun", vencidas: 2500, atendidas: 2800 },
+  { month: "Jul", vencidas: 2800, atendidas: 3200 },
 ]
 
 // Usar memo para evitar re-renderizados innecesarios
@@ -75,32 +75,32 @@ export const LineChartComparison = memo(function LineChartComparison({
         <h3 className="font-medium text-gray-800">{title}</h3>
         <div className="flex gap-2">
           <Badge
-            variant={selectedCourses.includes("courseA") ? "default" : "outline"}
+            variant={selectedCourses.includes("vencidas") ? "default" : "outline"}
             className={`cursor-pointer ${
-              selectedCourses.includes("courseA")
+              selectedCourses.includes("vencidas")
                 ? "bg-green-500"
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
             }`}
-            onClick={() => onToggleCourse("courseA")}
+            onClick={() => onToggleCourse("vencidas")}
             style={{
-              backgroundColor: selectedCourses.includes("courseA") ? themeColors.chart.green : "",
+              backgroundColor: selectedCourses.includes("vencidas") ? themeColors.chart.red : "",
             }}
           >
-            Curso A
+            Vencidas
           </Badge>
           <Badge
-            variant={selectedCourses.includes("courseB") ? "default" : "outline"}
+            variant={selectedCourses.includes("atendidas") ? "default" : "outline"}
             className={`cursor-pointer ${
-              selectedCourses.includes("courseB")
+              selectedCourses.includes("atendidas")
                 ? "bg-blue-500"
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
             }`}
-            onClick={() => onToggleCourse("courseB")}
+            onClick={() => onToggleCourse("atendidas")}
             style={{
-              backgroundColor: selectedCourses.includes("courseB") ? themeColors.chart.blue : "",
+              backgroundColor: selectedCourses.includes("atendidas") ? themeColors.chart.green : "",
             }}
           >
-            Curso B
+            Atendidas
           </Badge>
         </div>
       </div>
@@ -113,24 +113,24 @@ export const LineChartComparison = memo(function LineChartComparison({
             <XAxis dataKey="month" />
             <YAxis />
             <Tooltip
-              formatter={(value, name) => [value, name === "courseA" ? "Curso A" : "Curso B"]}
+              formatter={(value, name) => [value, name === "vencidas" ? "Vencidas" : "Atendidas"]}
               contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
             />
-            {selectedCourses.includes("courseA") && (
+            {selectedCourses.includes("vencidas") && (
               <Line
                 type="monotone"
-                dataKey="courseA"
-                stroke={themeColors.chart.green}
+                dataKey="vencidas"
+                stroke={themeColors.chart.red}
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}
               />
             )}
-            {selectedCourses.includes("courseB") && (
+            {selectedCourses.includes("atendidas") && (
               <Line
                 type="monotone"
-                dataKey="courseB"
-                stroke={themeColors.chart.blue}
+                dataKey="atendidas"
+                stroke={themeColors.chart.green}
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}

@@ -70,7 +70,7 @@ export const LineChartHistory = memo(function LineChartComparison({
   }, [])
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm border border-blue-200">
+    <div className="bg-white rounded-lg p-6 shadow-sm border border-green-200">
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-medium text-gray-800">{title}</h3>
         <div className="flex gap-2">
@@ -78,29 +78,29 @@ export const LineChartHistory = memo(function LineChartComparison({
             variant={selectedCourses.includes("vencidas") ? "default" : "outline"}
             className={`cursor-pointer ${
               selectedCourses.includes("vencidas")
-                ? "bg-green-500"
+                ? "bg-red-500"
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
             }`}
             onClick={() => onToggleCourse("vencidas")}
             style={{
-              backgroundColor: selectedCourses.includes("vencidas") ? themeColors.chart.green : "",
+              backgroundColor: selectedCourses.includes("vencidas") ? themeColors.chart.red : "",
             }}
           >
-            Vencida
+            Vencidas
           </Badge>
           <Badge
             variant={selectedCourses.includes("atendidas") ? "default" : "outline"}
             className={`cursor-pointer ${
               selectedCourses.includes("atendidas")
-                ? "bg-blue-500"
+                ? "bg-green-500"
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
             }`}
             onClick={() => onToggleCourse("atendidas")}
             style={{
-              backgroundColor: selectedCourses.includes("atendidas") ? themeColors.chart.blue : "",
+              backgroundColor: selectedCourses.includes("atendidas") ? themeColors.chart.green : "",
             }}
           >
-            Atendida
+            Atendidas
           </Badge>
         </div>
       </div>
@@ -113,14 +113,14 @@ export const LineChartHistory = memo(function LineChartComparison({
             <XAxis dataKey="month" />
             <YAxis />
             <Tooltip
-              formatter={(value, name) => [value, name === "vencidas" ? "Vencida" : "Atendida"]}
+              formatter={(value, name) => [value, name === "vencidas" ? "Vencidas" : "Atendidas"]}
               contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
             />
             {selectedCourses.includes("vencidas") && (
               <Line
                 type="monotone"
                 dataKey="vencidas"
-                stroke={themeColors.chart.green}
+                stroke={themeColors.chart.red}
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}
@@ -130,7 +130,7 @@ export const LineChartHistory = memo(function LineChartComparison({
               <Line
                 type="monotone"
                 dataKey="atendidas"
-                stroke={themeColors.chart.blue}
+                stroke={themeColors.chart.green}
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}
@@ -138,7 +138,7 @@ export const LineChartHistory = memo(function LineChartComparison({
               />
             )}
           </LineChart>
-        </ResponsiveContainer> : <div className="bg-blue-500 rounded-md p-2">
+        </ResponsiveContainer> : <div className="bg-green-500 rounded-md p-2">
           <h1 className="font-medium text-white">{error}</h1>
         </div>}
       </div>
