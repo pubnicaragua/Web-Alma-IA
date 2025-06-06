@@ -530,3 +530,26 @@ export async function fetchPatologieForGrade(grado_id:number): Promise<Emotion[]
     throw error
   }
 }
+export async function fetchPatologieGeneral(): Promise<Emotion[]> {
+  try {
+    const response = await fetchWithAuth("/home/barra/patologias", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`Error al obtener emociones: ${response.status} - ${errorText}`)
+      throw new Error(`Error al obtener emociones: ${response.status} - ${errorText}`)
+    }
+
+    const data = await response.json()
+    console.log("Emociones obtenidas:", data)
+    return data
+  } catch (error) {
+    console.error("Error al obtener emociones:", error)
+    throw error
+  }
+}

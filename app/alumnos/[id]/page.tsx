@@ -122,7 +122,7 @@ export default function StudentDetailPage() {
     tipo: getTipoAlerta(alerta.alertas_tipo_alerta_tipo_id),
     estado: alerta.estado,
     prioridad: getPrioridad(alerta.prioridad_id),
-    responsable: alerta.persona_responsable_actual.nombres + " " + alerta.persona_responsable_actual.apellidos,
+    responsable: alerta?.persona_responsable_actual?.nombres + " " + alerta?.persona_responsable_actual?.apellidos,
   }))
   // Convertir informes al formato esperado por el componente
   const reportsData = informes.map((informe) => ({

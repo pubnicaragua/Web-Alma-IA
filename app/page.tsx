@@ -17,6 +17,7 @@ import { isAuthenticated, removeAuthToken, fetchWithAuth } from "@/lib/api-confi
 import { type CardData, fetchCardData } from "@/services/home-service"
 import { useToast } from "@/hooks/use-toast"
 import { getSchoolById } from "@/services/school-service"
+import { BarChartComparisonPatologieGeneral } from "@/components/bar-chart-comparison-patologie-general"
 
 export default function Home() {
   const router = useRouter()
@@ -262,8 +263,8 @@ export default function Home() {
         </div>
         {/* Gráficos y datos */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <BarChartComparison
-            title="Emociones"
+          <BarChartComparisonPatologieGeneral
+            title="Patologias"
             selectedEmotions={selectedEmotions}
             onToggleEmotion={handleToggleEmotion}
             setSelectedEmotions={setSelectedEmotions}
