@@ -9,6 +9,8 @@ import Image from "next/image"
 import { AlertCircle, RefreshCw } from "lucide-react"
 import { type Alert, fetchAlerts } from "@/services/alerts-service"
 import { getSearchParam } from "@/lib/search-params"
+import { time } from "console"
+import { Input } from "@/components/ui/input"
 
 export default function AlertsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const router = useRouter()
@@ -21,6 +23,7 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
   const [priorityFilter, setPriorityFilter] = useState<string>("Todos")
   const [statusFilter, setStatusFilter] = useState<string>("Todos")
   const [dateFilter, setDateFilter] = useState<string>("Todos")
+  const [horaFilter, setHoraFilter] = useState<string>()
   const [currentPage, setCurrentPage] = useState(1)
 
   // Cargar datos solo cuando se accede a la página
@@ -68,64 +71,67 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
   const dateOptions = ["Todos", "Hoy", "Ayer", "Esta semana", "Este mes"]
 
   // Filtrar los datos según los filtros seleccionados
-  const filteredAlerts = useMemo(() => {
-    // Restablecer a la primera página cuando cambian los filtros
-    setCurrentPage(1);
-    
-    return alerts.filter((alert) => {
-      // Aplicar filtro por tipo
-      if (typeFilter !== "Todos" && alert.type !== typeFilter) return false;
-      
-      // Aplicar filtro por prioridad
-      if (priorityFilter !== "Todos" && alert.priority !== priorityFilter) return false;
-      
-      // Aplicar filtro por estado
-      if (statusFilter !== "Todos" && alert.status !== statusFilter) return false;
-      
-      // Aplicar filtro por fecha
-      if (dateFilter !== "Todos" && alert.date) {
-        try {
-          const today = new Date();
-          const alertDate = new Date(alert.date.split("/").reverse().join("-"));
-          
-          const isToday = alertDate.toDateString() === today.toDateString();
-          
-          const yesterday = new Date(today);
-          yesterday.setDate(yesterday.getDate() - 1);
-          const isYesterday = alertDate.toDateString() === yesterday.toDateString();
-          
-          const startOfWeek = new Date(today);
-          startOfWeek.setDate(today.getDate() - today.getDay());
-          const endOfWeek = new Date(startOfWeek);
-          endOfWeek.setDate(startOfWeek.getDate() + 6);
-          const isThisWeek = alertDate >= startOfWeek && alertDate <= endOfWeek;
-          
-          const isThisMonth = alertDate.getMonth() === today.getMonth() && 
-                            alertDate.getFullYear() === today.getFullYear();
-          
-          switch (dateFilter) {
-            case "Hoy":
-              if (!isToday) return false;
-              break;
-            case "Ayer":
-              if (!isYesterday) return false;
-              break;
-            case "Esta semana":
-              if (!isThisWeek) return false;
-              break;
-            case "Este mes":
-              if (!isThisMonth) return false;
-              break;
-          }
-        } catch (error) {
-          console.error("Error al procesar fechas:", error);
-          return false;
+ const filteredAlerts = useMemo(() => {
+  setCurrentPage(1)
+
+  const filtered = alerts.filter((alert) => {
+    if (typeFilter !== "Todos" && alert.type !== typeFilter) return false
+    if (priorityFilter !== "Todos" && alert.priority !== priorityFilter) return false
+    if (statusFilter !== "Todos" && alert.status !== statusFilter) return false
+
+    if (dateFilter !== "Todos" && alert.date) {
+      try {
+        const today = new Date();
+        const alertDate = new Date(alert.date.split("/").reverse().join("-"));
+
+        const isToday = alertDate.toDateString() === today.toDateString();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        const isYesterday = alertDate.toDateString() === yesterday.toDateString();
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        const isThisWeek = alertDate >= startOfWeek && alertDate <= endOfWeek;
+        const isThisMonth = alertDate.getMonth() === today.getMonth() && alertDate.getFullYear() === today.getFullYear();
+
+        switch (dateFilter) {
+          case "Hoy":
+            if (!isToday) return false;
+            break;
+          case "Ayer":
+            if (!isYesterday) return false;
+            break;
+          case "Esta semana":
+            if (!isThisWeek) return false;
+            break;
+          case "Este mes":
+            if (!isThisMonth) return false;
+            break;
         }
+      } catch (error) {
+        console.error("Error al procesar fechas:", error);
+        return false;
       }
-      
-      return true;
-    });
-  }, [alerts, typeFilter, priorityFilter, statusFilter, dateFilter]);
+    }
+
+    if (horaFilter && alert.time) {
+      const alertTime = alert.time.slice(0, 5)
+      if (alertTime !== horaFilter) return false
+    }
+
+    return true
+  })
+
+  // Orden descendente por fecha y hora
+  return filtered.sort((a, b) => {
+    const dateTimeA = new Date(`${a.date?.split("/").reverse().join("-")}T${a.time || "00:00"}`);
+    const dateTimeB = new Date(`${b.date?.split("/").reverse().join("-")}T${b.time || "00:00"}`);
+    return dateTimeB.getTime() - dateTimeA.getTime();
+  })
+}, [alerts, typeFilter, priorityFilter, statusFilter, dateFilter, horaFilter])
+
+
 
   // Columnas para la tabla
   const columns = [
@@ -136,8 +142,6 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
     { key: "date", title: "Fecha" },
     { key: "time", title: "Hora" },
   ]
-
-
 
   // Función para navegar a la vista detallada de la alerta
   const handleAlertClick = (alert: Alert) => {
@@ -219,6 +223,12 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
             </Badge>
           </div>
         )
+      case "time":
+        return (
+          <div className="text-left">
+            {alert.time || 'N/A'}
+          </div>
+        )
       default:
         return <div className="text-left">{alert[column.key as keyof Alert] || 'N/A'}</div>
     }
@@ -281,7 +291,13 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
           />
           <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
           <FilterDropdown label="Fecha" options={dateOptions} value={dateFilter} onChange={setDateFilter} />
-        </div>
+         <Input
+          placeholder="Hora"
+          type="Time"
+          value={horaFilter}
+          onChange={(e) => setHoraFilter(e.target.value)}
+         /> 
+          </div>
 
         {/* Tabla de alertas */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">

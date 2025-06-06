@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { X, Plus, AlertTriangle, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -15,10 +14,11 @@ import { useIsMobile } from "@/hooks/use-mobile"
 
 interface AddAlertModalProps {
   onAddAlert: (alert: {
-    alumno_alerta_id:number
+    alumno_alerta_id: number
     tipo: string
     descripcion: string
     fecha: string
+    hora: string
     prioridad: string
     responsable: string
   }) => void
@@ -30,6 +30,7 @@ export function AddAlertModal({ onAddAlert, currentUser = "Usuario actual" }: Ad
   const [tipo, setTipo] = useState("")
   const [descripcion, setDescripcion] = useState("")
   const [fecha, setFecha] = useState("")
+  const [hora, setHora] = useState("")
   const [prioridad, setPrioridad] = useState("Media")
   const [responsable, setResponsable] = useState(currentUser)
   const isMobile = useIsMobile()
@@ -38,7 +39,7 @@ export function AddAlertModal({ onAddAlert, currentUser = "Usuario actual" }: Ad
     e.preventDefault()
 
     // Validación básica
-    if (!tipo || !descripcion || !fecha || !prioridad || !responsable) {
+    if (!tipo || !descripcion || !fecha || !hora || !prioridad || !responsable) {
       return
     }
 
@@ -47,6 +48,7 @@ export function AddAlertModal({ onAddAlert, currentUser = "Usuario actual" }: Ad
       tipo,
       descripcion,
       fecha,
+      hora,
       prioridad,
       responsable,
     })
@@ -55,6 +57,7 @@ export function AddAlertModal({ onAddAlert, currentUser = "Usuario actual" }: Ad
     setTipo("")
     setDescripcion("")
     setFecha("")
+    setHora("")
     setPrioridad("Media")
     setResponsable(currentUser)
     onClose()
@@ -63,9 +66,10 @@ export function AddAlertModal({ onAddAlert, currentUser = "Usuario actual" }: Ad
   // Opciones para los selectores
   const tiposAlerta = [
     { value: "SOS Alma", color: "bg-red-100 text-red-800" },
-    { value: "Alerta amarilla", color: "bg-yellow-100 text-yellow-800" },
-    { value: "Denuncia", color: "bg-purple-100 text-purple-800" },
+    { value: "Alerta Amarilla", color: "bg-yellow-100 text-yellow-800" },
     { value: "Alerta Naranja", color: "bg-orange-100 text-orange-800" },
+    { value: "Alerta Roja", color: "bg-red-100 text-red-800" },
+    { value: "Denuncia", color: "bg-purple-100 text-purple-800" },
   ]
 
   const prioridadesAlerta = [
@@ -164,9 +168,15 @@ export function AddAlertModal({ onAddAlert, currentUser = "Usuario actual" }: Ad
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="fecha">Fecha del suceso</Label>
-              <Input id="fecha" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="fecha">Fecha del suceso</Label>
+                <Input id="fecha" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hora">Hora del suceso</Label>
+                <Input id="hora" type="time" value={hora} onChange={(e) => setHora(e.target.value)} required />
+              </div>
             </div>
 
             <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600">

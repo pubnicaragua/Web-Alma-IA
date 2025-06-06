@@ -8,15 +8,8 @@ Este documento lista las tareas pendientes en el frontend de React, organizadas 
 
 ### 1.8 Alertas (Grilla y Creación)
 - [ ] **Grilla debe estar ordenada por fecha y hora descendente**
-  - Archivos: `app/alertas/page.tsx`, `components/data-table.tsx`
+  - Archivos: `components/data-table.tsx`
   - Acción: Implementar lógica de ordenamiento.
-- [ ] **Falta tipo de alerta Roja**
-  - Archivo: `components/student/add-alert-modal.tsx`
-  - Acción: Asegurar que esté habilitado el tipo de alerta “Roja”.
-- [ ] **Falta opción para ingresar hora manual**
-  - Archivo: `components/student/add-alert-modal.tsx`
-  - Acción: Añadir campo de hora editable, con valor por defecto solo si no se especifica.
-
 ---
 
 ## ⚠️ PRIORIDAD MEDIA
