@@ -393,6 +393,30 @@ export async function fetchTotalAlertsChartLine(): Promise<DataPoint[]> {
     throw error
   }
 }
+export async function fetchTotalAlertsHistoricoChartLine(): Promise<DataPoint[]> {
+  try {
+    console.log("Obteniendo Alertas...")
+    const response = await fetchWithAuth("/comparativa/alerts/historial", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`Error al obtener alertas: ${response.status} - ${errorText}`)
+      throw new Error(`Error al obtener alertas: ${response.status} - ${errorText}`)
+    }
+
+    const data = await response.json()
+    console.log("Alertas totales obtenodas:", data)
+    return data
+  } catch (error) {
+    console.error("Error al obtener emociones:", error)
+    throw error
+  }
+}
 
 export interface CreateAccionAlertParams {
   alumno_alerta_id: number

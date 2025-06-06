@@ -18,6 +18,8 @@ import {
 import { Download, Loader2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { LineChartHistory } from "@/components/line-chart-history"
+import { BarChartComparisonCategory } from "@/components/bar-chart-comparison-category"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
 
@@ -64,7 +66,7 @@ export default function ComparativePage() {
   const [selectedEmotionsCourseB, setSelectedEmotionsCourseB] = useState<string[]>([])
 
   // Estado para los cursos seleccionados en el gráfico de líneas
-  const [selectedCourses, setSelectedCourses] = useState<string[]>(["courseA", "courseB"])
+  const [selectedCourses, setSelectedCourses] = useState<string[]>(["vencidas", "atendidas"])
 
   // Estado de carga
   const [isLoading, setIsLoading] = useState({
@@ -353,7 +355,7 @@ export default function ComparativePage() {
 
         {/* Gráficos de barras */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <BarChartComparison
+          <BarChartComparisonCategory
             title={getCourseNameById(courseAFilter)}
             initialData={emotionsDataCourseA}
             selectedEmotions={selectedEmotionsCourseA}
@@ -372,6 +374,17 @@ export default function ComparativePage() {
         {/* Gráfico de líneas */}
         <div className="mb-6">
           <LineChartComparison
+            title="Alertas totales"
+            selectedCourses={selectedCourses}
+            onToggleCourse={handleToggleCourse}
+            timelineData={timelineData}
+            courseAName={getCourseNameById(courseAFilter)}
+            courseBName={getCourseNameById(courseBFilter)}
+            isLoading={isLoading.timeline}
+          />
+        </div>
+        <div className="mb-6">
+          <LineChartHistory
             title="Alertas totales"
             selectedCourses={selectedCourses}
             onToggleCourse={handleToggleCourse}
