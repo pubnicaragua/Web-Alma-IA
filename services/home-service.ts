@@ -77,6 +77,7 @@ export interface TotalAlert {
   color: string
 }
 
+
 export interface Emotion {
   name: string
   value: number

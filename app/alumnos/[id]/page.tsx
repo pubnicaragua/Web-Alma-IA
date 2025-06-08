@@ -1,6 +1,5 @@
 "use client"
 
-import { BarChartComparison } from "@/components/bar-chart-comparison"
 import { AppLayout } from "@/components/layout/app-layout"
 import { StudentAlerts } from "@/components/student/student-alerts"
 import { StudentReports } from "@/components/student/student-reports"
@@ -12,6 +11,7 @@ import { AlertTriangle, ArrowUpRight, Bell, FileText, Mail, Phone, Smile, User, 
 import Image from "next/image"
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
+import { BarChartComparisonAlumno } from "@/components/bar-chart-comparison-alumno"
 
 
 export default function StudentDetailPage() {
@@ -373,7 +373,7 @@ export default function StudentDetailPage() {
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Primera gráfica: Emociones (reemplazada por la del menú principal) */}
-                    <BarChartComparison
+                    <BarChartComparisonAlumno
                       title="Emociones"
                       selectedEmotions={selectedEmotions}
                       onToggleEmotion={handleToggleEmotion}

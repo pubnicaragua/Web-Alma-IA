@@ -15,12 +15,12 @@ import { AndroidNavMenu } from "@/components/android-nav-menu"
 import { useIsMobile } from "@/hooks/use-mobile"  
 import { getSearchParam } from "@/lib/search-params"  
 import { searchStudents } from "@/services/header-service"  
+import { useSearchParams } from "next/navigation"
+
   
-export default function StudentsPage({   
-  searchParams   
-}: {   
-  searchParams: { [key: string]: string | string[] | undefined }   
-}) {  
+export default function StudentsPage() {  
+  const searchParams = useSearchParams()
+const searchParam = searchParams.get("search") ?? ""
   const router = useRouter()  
   const { toast } = useToast()  
   const [students, setStudents] = useState<Student[]>([])  
@@ -58,8 +58,7 @@ export default function StudentsPage({
         
       // Obtener datos de estudiantes desde la API  
       let data: Student[]  
-      const searchParam = getSearchParam(searchParams, 'search')  
-        
+ 
       if (searchParam) {  
         data = await searchStudents(searchParam)  
       } else {  
