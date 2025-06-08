@@ -22,6 +22,8 @@ export function RecentAlerts() {
 
         // Intentar obtener datos de la API
         const data = await fetchRecentAlerts()
+        console.log(data);
+        
         setAlerts(data)
       } catch (error) {
         console.error("Error al cargar alertas recientes:", error)

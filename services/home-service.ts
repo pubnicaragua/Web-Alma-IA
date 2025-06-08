@@ -369,7 +369,7 @@ export async function fetchRecentAlerts(estado?: string): Promise<RecentAlert[]>
       if (!response.ok) {  
         console.error(`Error en respuesta API (home/alertas/recientes): ${response.status} ${response.statusText}`)  
         console.log("Usando datos de ejemplo para alertas recientes")  
-        return FALLBACK_RECENT_ALERTS  
+        return []  
       }  
   
       const data = await response.json()  
@@ -380,7 +380,7 @@ export async function fetchRecentAlerts(estado?: string): Promise<RecentAlert[]>
         return data  
       } else {  
         console.log("Datos de API vacíos o con formato incorrecto, usando datos de ejemplo")  
-        return FALLBACK_RECENT_ALERTS  
+        return []  
       }  
     } catch (error) {  
       console.error("Error al obtener alertas recientes:", error)  
