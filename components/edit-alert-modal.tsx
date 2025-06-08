@@ -106,6 +106,7 @@ export function EditAlertModal({ isOpen, onClose, alert, onSave }: EditAlertModa
                 <SelectContent>
                   <SelectItem value="1">SOS Alma</SelectItem>
                   <SelectItem value="2">Alerta Emocional</SelectItem>
+                  <SelectItem value="5">Roja</SelectItem>
                 </SelectContent>
               </Select>
             </div>

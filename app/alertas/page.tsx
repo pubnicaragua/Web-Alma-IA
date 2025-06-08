@@ -176,11 +176,14 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
               className={`whitespace-nowrap px-3 py-1 ${
                 alert.type === "SOS Alma" || alert.type === "Rendimiento Académico"
                   ? "bg-red-500"
+                  :  
+                  alert.type === "Roja" || alert.type === "Rendimiento Académico"
+                  ? "bg-red-500"
                   : alert.type === "Amarilla" || alert.type === "Asistencia"
                     ? "bg-yellow-400"
                     : alert.type === "Naranja" || alert.type === "Comportamiento"
                       ? "bg-orange-500"
-                      : alert.type === "Denuncia"
+                      : alert.type === "Denuncias"
                         ? "bg-purple-600"
                         : "bg-blue-500"
               }`}
@@ -291,12 +294,6 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
           />
           <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
           <FilterDropdown label="Fecha" options={dateOptions} value={dateFilter} onChange={setDateFilter} />
-         <Input
-          placeholder="Hora"
-          type="Time"
-          value={horaFilter}
-          onChange={(e) => setHoraFilter(e.target.value)}
-         /> 
           </div>
 
         {/* Tabla de alertas */}
