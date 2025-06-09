@@ -180,6 +180,25 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
                 </SelectContent>
               </Select>
             </div>
+             {/* Filtro por Tipo */}
+            <div className="w-full">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+              <Select value={filterType} onValueChange={handleFilterType}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {uniqueTypes.map((tipo, index) => (
+                    <SelectItem key={`tipo-${index}`} value={tipo}>
+                      {tipo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+           
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Ordenar por fecha
