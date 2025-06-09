@@ -127,8 +127,8 @@ export default function StudentDetailPage() {
   // Convertir informes al formato esperado por el componente
   const reportsData = informes.map((informe) => ({
     fecha: formatDate(informe.fecha),
-    tipo: "Informe General",
-    resumen: `Informe ${formatDate(informe.fecha)}`,
+    tipo: "Informe Mensual",
+    resumen: `Informe ${formatDateMensual(informe.fecha)}`,
     url_reporte: informe.url_reporte,
     activo: informe.activo,
   }))
@@ -547,6 +547,12 @@ function formatDate(dateString: string): string {
   return date.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })
 }
 
+function formatDateMensual(dateString: string): string {
+  if (!dateString) return "N/A"
+  const date = new Date(dateString)
+  const formatted = date.toLocaleDateString("es-ES", { month: "long", year: "numeric" })
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+}
 function formatTime(dateString: string): string {
   if (!dateString) return "N/A"
   const date = new Date(dateString)
