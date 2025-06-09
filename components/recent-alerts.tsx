@@ -78,8 +78,7 @@ export function RecentAlerts() {
       <CardContent>
         <div className="space-y-0">
           {limitedAlerts.map((alert, index) => (
-            <div key={alert.alumno_alerta_id || index} onClick={() => handleAlertClick(alert.alumno_alerta_id)}>
-              <div className="flex items-center justify-between py-3">
+<div   key={alert.alumno_alerta_id || index}   onClick={() => handleAlertClick(alert.alumno_alerta_id)}  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md transition-colors">              <div className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-3 w-[45%]">
                   {isClient && (
                     <div className="relative h-10 w-10 overflow-hidden rounded-full flex-shrink-0">
