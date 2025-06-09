@@ -31,7 +31,7 @@ const columns = [
   { key: "nivel", title: "Nivel" },
   { key: "fecha_generacion", title: "Fecha de generación" },
   { key: "creado_por", title: "Generado por" },
-  { key: "url_reporte", title: "Informe", className: "text-center" }, // 👈 Añadido
+  { key: "url_reporte", title: "Informe", className: "text-left" }, // 👈 Añadido
 ];
 
 export function ReportsList({ reports = [] }: ReportsListProps) {
@@ -57,11 +57,16 @@ export function ReportsList({ reports = [] }: ReportsListProps) {
   const renderCell = (report: APIReportGeneral, column: Column) => {
     switch (column.key) {
       case "fecha_generacion":
-        return (
-          <span>
-            {new Date(report.fecha_generacion).toLocaleDateString("es-ES")}
-          </span>
-        );
+        const date = new Date(report.fecha_generacion);
+      const formatted = new Intl.DateTimeFormat("es-ES", {
+        month: "long",
+        year: "numeric",
+      })
+        .format(date)
+        .replace(" de ", " ");
+      const capitalized =
+        formatted.charAt(0).toUpperCase() + formatted.slice(1);
+      return <span>{capitalized}</span>;
       case "url_reporte":
         return (
           <Link
