@@ -8,22 +8,23 @@ import { type RecentAlert, fetchRecentAlerts } from "@/services/home-service"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 import { Badge } from "@/components/ui/badge"
+import { useRouter } from "next/navigation" // <-- correcto para App Router
 
 export function RecentAlerts() {
   const [alerts, setAlerts] = useState<RecentAlert[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isClient, setIsClient] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
+    setIsClient(true)
     const getAlerts = async () => {
       try {
         setIsLoading(true)
         setError(null)
 
-        // Intentar obtener datos de la API
         const data = await fetchRecentAlerts()
-        console.log(data);
-        
         setAlerts(data)
       } catch (error) {
         console.error("Error al cargar alertas recientes:", error)
@@ -40,10 +41,8 @@ export function RecentAlerts() {
     return <RecentAlertsSkeleton />
   }
 
-  // Limitar a mostrar solo los 5 elementos más recientes
-  const limitedAlerts = alerts && alerts.length > 0 ? alerts.slice(0, 5) : []
+  const limitedAlerts = alerts.slice(0, 5)
 
-  // Función para formatear la fecha
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString)
@@ -53,10 +52,12 @@ export function RecentAlerts() {
     }
   }
 
-  // Función para obtener el color de la prioridad
+  const handleAlertClick = (alertId: number) => {
+    router.push(`/alertas/${alertId}`)
+  }
+
   const getPriorityColor = (priority: string | undefined) => {
     if (!priority) return "bg-gray-200"
-
     switch (priority.toLowerCase()) {
       case "alta":
         return "bg-red-500 hover:bg-red-600"
@@ -76,19 +77,20 @@ export function RecentAlerts() {
       </CardHeader>
       <CardContent>
         <div className="space-y-0">
-          {alerts.map((alert, index) => (
-            <div key={alert.alumno_alerta_id || index}>
+          {limitedAlerts.map((alert, index) => (
+            <div key={alert.alumno_alerta_id || index} onClick={() => handleAlertClick(alert.alumno_alerta_id)}>
               <div className="flex items-center justify-between py-3">
-                {/* Primera columna: Datos del alumno */}
                 <div className="flex items-center gap-3 w-[45%]">
-                  <div className="relative h-10 w-10 overflow-hidden rounded-full flex-shrink-0">
-                    <Image
-                      src={alert.alumnos?.url_foto_perfil || "/diverse-students-studying.png"}
-                      alt={`${alert.alumnos?.personas?.nombres || "Estudiante"}`}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
+                  {isClient && (
+                    <div className="relative h-10 w-10 overflow-hidden rounded-full flex-shrink-0">
+                      <Image
+                        src={alert.alumnos?.url_foto_perfil || "/diverse-students-studying.png"}
+                        alt={`${alert.alumnos?.personas?.nombres || "Estudiante"}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <h4 className="text-sm font-medium truncate">
                       {alert.alumnos?.personas
@@ -102,15 +104,15 @@ export function RecentAlerts() {
                   </div>
                 </div>
 
-                {/* Segunda columna: Prioridad */}
                 <div className="w-[25%] flex justify-center">
                   <Badge className={`text-xs text-white ${getPriorityColor(alert.alertas_prioridades?.nombre)}`}>
                     {alert.alertas_prioridades?.nombre || "Sin prioridad"}
                   </Badge>
                 </div>
 
-                {/* Tercera columna: Fecha */}
-                <div className="text-xs text-gray-500 text-right w-[30%]">{formatDate(alert.fecha_generada)}</div>
+                <div className="text-xs text-gray-500 text-right w-[30%]">
+                  {isClient ? formatDate(alert.fecha_generada) : ""}
+                </div>
               </div>
               {index < limitedAlerts.length - 1 && <div className="border-t border-gray-100"></div>}
             </div>
