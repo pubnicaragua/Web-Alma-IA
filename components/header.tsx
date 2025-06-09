@@ -84,11 +84,14 @@ export function Header({ toggleSidebar }: HeaderProps) {
   }  
   
   const loadNotifications = async () => {  
-    if (!isClient) return  
-      
+    //if (!isClient) return  
     try {  
+      console.log(localStorage.getItem('notificationsRead'));
+      
       // Solo cargar notificaciones si no las hemos marcado como leídas  
       if (!localStorage.getItem('notificationsRead')) {  
+        console.log('sin local storage');
+        
         const count = await getNotificationCount()  
         console.log("Conteo de notificaciones cargado:", count)  
         setNotificationCount(count)  
@@ -97,6 +100,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
           localStorage.setItem('notificationCount', count.toString())  
         }  
       } else {  
+        console.log('con loal storage')
         // Cargar desde localStorage si existe  
         const storedCount = localStorage.getItem('notificationCount')  
         if (storedCount) {  
