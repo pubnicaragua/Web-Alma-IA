@@ -45,14 +45,14 @@ export function BarChartComparisonPatologie({ title, grado }: BarChartComparison
       const emotionsData = await fetchPatologieForGrade(grado)
       const allEmotions = new Set<string>()
 
-      // Normalizar datos y recopilar todas las emociones
+      // Normalizar datos y recopilar todas las patologias
       const normalizedData = emotionsData.map((item) => {
         const { name, ...emotions } = item
         Object.keys(emotions).forEach((emotion) => allEmotions.add(emotion))
         return { name, ...emotions }
       })
 
-      // Asegurar que cada entrada tenga todas las emociones con valor 0 si faltan
+      // Asegurar que cada entrada tenga todas las patologias con valor 0 si faltan
       const completeData = normalizedData.map((item) => {
         const completeItem: EmotionData = { name: item.name }
         allEmotions.forEach((emotion) => {
@@ -64,10 +64,10 @@ export function BarChartComparisonPatologie({ title, grado }: BarChartComparison
       setData(completeData)
       setSelectedEmotions(Array.from(allEmotions))
     } catch (err) {
-      setError("No se pudieron cargar los datos de emociones. Intente nuevamente.")
+      setError("No se pudieron cargar los datos de patologias. Intente nuevamente.")
       toast({
         title: "Error al cargar datos",
-        description: "No se pudieron cargar los datos de emociones. Intente nuevamente.",
+        description: "No se pudieron cargar los datos de patologias. Intente nuevamente.",
         variant: "destructive",
       })
     } finally {
@@ -123,7 +123,7 @@ export function BarChartComparisonPatologie({ title, grado }: BarChartComparison
           <Smile className="mr-2 text-gray-700" />
           <h3 className="font-medium text-gray-800">{title}</h3>
         </div>
-        <div className="text-gray-500 text-center py-10">No hay datos de emociones disponibles.</div>
+        <div className="text-gray-500 text-center py-10">No hay datos de patologias disponibles.</div>
       </div>
     )
   }
@@ -198,7 +198,7 @@ export function BarChartComparisonPatologie({ title, grado }: BarChartComparison
   )
 }
 
-// Función auxiliar para asignar colores a las emociones
+// Función auxiliar para asignar colores a las patologias
 function getEmotionColor(emotion: string): string {
   const colors: Record<string, string> = {
   "Salud Mental": themeColors.chart.green,

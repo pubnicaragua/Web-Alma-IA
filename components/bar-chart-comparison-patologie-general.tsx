@@ -55,12 +55,12 @@ export function BarChartComparisonPatologieGeneral({
       setSelectedEmotions(emotionsData.map((emotion) => emotion.name))
       setData(emotionsData)
     } catch (err) {
-      setError("No se pudieron cargar los datos de emociones. Intente nuevamente.")
+      setError("No se pudieron cargar los datos de patologias. Intente nuevamente.")
 
       // Mostrar notificación de error
       toast({
         title: "Error al cargar datos",
-        description: "No se pudieron cargar los datos de emociones. Intente nuevamente.",
+        description: "No se pudieron cargar los datos de patologias. Intente nuevamente.",
         variant: "destructive",
       })
     } finally {
@@ -116,7 +116,7 @@ export function BarChartComparisonPatologieGeneral({
           <Smile className="mr-2 text-gray-700" />
           <h3 className="font-medium text-gray-800">{title}</h3>
         </div>
-        <div className="text-gray-500 text-center py-10">No hay datos de emociones disponibles.</div>
+        <div className="text-gray-500 text-center py-10">No hay datos de patologias disponibles.</div>
       </div>
     )
   }
@@ -177,7 +177,7 @@ export function BarChartComparisonPatologieGeneral({
   )
 }
 
-// Función auxiliar para asignar colores a las emociones
+// Función auxiliar para asignar colores a las patologias
 function getEmotionColor(emotion: string): string {
   const colors: Record<string, string> = {
     Felicidad: themeColors.chart.yellow,
