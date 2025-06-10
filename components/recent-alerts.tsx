@@ -82,7 +82,7 @@ export function RecentAlerts() {
               <div className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-3 w-[45%]">
                   {isClient && (
-                    <div className="relative h-10 w-10 overflow-hidden rounded-full flex-shrink-0">
+                    <div className="relative h-10 w-10 overflow-hidden rounded-full flex-shrink-0 cursor-pointer">
                       <Image
                         src={alert.alumnos?.url_foto_perfil || "/diverse-students-studying.png"}
                         alt={`${alert.alumnos?.personas?.nombres || "Estudiante"}`}
@@ -91,7 +91,7 @@ export function RecentAlerts() {
                       />
                     </div>
                   )}
-                  <div className="min-w-0">
+                  <div className="min-w-0 cursor-pointer">
                     <h4 className="text-sm font-medium truncate">
                       {alert.alumnos?.personas
                         ? `${alert.alumnos.personas.nombres} ${alert.alumnos.personas.apellidos}`
