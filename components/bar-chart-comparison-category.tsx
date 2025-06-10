@@ -201,12 +201,28 @@ export function BarChartComparisonCategory({ title, grado }: BarChartComparisonC
 // Función auxiliar para asignar colores a las emociones
 function getEmotionColor(emotion: string): string {
   const colors: Record<string, string> = {
-    Felicidad: themeColors.chart.yellow,
-    Tristeza: themeColors.chart.blue,
-    Estrés: themeColors.chart.gray,
-    Ansiedad: themeColors.chart.orange,
-    Enojo: themeColors.chart.red,
-    Otros: themeColors.chart.purple,
-  }
-  return colors[emotion] || themeColors.chart.gray
+    Alegria: themeColors.emotions.Alegría,
+    Tranquilidad: themeColors.emotions.Tranquilidad,
+    Orgullo: themeColors.emotions.Orgullo,
+    Gratitud: themeColors.emotions.Gratitud,
+    Amor: themeColors.emotions.Amor,
+    Esperanza: themeColors.emotions.Esperanza,
+    Sorpresa: themeColors.emotions.Sorpresa,
+    Confusión: themeColors.emotions.Confusión,
+    Indiferencia: themeColors.emotions.Indiferencia,
+    Miedo: themeColors.emotions.Miedo,
+    Tristeza: themeColors.emotions.Tristeza,
+    Enojo: themeColors.emotions.Enojo,
+    Frustración: themeColors.emotions.Frustración,
+    Ansiedad: themeColors.emotions.Ansiedad,
+    Verguenza: themeColors.emotions.Vergüenza,
+    Celos: themeColors.emotions.Celos,
+    Agobio: themeColors.emotions.Agobio,
+    Inseguridad: themeColors.emotions.Inseguridad,
+    Desesperanza: themeColors.emotions.Desesperanza,
+    Culpa: themeColors.emotions.Culpa,
+    Estrés: themeColors.emotions.Estrés,
+    Aburrimiento: themeColors.emotions.Aburrimiento
+  };
+  return colors[emotion] || themeColors.emotions.Aburrimiento;
 }
