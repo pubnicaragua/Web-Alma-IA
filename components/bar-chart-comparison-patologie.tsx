@@ -201,13 +201,13 @@ export function BarChartComparisonPatologie({ title, grado }: BarChartComparison
 // Función auxiliar para asignar colores a las patologias
 function getEmotionColor(emotion: string): string {
   const colors: Record<string, string> = {
-  "Salud Mental": themeColors.chart.green,
-  "Trastorno del Ánimo": themeColors.chart.blue,
-  "Trauma Complejo": themeColors.chart.purple,
-  "Neurodivergencia (Condiciones)": themeColors.chart.orange,
-  "Trastorno del Sueño": themeColors.chart.purple,
-  "Trastorno de Conducta Alimentaria": themeColors.chart.pink,
-  "Adicciones Conductuales": themeColors.chart.red,
+  "Salud Mental": "#4DA6FF",
+  "Trastorno del Ánimo": "#6E6E6E",
+  "Trauma Complejo": "#B03A2E",
+  "Neurodivergencia": "#9B59B6",
+  "Trastorno del Sueño": "#2C3E50",
+  "Trastorno de Conducta Alimentaria": "#808000",
+  "Adicciones Conductuales": "#E67E22",
 }
   return colors[emotion] || themeColors.chart.gray
 }

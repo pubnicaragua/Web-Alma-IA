@@ -44,9 +44,7 @@ Este documento lista las tareas pendientes en el frontend de React, organizadas 
 ## 🔻 PRIORIDAD BAJA
 
 ### 1.3 Home
-- [ ] **Campanita de alertas muestra todas, no solo pendientes**
-  - Archivos: `components/recent-alerts.tsx`, `services/home-service.ts`
-  - Acción: Ajustar `fetchRecentAlerts` para que acepte filtro de estado o sea filtrado en backend.
+
 - [ ] **Gráfico central debe ser de patologías, no emociones**
   - Archivo: `app/page.tsx`
   - Acción: Renombrar título y ajustar datos (`apiEmotions`) → Requiere nuevo endpoint.
