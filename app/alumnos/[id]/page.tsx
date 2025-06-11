@@ -128,7 +128,7 @@ export default function StudentDetailPage() {
   const reportsData = informes.map((informe) => ({
     fecha: formatDate(informe.fecha),
     tipo: "Informe Mensual",
-    resumen: `Informe ${formatDateMensual(informe.fecha)}`,
+    resumen: `${formatDateMensual(informe.fecha)}`,
     url_reporte: informe.url_reporte,
     activo: informe.activo,
   }))
