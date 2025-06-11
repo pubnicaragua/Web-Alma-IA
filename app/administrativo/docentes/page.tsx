@@ -92,7 +92,7 @@ export default function TeachersPage() {
           >
             <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
               <Image
-                src={teacher.image || "/placeholder.svg"}
+                src={teacher.image || "https://avatar.iran.liara.run/public"}
                 alt={teacher.name}
                 width={32}
                 height={32}

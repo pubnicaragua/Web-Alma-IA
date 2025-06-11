@@ -1,24 +1,24 @@
-"use client"  
-  
-import { AddActionModal } from "@/components/alert/add-action-modal"  
-import { AlertDetailSkeleton } from "@/components/alert/alert-detail-skeleton"  
-import { AppLayout } from "@/components/layout/app-layout"  
-import { Button } from "@/components/ui/button"  
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"  
-import { useIsMobile } from "@/hooks/use-mobile"  
-import { useToast } from "@/hooks/use-toast" // Asegúrate de que useToast esté importado  
-import {   
-  AlertPage,   
-  changeLeida,   
-  createAccionAlert,   
-  CreateAccionAlertParams,   
-  fetchAlertById,  
-  createAlertBitacora,   
-  fetchAlertDetail,   
-  fetchAlertBitacoras,   
-  type AlumnoAlertaBitacora,   
-  type BitacoraResponse,   
-  type AlertDetailResponse   
+"use client"
+
+import { AddActionModal } from "@/components/alert/add-action-modal"
+import { AlertDetailSkeleton } from "@/components/alert/alert-detail-skeleton"
+import { AppLayout } from "@/components/layout/app-layout"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { useToast } from "@/hooks/use-toast"
+import { 
+  AlertPage, 
+  changeLeida, 
+  createAccionAlert, 
+  CreateAccionAlertParams, 
+  fetchAlertById,
+  createAlertBitacora, 
+  fetchAlertDetail, 
+  fetchAlertBitacoras, 
+  type AlumnoAlertaBitacora, 
+  type BitacoraResponse, 
+  type AlertDetailResponse 
 } from "@/services/alerts-service" 
 import { ArrowLeft, Edit, Lock } from "lucide-react"  
 import Image from "next/image"  
@@ -26,7 +26,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"  
 import { EditAlertModal } from "@/components/edit-alert-modal"  
 import { hasSearchParam } from "@/lib/search-params"  
-  
+
 interface Action {  
   plan_accion: string  
   fecha_compromiso: string  
@@ -38,25 +38,24 @@ interface Action {
   accionRealizada: string  
   fechaCompromiso: string  
 }  
-  
+
 export default function AlertDetailPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {  
   const { id } = useParams()  
   const router = useRouter()  
-  const { toast } = useToast() // Inicializar useToast  
+  const { toast } = useToast()
   const [alert, setAlert] = useState<AlertPage | null>(null)  
   const [bitacoras, setBitacoras] = useState<BitacoraResponse[]>([])  
   const [error, setError] = useState<string | null>(null)  
   const [isLoading, setIsLoading] = useState(true)  
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)  
   const isMobile = useIsMobile()  
-  
+
   const loadAlert = useCallback(async (id: number) => {  
     try {  
       setIsLoading(true)  
       setError(null)  
       const data = await fetchAlertById(id)  
         
-      // Verificar si hay una notificación pendiente  
       if (hasSearchParam(searchParams, 'notifications')) {  
         try {  
           await changeLeida(id)  
@@ -66,8 +65,6 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
         }  
       }  
       setAlert(data)  
-        
-      // Cargar bitácoras de la alerta  
       await loadAlertBitacoras(id)  
     } catch (err) {  
       console.error("Error al cargar alertas:", err)  
@@ -76,7 +73,7 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
       setIsLoading(false)  
     }  
   }, [searchParams])  
-  
+
   const loadAlertBitacoras = async (alertaId: number) => {  
     try {  
       const bitacorasData = await fetchAlertBitacoras(alertaId)  
@@ -86,46 +83,43 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
       setBitacoras([])  
     }  
   }  
-  
+
   useEffect(() => {  
     if (id) {  
       loadAlert(Number(id))  
     }  
   }, [id, loadAlert])  
-  
+
   const handleEditClick = () => {  
     setIsEditModalOpen(true)  
   }  
-  
+
   const handleSaveChanges = async (data: any) => {  
     if (!alert) return  
       
     try {  
-      // await updateAlert(alert.id, data)  
       await loadAlert(alert.id)  
       setIsEditModalOpen(false)  
     } catch (error) {  
       console.error('Error updating alert:', error)  
     }  
   }  
-  
+
   const handleGoBack = () => {  
     router.back()  
   }  
-  
+
   const handleAddAction = async (newAction: {  
     plan_accion: string  
     fecha_compromiso: string  
     fecha_realizacion?: string  
     url_archivo?: string  
-    // observaciones: string // ELIMINAR ESTA LÍNEA  
   }) => {  
     if (!alert) return  
-  
+
     try {  
       setIsLoading(true)  
         
-      // Preparar datos para la bitácora  
       const bitacoraData: AlumnoAlertaBitacora = {  
         alumno_alerta_id: Number(id),  
         alumno_id: alert.student?.alumno_id || 0,  
@@ -133,13 +127,9 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
         fecha_compromiso: newAction.fecha_compromiso || undefined,  
         fecha_realizacion: newAction.fecha_realizacion || undefined,  
         url_archivo: newAction.url_archivo || undefined,  
-        // observaciones: newAction.observaciones || undefined, // ELIMINAR ESTA LÍNEA  
       }  
-  
-      // Crear la bitácora en el backend  
+
       await createAlertBitacora(bitacoraData)  
-        
-      // Recargar las bitácoras para mostrar la nueva entrada  
       await loadAlertBitacoras(Number(id))  
         
       toast({  
@@ -158,8 +148,7 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
       setIsLoading(false)  
     }  
   }  
-  
-  // Formatear bitácoras para mostrar en la tabla  
+
   const formatBitacorasForTable = (bitacoras: BitacoraResponse[]): Action[] => {  
     return bitacoras.map(bitacora => {  
       const fecha = new Date(bitacora.fecha_compromiso)  
@@ -169,14 +158,13 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
         minute: '2-digit',  
         hour12: true   
       })  
-  
+
       return {  
         fecha: fechaFormateada,  
         hora: horaFormateada,  
-        usuarioResponsable: bitacora.alumno.nombre, // O el usuario que creó la bitácora  
+        usuarioResponsable: bitacora.alumno.nombre,
         accionRealizada: bitacora.plan_accion,  
-        fechaCompromiso: bitacora.fecha_compromiso ? new Date(bitacora.fecha_compromiso).toLocaleDateString('es-ES') : '-',  
-        // observaciones: bitacora.observaciones || '-', // ELIMINAR ESTA LÍNEA  
+        fechaCompromiso: bitacora.fecha_compromiso ? new Date(bitacora.fecha_compromiso).toLocaleDateString('es-ES') : '-',
         plan_accion: bitacora.plan_accion,  
         fecha_compromiso: bitacora.fecha_compromiso,  
         fecha_realizacion: bitacora.fecha_realizacion || '',  
@@ -184,7 +172,7 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
       }  
     })  
   }  
-  
+
   if (isLoading) {  
     return (  
       <AppLayout>  
@@ -192,7 +180,7 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
       </AppLayout>  
     )  
   }  
-  
+
   if (error) {  
     return (  
       <AppLayout>  
@@ -204,23 +192,21 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
       </AppLayout>  
     )  
   }  
-  
+
   const actionsToShow = bitacoras.length > 0 ? formatBitacorasForTable(bitacoras) : alert?.actions || []  
-  
+
   return (  
     <>  
       {alert ? (  
         <AppLayout>  
           <div className="container mx-auto px-3 sm:px-6 py-8">  
-            {/* Botón Volver */}  
             <div className="mb-6">  
               <Button variant="outline" size="sm" onClick={handleGoBack} className="flex items-center gap-1">  
                 <ArrowLeft className="h-4 w-4" />  
                 Volver  
               </Button>  
             </div>  
-  
-            {/* Card de información del alumno */}  
+
             <Card className="mb-6">  
               <CardHeader className="pb-2">  
                 <CardTitle className="text-xl">Información del Alumno</CardTitle>  
@@ -247,8 +233,7 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
                 )}  
               </CardContent>  
             </Card>  
-  
-            {/* Card de detalles de la alerta */}  
+
             <Card className="mb-6">  
               <CardHeader className="flex justify-end w-full space-y-0 pb-2">  
                 <Button variant="outline" size="sm" className="w-fit" onClick={handleEditClick}>  
@@ -257,7 +242,6 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
                 </Button>  
               </CardHeader>  
               <CardContent className="space-y-6">  
-                {/* Responsable actual */}  
                 <div>  
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">Responsable Actual:</h3>  
                   <div className="flex items-center">  
@@ -281,16 +265,14 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
                     </div>  
                   )}  
                 </div>  
-  
-                {/* Descripción de la alerta */}  
+
                 <div>  
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">Descripción de la alerta</h3>  
                   <p className="text-gray-700 bg-gray-50 p-3 rounded-md">{alert.description}</p>  
                 </div>  
               </CardContent>  
             </Card>  
-  
-            {/* Bitácora de acciones */}  
+
             <Card className="mb-6">  
               <CardHeader className="pb-2 flex flex-row items-center justify-between">  
                 <CardTitle className="text-xl">Bitácora de acciones</CardTitle>  
@@ -309,7 +291,6 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
                         <th className="px-4 py-3 text-left font-medium text-white">Usuario Responsable</th>  
                         <th className="px-4 py-3 text-left font-medium text-white">Acción Realizada</th>  
                         <th className="px-4 py-3 text-left font-medium text-white">Fecha de Compromiso</th>  
-                        <th className="px-4 py-3 text-left font-medium text-white">Observaciones</th>  
                       </tr>  
                     </thead>  
                     <tbody>  
@@ -321,12 +302,11 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
                             <td className="px-4 py-3 text-sm">{action.usuarioResponsable}</td>  
                             <td className="px-4 py-3 text-sm">{action.accionRealizada}</td>  
                             <td className="px-4 py-3 text-sm">{action.fechaCompromiso}</td>  
-                            <td className="px-4 py-3 text-sm">{action.observaciones}</td>  
                           </tr>  
                         ))  
                       ) : (  
                         <tr>  
-                          <td colSpan={6} className="px-4 py-6 text-center text-gray-500">  
+                          <td colSpan={5} className="px-4 py-6 text-center text-gray-500">  
                             No hay acciones registradas para esta alerta  
                           </td>  
                         </tr>  
@@ -337,7 +317,7 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
               </CardContent>  
             </Card>  
           </div>  
-  
+
           <EditAlertModal   
             isOpen={isEditModalOpen}  
             onClose={() => setIsEditModalOpen(false)}  
