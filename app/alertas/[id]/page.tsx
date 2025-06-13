@@ -267,7 +267,28 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
                 </div>  
 
                 <div>  
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Descripción de la alerta</h3>  
+                
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">Descripción de la alerta</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+  <div>
+    <p className="text-sm text-gray-500">Origen</p>
+    <p className="text-base font-medium text-gray-800">{alert.origen}</p>
+  </div>
+  <div>
+    <p className="text-sm text-gray-500">Tipo</p>
+    <p className="text-base font-medium text-gray-800">{alert.tipo}</p>
+  </div>
+  <div>
+    <p className="text-sm text-gray-500">Prioridad</p>
+    <p className="text-base font-medium ">{alert.prioridad}</p>
+  </div>
+  <div>
+    <p className="text-sm text-gray-500">Severidad</p>
+    <p className="text-base font-medium ">{alert.severidad}</p>
+  </div>
+</div>  
+    <p className="text-sm text-gray-500">Mensaje</p>
+
                   <p className="text-gray-700 bg-gray-50 p-3 rounded-md">{alert.description}</p>  
                 </div>  
               </CardContent>  

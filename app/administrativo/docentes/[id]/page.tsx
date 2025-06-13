@@ -195,7 +195,7 @@ export default function TeacherDetailPage() {
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
               <div className="relative w-32 h-32 rounded-full overflow-hidden flex-shrink-0 border-4 border-blue-100">
                 <Image
-                  src={"/young-man-city.png"}
+                  src={"https://avatar.iran.liara.run/public"}
                   alt={teacher.personas.nombres}
                   fill
                   sizes="128px"

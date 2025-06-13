@@ -87,7 +87,7 @@ const mapApiDataToTeachers = (apiData: TeacherApiResponse[]): Teacher[] => {
     course: "",
     type: "",
     age: undefined,
-    image: "/young-man-city.png"
+    image: "https://avatar.iran.liara.run/public"
    
   }))
 }
