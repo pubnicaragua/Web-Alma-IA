@@ -162,7 +162,6 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
       return {  
         fecha: fechaFormateada,  
         hora: horaFormateada,  
-        usuarioResponsable: bitacora.alumno.nombre,
         accionRealizada: bitacora.plan_accion,  
         fechaCompromiso: bitacora.fecha_compromiso ? new Date(bitacora.fecha_compromiso).toLocaleDateString('es-ES') : '-',
         plan_accion: bitacora.plan_accion,  

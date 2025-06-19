@@ -28,12 +28,12 @@ interface ApiAlertOrigin {
   alerta_origen_id: number
 }
 
-interface ApiAlertSeverity {
+export interface ApiAlertSeverity {
   nombre: string
   alerta_severidad_id: number
 }
 
-interface ApiAlertPriority {
+export interface ApiAlertPriority {
   nombre: string
   alerta_prioridad_id: number
 }
@@ -472,29 +472,31 @@ export interface AlumnoAlertaBitacora {
   // observaciones?: string // ELIMINAR ESTA LÍNEA  
 }
   
-export interface BitacoraResponse {  
-  alumno_alerta_bitacora_id: number  
-  alumno_alerta_id: number  
-  alumno_id: number  
-  plan_accion: string  
-  fecha_compromiso: string  
-  fecha_realizacion: string | null  
-  url_archivo: string | null  
-  observaciones: string  
-  estado_seguimiento: string  
-  alumno: {  
-    alumno_id: number  
-    nombre: string  
-    curso_actual: string  
-  }  
-  alerta: {  
-    alumno_alerta_id: number  
-    tipo_alerta: string  
-    estado: string  
-    severidad: string  
-  }  
-}  
-  
+export interface BitacoraResponse {
+  alumno_alerta_bitacora_id: number
+  alumno_alerta_id: number
+  alumno_id: number
+  plan_accion: string
+  fecha_compromiso: string
+  fecha_realizacion: string | null
+  url_archivo: string | null
+  creado_por: number
+  actualizado_por: number
+  fecha_creacion: string
+  fecha_actualizacion: string
+  activo: boolean
+  alumno?: {
+    alumno_id: number
+    nombre: string
+    curso_actual: string
+  }
+  alerta?: {
+    alumno_alerta_id: number
+    tipo_alerta: string
+    estado: string
+    severidad: string
+  }
+}
 export interface AlertDetailResponse {  
   alumno_alerta_id: number  
   alumno_id: number  
@@ -567,7 +569,7 @@ export async function createAlertBitacora(bitacoraData: AlumnoAlertaBitacora): P
 export async function fetchAlertBitacoras(alertaId?: number): Promise<BitacoraResponse[]> {  
   let endpoint = "/alumnos/alertas_bitacoras"  
   if (alertaId) {  
-    endpoint += `?alerta_id=${alertaId}`  
+    endpoint += `?alumno_alerta_id=${alertaId}`  
   }  
   
   const response = await fetchWithAuth(endpoint, {  
@@ -635,4 +637,56 @@ export async function deleteAlertBitacora(bitacoraId: number): Promise<void> {
     const errorText = await response.text()  
     throw new Error(`Error al eliminar bitácora: ${response.status} - ${errorText}`)  
   }  
+}
+export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
+  try {
+    console.log("Obteniendo lista de grados desde la API...");
+
+    // Realizar la solicitud GET a la API
+    const response = await fetchWithAuth("/alertas/alertas_severidades", {
+      method: "GET",
+    });
+    // Si la respuesta no es exitosa, lanzar un error
+    if (!response.ok) {
+      // Intentar leer el mensaje de error
+      const errorText = await response.text();
+      throw new Error(`Error al obtener alumnos: ${ response.status } - ${ errorText }`);
+    }
+
+    // Intentar parsear la respuesta como JSON
+    const apiStudents = (await response.json());
+   
+    // Transformar los datos de la API a nuestro modelo de Student
+    console.log("Estudiantes transformados:", apiStudents);
+    return apiStudents;
+  } catch (error) {
+    console.error('Error al obtener estudiantes:', error);
+    throw error; // Propagar el error para que se maneje en el componente
+  }
+}
+export async function fetchPrority(): Promise<ApiAlertPriority[]> {
+  try {
+    console.log("Obteniendo lista de grados desde la API...");
+
+    // Realizar la solicitud GET a la API
+    const response = await fetchWithAuth("/alertas/alertas_prioridades", {
+      method: "GET",
+    });
+    // Si la respuesta no es exitosa, lanzar un error
+    if (!response.ok) {
+      // Intentar leer el mensaje de error
+      const errorText = await response.text();
+      throw new Error(`Error al obtener alumnos: ${ response.status } - ${ errorText }`);
+    }
+
+    // Intentar parsear la respuesta como JSON
+    const apiStudents = (await response.json());
+   
+    // Transformar los datos de la API a nuestro modelo de Student
+    console.log("Estudiantes transformados:", apiStudents);
+    return apiStudents;
+  } catch (error) {
+    console.error('Error al obtener estudiantes:', error);
+    throw error; // Propagar el error para que se maneje en el componente
+  }
 }
