@@ -421,6 +421,8 @@ export async function fetchTotalAlertsHistoricoChartLine(): Promise<DataPoint[]>
 export interface CreateAccionAlertParams {
   alumno_alerta_id: number
   alumno_id: number
+  alerta_prioridad_id:number
+  alerta_severidad_id:number
   plan_accion: string
   fecha_compromiso: string
   fecha_realizacion: string
@@ -442,6 +444,8 @@ export const createAccionAlert = async (data: CreateAccionAlertParams) => {
       body: JSON.stringify({
         alumno_alerta_id: data.alumno_alerta_id,
         alumno_id: data.alumno_id,
+        alerta_severidad_id: data.alerta_severidad_id,
+        alerta_prioridad_id: data.alerta_prioridad_id,
         plan_accion: data.plan_accion,
         fecha_compromiso: data.fecha_compromiso,
         fecha_realizacion: data.fecha_realizacion,
@@ -469,6 +473,8 @@ export interface AlumnoAlertaBitacora {
   fecha_compromiso?: string  
   fecha_realizacion?: string  
   url_archivo?: string  
+      alerta_prioridad_id: number;
+    alerta_severidad_id: number;
   // observaciones?: string // ELIMINAR ESTA LÍNEA  
 }
   

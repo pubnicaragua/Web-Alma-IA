@@ -114,6 +114,8 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
     fecha_compromiso: string  
     fecha_realizacion?: string  
     url_archivo?: string  
+    alerta_severidad_id:number
+    alerta_prioridad_id:number
   }) => {  
     if (!alert) return  
 
@@ -127,6 +129,8 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
         fecha_compromiso: newAction.fecha_compromiso || undefined,  
         fecha_realizacion: newAction.fecha_realizacion || undefined,  
         url_archivo: newAction.url_archivo || undefined,  
+        alerta_prioridad_id: newAction.alerta_prioridad_id ,
+        alerta_severidad_id: newAction.alerta_severidad_id,
       }  
 
       await createAlertBitacora(bitacoraData)  

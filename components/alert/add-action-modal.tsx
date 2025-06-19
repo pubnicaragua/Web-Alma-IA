@@ -30,23 +30,12 @@ interface AddActionModalProps {
     fecha_compromiso: string;
     fecha_realizacion?: string;
     url_archivo?: string;
-    prioridad: string;
-    severidad: string;
+    alerta_prioridad_id: number;
+    alerta_severidad_id: number;
     responsable: string;
   }) => void;
   isMobile?: boolean;
 }
-
-interface Priority {
-  nombre: string;
-  alerta_prioridad_id: number;
-}
-
-interface Severity {
-  id: string;
-  nombre: string;
-}
-
 export function AddActionModal({
   onAddAction,
   isMobile = false,
@@ -57,8 +46,8 @@ export function AddActionModal({
   const [fechaRealizacion, setFechaRealizacion] = useState("");
   const [urlArchivo, setUrlArchivo] = useState("");
   const [responsable, setResponsable] = useState("");
-  const [prioridad, setPrioridad] = useState("");
-  const [severidad, setSeveridad] = useState("");
+  const [prioridad, setPrioridad] = useState(0);
+  const [severidad, setSeveridad] = useState(0);
   const [prioridades, setPrioridades] = useState<ApiAlertPriority[]>([]);
   const [severidades, setSeveridades] = useState<ApiAlertSeverity[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -113,8 +102,8 @@ export function AddActionModal({
       fecha_compromiso: fechaCompromiso,
       fecha_realizacion: fechaRealizacion || undefined,
       url_archivo: urlArchivo || undefined,
-      prioridad,
-      severidad,
+      alerta_severidad_id: severidad,
+      alerta_prioridad_id: prioridad,
       responsable,
     });
 
@@ -124,8 +113,8 @@ export function AddActionModal({
     setFechaRealizacion("");
     setUrlArchivo("");
     setResponsable("");
-    setPrioridad("");
-    setSeveridad("");
+    setPrioridad(0);
+    setSeveridad(0);
     setErrors({});
     onClose();
   };
