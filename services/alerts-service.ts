@@ -1,5 +1,6 @@
 import { fetchWithAuth } from "@/lib/api-config"
 import { DataPoint } from "@/components/line-chart-comparison"
+import { Persona } from "./teachers-service"
 
 // Interfaces para los datos de la API según la estructura real
 interface ApiPerson {
@@ -423,6 +424,7 @@ export interface CreateAccionAlertParams {
   alumno_id: number
   alerta_prioridad_id:number
   alerta_severidad_id:number
+  responsable_id:number
   plan_accion: string
   fecha_compromiso: string
   fecha_realizacion: string
@@ -446,6 +448,7 @@ export const createAccionAlert = async (data: CreateAccionAlertParams) => {
         alumno_id: data.alumno_id,
         alerta_severidad_id: data.alerta_severidad_id,
         alerta_prioridad_id: data.alerta_prioridad_id,
+        responsable_id:data.responsable_id,
         plan_accion: data.plan_accion,
         fecha_compromiso: data.fecha_compromiso,
         fecha_realizacion: data.fecha_realizacion,
@@ -475,6 +478,7 @@ export interface AlumnoAlertaBitacora {
   url_archivo?: string  
       alerta_prioridad_id: number;
     alerta_severidad_id: number;
+    responsable_id:number;
   // observaciones?: string // ELIMINAR ESTA LÍNEA  
 }
   
@@ -555,6 +559,8 @@ export interface AlertDetailResponse {
   
 // Crear nueva bitácora  
 export async function createAlertBitacora(bitacoraData: AlumnoAlertaBitacora): Promise<BitacoraResponse> {  
+ console.log(bitacoraData);
+ 
   const response = await fetchWithAuth("/alumnos/alertas_bitacoras", {  
     method: "POST",  
     headers: {  
@@ -683,6 +689,32 @@ export async function fetchPrority(): Promise<ApiAlertPriority[]> {
       // Intentar leer el mensaje de error
       const errorText = await response.text();
       throw new Error(`Error al obtener alumnos: ${ response.status } - ${ errorText }`);
+    }
+
+    // Intentar parsear la respuesta como JSON
+    const apiStudents = (await response.json());
+   
+    // Transformar los datos de la API a nuestro modelo de Student
+    console.log("Estudiantes transformados:", apiStudents);
+    return apiStudents;
+  } catch (error) {
+    console.error('Error al obtener estudiantes:', error);
+    throw error; // Propagar el error para que se maneje en el componente
+  }
+}
+export async function fetchEquipoAlma(): Promise<Persona[]> {
+  try {
+    console.log("Obteniendo lista de grados desde la API...");
+
+    // Realizar la solicitud GET a la API
+    const response = await fetchWithAuth("/personas?rol_id=3", {
+      method: "GET",
+    });
+    // Si la respuesta no es exitosa, lanzar un error
+    if (!response.ok) {
+      // Intentar leer el mensaje de error
+      const errorText = await response.text();
+      throw new Error(`Error al obtener personas: ${ response.status } - ${ errorText }`);
     }
 
     // Intentar parsear la respuesta como JSON

@@ -116,6 +116,7 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
     url_archivo?: string  
     alerta_severidad_id:number
     alerta_prioridad_id:number
+    responsable_id:number
   }) => {  
     if (!alert) return  
 
@@ -131,6 +132,7 @@ export default function AlertDetailPage({ searchParams }: { searchParams: { [key
         url_archivo: newAction.url_archivo || undefined,  
         alerta_prioridad_id: newAction.alerta_prioridad_id ,
         alerta_severidad_id: newAction.alerta_severidad_id,
+        responsable_id:newAction.responsable_id
       }  
 
       await createAlertBitacora(bitacoraData)  

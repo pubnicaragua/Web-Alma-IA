@@ -22,7 +22,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useModal } from "@/lib/modal-utils";
-import { ApiAlertPriority, ApiAlertSeverity, fetchPrority, fetchSeverity } from "@/services/alerts-service";
+import { ApiAlertPriority, ApiAlertSeverity, fetchPrority, fetchSeverity, fetchEquipoAlma } from "@/services/alerts-service";
+import { Persona } from "@/services/teachers-service";
 
 interface AddActionModalProps {
   onAddAction: (action: {
@@ -32,7 +33,7 @@ interface AddActionModalProps {
     url_archivo?: string;
     alerta_prioridad_id: number;
     alerta_severidad_id: number;
-    responsable: string;
+    responsable_id: number; 
   }) => void;
   isMobile?: boolean;
 }
@@ -45,11 +46,12 @@ export function AddActionModal({
   const [fechaCompromiso, setFechaCompromiso] = useState("");
   const [fechaRealizacion, setFechaRealizacion] = useState("");
   const [urlArchivo, setUrlArchivo] = useState("");
-  const [responsable, setResponsable] = useState("");
+  const [responsableId, setResponsableId] = useState<number>(0); // Solo el ID
   const [prioridad, setPrioridad] = useState(0);
   const [severidad, setSeveridad] = useState(0);
   const [prioridades, setPrioridades] = useState<ApiAlertPriority[]>([]);
   const [severidades, setSeveridades] = useState<ApiAlertSeverity[]>([]);
+  const [responsables, setResponsables] = useState<Persona[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
@@ -63,10 +65,16 @@ export function AddActionModal({
       // Reemplazar con tu llamada real a la API
       const data = await fetchSeverity();
       setSeveridades(data);
+    };    
+    const fetchResponsables= async () => {
+      // Reemplazar con tu llamada real a la API
+      const data = await fetchEquipoAlma();
+      setResponsables(data);
     };
 
     fetchPrioridades();
     fetchSeveridades();
+    fetchResponsables();
   }, []);
 
   const validateForm = () => {
@@ -75,7 +83,7 @@ export function AddActionModal({
     if (!planAccion.trim()) {
       newErrors.planAccion = "El plan de acción es obligatorio";
     }
-    if (!responsable.trim()) {
+    if (!responsableId.toString().trim()) {
       newErrors.responsable = "El responsable es obligatorio";
     }
     if (!prioridad) {
@@ -104,7 +112,7 @@ export function AddActionModal({
       url_archivo: urlArchivo || undefined,
       alerta_severidad_id: severidad,
       alerta_prioridad_id: prioridad,
-      responsable,
+      responsable_id:responsableId,
     });
 
     // Limpiar formulario y cerrar modal
@@ -112,7 +120,7 @@ export function AddActionModal({
     setFechaCompromiso("");
     setFechaRealizacion("");
     setUrlArchivo("");
-    setResponsable("");
+    setResponsableId(0);
     setPrioridad(0);
     setSeveridad(0);
     setErrors({});
@@ -176,15 +184,26 @@ export function AddActionModal({
               <Label htmlFor="responsable" className="text-gray-700">
                 Responsable *
               </Label>
-              <Input
-                id="responsable"
-                value={responsable}
-                onChange={(e) => setResponsable(e.target.value)}
-                placeholder="Nombre del responsable"
-                className={`border-gray-300 ${
-                  errors.responsable ? "border-red-500" : ""
-                }`}
-              />
+                <Select 
+                value={responsableId.toString()} 
+                onValueChange={(value) => setResponsableId(parseInt(value))}
+              >
+                <SelectTrigger
+                  className={`w-full ${errors.responsable ? "border-red-500" : ""}`}
+                >
+                  <SelectValue placeholder="Seleccione responsable" />
+                </SelectTrigger>
+                <SelectContent>
+                  {responsables.map((p) => (
+                    <SelectItem 
+                      key={p.persona_id} 
+                      value={p.persona_id?.toString() || ""}
+                    >
+                      {p.nombres} {p.apellidos}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {errors.responsable && (
                 <p className="text-red-500 text-sm">{errors.responsable}</p>
               )}
