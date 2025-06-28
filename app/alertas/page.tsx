@@ -1,137 +1,155 @@
-"use client"
-import { DataTable } from "@/components/data-table"
-import { FilterDropdown } from "@/components/filter-dropdown"
-import { AppLayout } from "@/components/layout/app-layout"
-import { Badge } from "@/components/ui/badge"
-import { useState, useEffect, useMemo } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { AlertCircle, RefreshCw } from "lucide-react"
-import { type Alert, fetchAlerts } from "@/services/alerts-service"
-import { getSearchParam } from "@/lib/search-params"
-import { time } from "console"
-import { Input } from "@/components/ui/input"
+"use client";
+import { DataTable } from "@/components/data-table";
+import { FilterDropdown } from "@/components/filter-dropdown";
+import { AppLayout } from "@/components/layout/app-layout";
+import { Badge } from "@/components/ui/badge";
+import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { type Alert, fetchAlerts } from "@/services/alerts-service";
+import { getSearchParam } from "@/lib/search-params";
+import { time } from "console";
+import { Input } from "@/components/ui/input";
 
-export default function AlertsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
-  const router = useRouter()
-  const [alerts, setAlerts] = useState<Alert[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export default function AlertsPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const router = useRouter();
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Estados para los filtros (solo para las columnas mostradas)
-  const [typeFilter, setTypeFilter] = useState<string>("Todos")
-  const [priorityFilter, setPriorityFilter] = useState<string>("Todos")
-  const [statusFilter, setStatusFilter] = useState<string>("Todos")
-  const [dateFilter, setDateFilter] = useState<string>("Todos")
-  const [horaFilter, setHoraFilter] = useState<string>()
-  const [currentPage, setCurrentPage] = useState(1)
+  const [typeFilter, setTypeFilter] = useState<string>("Todos");
+  const [priorityFilter, setPriorityFilter] = useState<string>("Todos");
+  const [statusFilter, setStatusFilter] = useState<string>("Todos");
+  const [dateFilter, setDateFilter] = useState<string>("Todos");
+  const [horaFilter, setHoraFilter] = useState<string>();
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Cargar datos solo cuando se accede a la página
   useEffect(() => {
     const loadAlerts = async () => {
       try {
-        setIsLoading(true)
-        setError(null)
-        let data = await fetchAlerts()
-        const params = getSearchParam(searchParams, 'notifications')
-        if(params){
-          data = data.filter(alert => alert.status === "Pendiente")
+        setIsLoading(true);
+        setError(null);
+        let data = await fetchAlerts();
+        const params = getSearchParam(searchParams, "notifications");
+        if (params) {
+          data = data.filter((alert) => alert.status === "Pendiente");
         }
-        setAlerts(data)
+        setAlerts(data);
       } catch (err) {
-        console.error("Error al cargar alertas:", err)
-        setError("No se pudieron cargar las alertas. Intente nuevamente.")
+        console.error("Error al cargar alertas:", err);
+        setError("No se pudieron cargar las alertas. Intente nuevamente.");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    loadAlerts()
-  }, [])
+    loadAlerts();
+  }, []);
 
   // Generar opciones para los filtros basadas en los datos
   const getUniqueValues = (key: keyof Alert): string[] => {
     const values = alerts
-      .map(alert => {
+      .map((alert) => {
         const value = alert[key];
         // Asegurarse de manejar valores undefined o null
         if (value === undefined || value === null) return null;
         return String(value);
       })
       .filter((value): value is string => value !== null);
-    
+
     // Eliminar duplicados y ordenar alfabéticamente
     const uniqueValues = Array.from(new Set(values)).sort();
     return ["Todos", ...uniqueValues];
-  }
+  };
 
-  const typeOptions = getUniqueValues("type")
-  const priorityOptions = getUniqueValues("priority")
-  const statusOptions = getUniqueValues("status")
-  const dateOptions = ["Todos", "Hoy", "Ayer", "Esta semana", "Este mes"]
+  const typeOptions = getUniqueValues("type");
+  const priorityOptions = getUniqueValues("priority");
+  const statusOptions = getUniqueValues("status");
+  const dateOptions = ["Todos", "Hoy", "Ayer", "Esta semana", "Este mes"];
 
   // Filtrar los datos según los filtros seleccionados
- const filteredAlerts = useMemo(() => {
-  setCurrentPage(1)
+  const filteredAlerts = useMemo(() => {
+    setCurrentPage(1);
 
-  const filtered = alerts.filter((alert) => {
-    if (typeFilter !== "Todos" && alert.type !== typeFilter) return false
-    if (priorityFilter !== "Todos" && alert.priority !== priorityFilter) return false
-    if (statusFilter !== "Todos" && alert.status !== statusFilter) return false
-
-    if (dateFilter !== "Todos" && alert.date) {
-      try {
-        const today = new Date();
-        const alertDate = new Date(alert.date.split("/").reverse().join("-"));
-
-        const isToday = alertDate.toDateString() === today.toDateString();
-        const yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1);
-        const isYesterday = alertDate.toDateString() === yesterday.toDateString();
-        const startOfWeek = new Date(today);
-        startOfWeek.setDate(today.getDate() - today.getDay());
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        const isThisWeek = alertDate >= startOfWeek && alertDate <= endOfWeek;
-        const isThisMonth = alertDate.getMonth() === today.getMonth() && alertDate.getFullYear() === today.getFullYear();
-
-        switch (dateFilter) {
-          case "Hoy":
-            if (!isToday) return false;
-            break;
-          case "Ayer":
-            if (!isYesterday) return false;
-            break;
-          case "Esta semana":
-            if (!isThisWeek) return false;
-            break;
-          case "Este mes":
-            if (!isThisMonth) return false;
-            break;
-        }
-      } catch (error) {
-        console.error("Error al procesar fechas:", error);
+    const filtered = alerts.filter((alert) => {
+      if (typeFilter !== "Todos" && alert.type !== typeFilter) return false;
+      if (priorityFilter !== "Todos" && alert.priority !== priorityFilter)
         return false;
+      if (statusFilter !== "Todos" && alert.status !== statusFilter)
+        return false;
+
+      if (dateFilter !== "Todos" && alert.date) {
+        try {
+          const today = new Date();
+          const alertDate = new Date(alert.date.split("/").reverse().join("-"));
+
+          const isToday = alertDate.toDateString() === today.toDateString();
+          const yesterday = new Date(today);
+          yesterday.setDate(today.getDate() - 1);
+          const isYesterday =
+            alertDate.toDateString() === yesterday.toDateString();
+          const startOfWeek = new Date(today);
+          startOfWeek.setDate(today.getDate() - today.getDay());
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 6);
+          const isThisWeek = alertDate >= startOfWeek && alertDate <= endOfWeek;
+          const isThisMonth =
+            alertDate.getMonth() === today.getMonth() &&
+            alertDate.getFullYear() === today.getFullYear();
+
+          switch (dateFilter) {
+            case "Hoy":
+              if (!isToday) return false;
+              break;
+            case "Ayer":
+              if (!isYesterday) return false;
+              break;
+            case "Esta semana":
+              if (!isThisWeek) return false;
+              break;
+            case "Este mes":
+              if (!isThisMonth) return false;
+              break;
+          }
+        } catch (error) {
+          console.error("Error al procesar fechas:", error);
+          return false;
+        }
       }
-    }
 
-    if (horaFilter && alert.time) {
-      const alertTime = alert.time.slice(0, 5)
-      if (alertTime !== horaFilter) return false
-    }
+      if (horaFilter && alert.time) {
+        const alertTime = alert.time.slice(0, 5);
+        if (alertTime !== horaFilter) return false;
+      }
 
-    return true
-  })
+      return true;
+    });
 
-  // Orden descendente por fecha y hora
-  return filtered.sort((a, b) => {
-    const dateTimeA = new Date(`${a.date?.split("/").reverse().join("-")}T${a.time || "00:00"}`);
-    const dateTimeB = new Date(`${b.date?.split("/").reverse().join("-")}T${b.time || "00:00"}`);
-    return dateTimeB.getTime() - dateTimeA.getTime();
-  })
-}, [alerts, typeFilter, priorityFilter, statusFilter, dateFilter, horaFilter])
-
-
+    // Orden descendente por fecha y hora
+    return filtered.sort((a, b) => {
+      const dateTimeA = new Date(
+        `${a.date?.split("/").reverse().join("-")}T${a.time || "00:00"}`
+      );
+      const dateTimeB = new Date(
+        `${b.date?.split("/").reverse().join("-")}T${b.time || "00:00"}`
+      );
+      return dateTimeB.getTime() - dateTimeA.getTime();
+    });
+  }, [
+    alerts,
+    typeFilter,
+    priorityFilter,
+    statusFilter,
+    dateFilter,
+    horaFilter,
+  ]);
 
   // Columnas para la tabla
   const columns = [
@@ -141,12 +159,12 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
     { key: "status", title: "Estado" },
     { key: "date", title: "Fecha" },
     { key: "time", title: "Hora" },
-  ]
+  ];
 
   // Función para navegar a la vista detallada de la alerta
   const handleAlertClick = (alert: Alert) => {
-    router.push(`/alertas/${alert.id}`)
-  }
+    router.push(`/alertas/${alert.id}`);
+  };
 
   // Renderizar celdas de la tabla
   const renderCell = (alert: Alert, column: { key: string; title: string }) => {
@@ -160,7 +178,7 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
             <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
               <Image
                 src={alert.student?.avatar || "/placeholder.svg"}
-                alt={alert.student?.name || 'image'}
+                alt={alert.student?.name || "image"}
                 width={32}
                 height={32}
                 className="w-full h-full object-cover"
@@ -168,30 +186,31 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
             </div>
             <span className="text-center">{alert?.student?.name}</span>
           </div>
-        )
+        );
       case "type":
         return (
           <div className="flex justify-start w-full">
             <Badge
               className={`whitespace-nowrap px-3 py-1 ${
-                alert.type === "SOS Alma" || alert.type === "Rendimiento Académico"
+                alert.type === "SOS Alma" ||
+                alert.type === "Rendimiento Académico"
                   ? "bg-red-500"
-                  :  
-                  alert.type === "Roja" || alert.type === "Rendimiento Académico"
+                  : alert.type === "Roja" ||
+                    alert.type === "Rendimiento Académico"
                   ? "bg-red-500"
                   : alert.type === "Amarilla" || alert.type === "Asistencia"
-                    ? "bg-yellow-400"
-                    : alert.type === "Naranja" || alert.type === "Comportamiento"
-                      ? "bg-orange-500"
-                      : alert.type === "Denuncias"
-                        ? "bg-purple-600"
-                        : "bg-blue-500"
+                  ? "bg-yellow-400"
+                  : alert.type === "Naranja" || alert.type === "Comportamiento"
+                  ? "bg-orange-500"
+                  : alert.type === "Denuncias"
+                  ? "bg-purple-600"
+                  : "bg-blue-500"
               }`}
             >
               {alert.type}
             </Badge>
           </div>
-        )
+        );
       case "priority":
         return (
           <div className="flex justify-start w-full">
@@ -201,14 +220,14 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
                 alert.priority === "Alta"
                   ? "border-red-500 text-red-500"
                   : alert.priority === "Media"
-                    ? "border-yellow-500 text-yellow-500"
-                    : "border-green-500 text-green-500"
+                  ? "border-yellow-500 text-yellow-500"
+                  : "border-green-500 text-green-500"
               }`}
             >
               {alert.priority}
             </Badge>
           </div>
-        )
+        );
       case "status":
         return (
           <div className="flex justify-start w-full">
@@ -218,24 +237,24 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
                 alert.status === "Pendiente"
                   ? "border-red-500 text-red-500"
                   : alert.status === "En curso"
-                    ? "border-blue-500 text-blue-500"
-                    : "border-green-500 text-green-500"
+                  ? "border-blue-500 text-blue-500"
+                  : "border-green-500 text-green-500"
               }`}
             >
               {alert.status}
             </Badge>
           </div>
-        )
+        );
       case "time":
+        return <div className="text-left">{alert.time || "N/A"}</div>;
+      default:
         return (
           <div className="text-left">
-            {alert.time || 'N/A'}
+            {alert[column.key as keyof Alert] || "N/A"}
           </div>
-        )
-      default:
-        return <div className="text-left">{alert[column.key as keyof Alert] || 'N/A'}</div>
+        );
     }
-  }
+  };
 
   // Renderizar mensaje de carga
   if (isLoading) {
@@ -249,7 +268,7 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
           </div>
         </div>
       </AppLayout>
-    )
+    );
   }
 
   // Renderizar mensaje de error
@@ -275,7 +294,7 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
           </div>
         </div>
       </AppLayout>
-    )
+    );
   }
 
   return (
@@ -285,36 +304,52 @@ export default function AlertsPage({ searchParams }: { searchParams: { [key: str
 
         {/* Filtros */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <FilterDropdown label="Tipo" options={typeOptions} value={typeFilter} onChange={setTypeFilter} />
+          <FilterDropdown
+            label="Tipo"
+            options={typeOptions}
+            value={typeFilter}
+            onChange={setTypeFilter}
+          />
           <FilterDropdown
             label="Prioridad"
             options={priorityOptions}
             value={priorityFilter}
             onChange={setPriorityFilter}
           />
-          <FilterDropdown label="Estado" options={statusOptions} value={statusFilter} onChange={setStatusFilter} />
-          <FilterDropdown label="Fecha" options={dateOptions} value={dateFilter} onChange={setDateFilter} />
-          </div>
+          <FilterDropdown
+            label="Estado"
+            options={statusOptions}
+            value={statusFilter}
+            onChange={setStatusFilter}
+          />
+          <FilterDropdown
+            label="Fecha"
+            options={dateOptions}
+            value={dateFilter}
+            onChange={setDateFilter}
+          />
+        </div>
 
         {/* Tabla de alertas */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {filteredAlerts.length > 0 ? (
-           <DataTable 
-           columns={columns}
-           data={filteredAlerts}
-           renderCell={renderCell}
-           currentPage={currentPage}
-           onPageChange={setCurrentPage}
-           pageSize={25}
-           className="mt-4"
-         />
+            <DataTable
+              columns={columns}
+              data={filteredAlerts}
+              renderCell={renderCell}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+              pageSize={25}
+              className="mt-4"
+            />
           ) : (
             <div className="p-8 text-center text-gray-500">
-              No se encontraron alertas que coincidan con los filtros seleccionados.
+              No se encontraron alertas que coincidan con los filtros
+              seleccionados.
             </div>
           )}
         </div>
       </div>
     </AppLayout>
-  )
+  );
 }

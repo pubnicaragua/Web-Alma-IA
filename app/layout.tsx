@@ -7,6 +7,7 @@ import { ThemeColorsProvider } from "@/lib/theme-colors"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/components/auth-provider"
 import { SessionTimeout } from "@/components/session-timeout"
+import { UserProvider } from "@/lib/user-context"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -32,9 +33,11 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light">
           <ThemeColorsProvider>
             <AuthProvider>
-              {children}
-              <Toaster />
-              <SessionTimeout />
+              <UserProvider>
+                {children}
+                <Toaster />
+                <SessionTimeout />
+              </UserProvider>
             </AuthProvider>
           </ThemeColorsProvider>
         </ThemeProvider>

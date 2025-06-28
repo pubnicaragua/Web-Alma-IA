@@ -1,114 +1,113 @@
-import { fetchWithAuth } from "@/lib/api-config"
+import { fetchWithAuth } from "@/lib/api-config";
 
 export interface Student {
-  name: string
-  image: string
+  name: string;
+  image: string;
 }
 
 // Actualizada para coincidir con la estructura de la API
 export interface RecentAlert {
-  alumno_alerta_id: number
-  alumno_id: number
-  fecha_generada: string
-  estado: string
+  alumno_alerta_id: number;
+  alumno_id: number;
+  fecha_generada: string;
+  estado: string;
   alumnos?: {
     personas?: {
-      nombres: string
-      apellidos: string
-    }
-    url_foto_perfil?: string
-  }
+      nombres: string;
+      apellidos: string;
+    };
+    url_foto_perfil?: string;
+  };
   alertas_tipos?: {
-    nombre: string
-  }
+    nombre: string;
+  };
   alertas_severidades?: {
-    nombre: string
-  }
+    nombre: string;
+  };
   alertas_prioridades?: {
-    nombre: string
-  }
+    nombre: string;
+  };
   alertas_origenes?: {
-    nombre: string
-  }
+    nombre: string;
+  };
 }
 
 export interface ImportantDate {
-  calendario_fecha_importante_id: number
-  colegio_id: number
-  curso_id: number
-  calendario_escolar_id: number
-  titulo: string
-  descripcion: string
-  fecha: string
-  tipo: string
-  creado_por: number
-  actualizado_por: number
-  fecha_creacion: string
-  fecha_actualizacion: string
-  activo: boolean
+  calendario_fecha_importante_id: number;
+  colegio_id: number;
+  curso_id: number;
+  calendario_escolar_id: number;
+  titulo: string;
+  descripcion: string;
+  fecha: string;
+  tipo: string;
+  creado_por: number;
+  actualizado_por: number;
+  fecha_creacion: string;
+  fecha_actualizacion: string;
+  activo: boolean;
   colegios?: {
-    nombre: string
-    colegio_id: number
-  }
+    nombre: string;
+    colegio_id: number;
+  };
   cursos?: {
     grados?: {
-      nombre: string
-      grado_id: number
-    }
-    nombre_curso: string
+      nombre: string;
+      grado_id: number;
+    };
+    nombre_curso: string;
     niveles_educativos?: {
-      nombre: string
-      nivel_educativo_id: number
-    }
-  }
+      nombre: string;
+      nivel_educativo_id: number;
+    };
+  };
   calendarios_escolares?: {
-    fecha_fin: string
-    ano_escolar: number
-    dias_habiles: number
-    fecha_inicio: string
-    calendario_escolar_id: number
-  }
+    fecha_fin: string;
+    ano_escolar: number;
+    dias_habiles: number;
+    fecha_inicio: string;
+    calendario_escolar_id: number;
+  };
 }
 
 export interface TotalAlert {
-  label: string
-  value: number
-  percentage: string
-  color: string
+  label: string;
+  value: number;
+  percentage: string;
+  color: string;
 }
 
-
 export interface Emotion {
-  name: string
-  value: number
-  color: string
+  name: string;
+  value: number;
+  color: string;
 }
 
 export interface CardData {
   alumnos: {
-    activos: number
-    inactivos: number
-    frecuentes: number
-    totales: number
-  }
+    activos: number;
+    inactivos: number;
+    frecuentes: number;
+    totales: number;
+  };
   sos_alma: {
-    activos: number
-    vencidos: number
-    por_vencer: number
-    totales: number
-  }
+    activos: number;
+    vencidos: number;
+    por_vencer: number;
+    totales: number;
+  };
   denuncias: {
-    activos: number
-    vencidos: number
-    por_vencer: number
-    totales: number
-  }
+    activos: number;
+    vencidos: number;
+    por_vencer: number;
+    totales: number;
+  };
   alertas_alma: {
-    activos: number
-    vencidos: number
-    por_vencer: number
-    totales: number
-  }
+    activos: number;
+    vencidos: number;
+    por_vencer: number;
+    totales: number;
+  };
 }
 
 // Datos de ejemplo para fechas importantes
@@ -244,7 +243,7 @@ export const FALLBACK_IMPORTANT_DATES: ImportantDate[] = [
     fecha_actualizacion: "2025-05-12T17:36:28.764228",
     activo: true,
   },
-]
+];
 
 // Datos de ejemplo para alertas recientes
 export const FALLBACK_RECENT_ALERTS: RecentAlert[] = [
@@ -286,7 +285,7 @@ export const FALLBACK_RECENT_ALERTS: RecentAlert[] = [
       url_foto_perfil: "https://example.com/foto.jpg",
     },
     alertas_tipos: {
-      nombre: "SOS ALMA",
+      nombre: "",
     },
     alertas_severidades: {
       nombre: "Baja",
@@ -323,212 +322,260 @@ export const FALLBACK_RECENT_ALERTS: RecentAlert[] = [
       nombre: "SOS",
     },
   },
-]
+];
 
 export async function fetchCardData(): Promise<CardData> {
   try {
-    console.log("Obteniendo datos de tarjetas...")
+    console.log("Obteniendo datos de tarjetas...");
     const response = await fetchWithAuth("/home/cards/emociones", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-    })
+    });
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`Error al obtener datos de tarjetas: ${response.status} - ${errorText}`)
-      throw new Error(`Error al obtener datos de tarjetas: ${response.status} - ${errorText}`)
+      const errorText = await response.text();
+      console.error(
+        `Error al obtener datos de tarjetas: ${response.status} - ${errorText}`
+      );
+      throw new Error(
+        `Error al obtener datos de tarjetas: ${response.status} - ${errorText}`
+      );
     }
 
-    const data = await response.json()
-    console.log("Datos de tarjetas obtenidos:", data)
-    return data
+    const data = await response.json();
+    console.log("Datos de tarjetas obtenidos:", data);
+    return data;
   } catch (error) {
-    console.error("Error al obtener datos de tarjetas:", error)
-    throw error
+    console.error("Error al obtener datos de tarjetas:", error);
+    throw error;
   }
 }
 
-export async function fetchRecentAlerts(estado?: string): Promise<RecentAlert[]> { // Añadir parámetro estado  
-  try {  
-    console.log("Fetching recent alerts from API...")  
-  
-    try {  
-      let endpoint = "/home/alertas/recientes"  
-      if (estado) {  
-        endpoint += `?estado=${estado}` // Añadir el parámetro de estado a la URL  
-      }  
-  
-      const response = await fetchWithAuth(endpoint, { // Usar el endpoint modificado  
-        method: "GET",  
-        headers: {  
-          "Content-Type": "application/json",  
-        },  
-      })  
-  
-      if (!response.ok) {  
-        console.error(`Error en respuesta API (home/alertas/recientes): ${response.status} ${response.statusText}`)  
-        console.log("Usando datos de ejemplo para alertas recientes")  
-        return []  
-      }  
-  
-      const data = await response.json()  
-      console.log("Recent alerts data:", data)  
-  
-      // Verificar si los datos tienen la estructura esperada  
-      if (Array.isArray(data) && data.length > 0) {  
-        return data  
-      } else {  
-        console.log("Datos de API vacíos o con formato incorrecto, usando datos de ejemplo")  
-        return []  
-      }  
-    } catch (error) {  
-      console.error("Error al obtener alertas recientes:", error)  
-      console.log("Usando datos de ejemplo para alertas recientes")  
-      return FALLBACK_RECENT_ALERTS  
-    }  
-  } catch (error) {  
-    console.error("Error in fetchRecentAlerts:", error)  
-    throw error  
-  }  
+export async function fetchRecentAlerts(
+  estado?: string
+): Promise<RecentAlert[]> {
+  // Añadir parámetro estado
+  try {
+    console.log("Fetching recent alerts from API...");
+
+    try {
+      let endpoint = "/home/alertas/recientes";
+      if (estado) {
+        endpoint += `?estado=${estado}`; // Añadir el parámetro de estado a la URL
+      }
+
+      const response = await fetchWithAuth(endpoint, {
+        // Usar el endpoint modificado
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        console.error(
+          `Error en respuesta API (home/alertas/recientes): ${response.status} ${response.statusText}`
+        );
+        console.log("Usando datos de ejemplo para alertas recientes");
+        return [];
+      }
+
+      const data = await response.json();
+      console.log("Recent alerts data:", data);
+
+      // Verificar si los datos tienen la estructura esperada
+      if (Array.isArray(data) && data.length > 0) {
+        return data;
+      } else {
+        console.log(
+          "Datos de API vacíos o con formato incorrecto, usando datos de ejemplo"
+        );
+        return [];
+      }
+    } catch (error) {
+      console.error("Error al obtener alertas recientes:", error);
+      console.log("Usando datos de ejemplo para alertas recientes");
+      return FALLBACK_RECENT_ALERTS;
+    }
+  } catch (error) {
+    console.error("Error in fetchRecentAlerts:", error);
+    throw error;
+  }
 }
 
 export async function fetchImportantDates(): Promise<ImportantDate[]> {
   try {
-    console.log("Obteniendo fechas importantes...")
+    console.log("Obteniendo fechas importantes...");
     const response = await fetchWithAuth("/home/fechas/importantes", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-    })
+    });
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`Error al obtener fechas importantes: ${response.status} - ${errorText}`)
-      throw new Error(`Error al obtener fechas importantes: ${response.status} - ${errorText}`)
+      const errorText = await response.text();
+      console.error(
+        `Error al obtener fechas importantes: ${response.status} - ${errorText}`
+      );
+      throw new Error(
+        `Error al obtener fechas importantes: ${response.status} - ${errorText}`
+      );
     }
 
-    let data
+    let data;
     try {
-      data = await response.json()
-      console.log("Datos de fechas importantes (raw):", data)
+      data = await response.json();
+      console.log("Datos de fechas importantes (raw):", data);
 
       // Verificar si los datos tienen el formato esperado
       if (!data || !Array.isArray(data)) {
-        console.error("Los datos recibidos no son un array:", data)
-        throw new Error('No se pudo obtener las fechas importantes, inténtelo más tarde')
+        console.error("Los datos recibidos no son un array:", data);
+        throw new Error(
+          "No se pudo obtener las fechas importantes, inténtelo más tarde"
+        );
       }
 
-      return data
+      return data;
     } catch (parseError) {
-      console.error("Error al parsear la respuesta JSON:", parseError)
-      throw new Error('No se pudo obtener las fechas importantes, inténtelo más tarde')
+      console.error("Error al parsear la respuesta JSON:", parseError);
+      throw new Error(
+        "No se pudo obtener las fechas importantes, inténtelo más tarde"
+      );
     }
   } catch (error) {
-    console.error("Error al obtener fechas importantes:", error)
-    throw new Error('No se pudo obtener las fechas importantes, inténtelo más tarde')
+    console.error("Error al obtener fechas importantes:", error);
+    throw new Error(
+      "No se pudo obtener las fechas importantes, inténtelo más tarde"
+    );
   }
 }
 
 export async function fetchTotalAlerts(): Promise<TotalAlert[]> {
   try {
-    console.log("Obteniendo alertas totales...")
+    console.log("Obteniendo alertas totales...");
     const response = await fetchWithAuth("/home/alertas/totales", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-    })
+    });
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`Error al obtener alertas totales: ${response.status} - ${errorText}`)
-      throw new Error(`Error al obtener alertas totales: ${response.status} - ${errorText}`)
+      const errorText = await response.text();
+      console.error(
+        `Error al obtener alertas totales: ${response.status} - ${errorText}`
+      );
+      throw new Error(
+        `Error al obtener alertas totales: ${response.status} - ${errorText}`
+      );
     }
 
-    const data = await response.json()
-    console.log("Alertas totales obtenidas:", data)
-    return data
+    const data = await response.json();
+    console.log("Alertas totales obtenidas:", data);
+    return data;
   } catch (error) {
-    console.error("Error al obtener alertas totales:", error)
-    throw error
+    console.error("Error al obtener alertas totales:", error);
+    throw error;
   }
 }
 
 export async function fetchEmotions(): Promise<Emotion[]> {
   try {
-    console.log("Obteniendo emociones...")
+    console.log("Obteniendo emociones...");
     const response = await fetchWithAuth("/home/emotions/general", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-    })
+    });
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`Error al obtener emociones: ${response.status} - ${errorText}`)
-      throw new Error(`Error al obtener emociones: ${response.status} - ${errorText}`)
+      const errorText = await response.text();
+      console.error(
+        `Error al obtener emociones: ${response.status} - ${errorText}`
+      );
+      throw new Error(
+        `Error al obtener emociones: ${response.status} - ${errorText}`
+      );
     }
 
-    const data = await response.json()
-    console.log("Emociones obtenidas:", data)
-    return data
+    const data = await response.json();
+    console.log("Emociones obtenidas:", data);
+    return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error)
-    throw error
+    console.error("Error al obtener emociones:", error);
+    throw error;
   }
 }
-export async function fetchEmotionsForGrade(grado_id:number): Promise<Emotion[]> {
+export async function fetchEmotionsForGrade(
+  grado_id: number
+): Promise<Emotion[]> {
   try {
-    console.log("Obteniendo emociones por grado...")
-    console.log("grado", grado_id)
-    const response = await fetchWithAuth("/comparativa/emociones/grado?grado_id="+grado_id, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    console.log("Obteniendo emociones por grado...");
+    console.log("grado", grado_id);
+    const response = await fetchWithAuth(
+      "/comparativa/emociones/grado?grado_id=" + grado_id,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`Error al obtener emociones: ${response.status} - ${errorText}`)
-      throw new Error(`Error al obtener emociones: ${response.status} - ${errorText}`)
+      const errorText = await response.text();
+      console.error(
+        `Error al obtener emociones: ${response.status} - ${errorText}`
+      );
+      throw new Error(
+        `Error al obtener emociones: ${response.status} - ${errorText}`
+      );
     }
 
-    const data = await response.json()
-    console.log("Emociones obtenidas:", data)
-    return data
+    const data = await response.json();
+    console.log("Emociones obtenidas:", data);
+    return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error)
-    throw error
+    console.error("Error al obtener emociones:", error);
+    throw error;
   }
 }
-export async function fetchPatologieForGrade(grado_id:number): Promise<Emotion[]> {
+export async function fetchPatologieForGrade(
+  grado_id: number
+): Promise<Emotion[]> {
   try {
-    console.log("Obteniendo emociones por grado...")
-    console.log("grado", grado_id)
-    const response = await fetchWithAuth("/comparativa/patologias/grado?grado_id="+grado_id, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    console.log("Obteniendo emociones por grado...");
+    console.log("grado", grado_id);
+    const response = await fetchWithAuth(
+      "/comparativa/patologias/grado?grado_id=" + grado_id,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`Error al obtener emociones: ${response.status} - ${errorText}`)
-      throw new Error(`Error al obtener emociones: ${response.status} - ${errorText}`)
+      const errorText = await response.text();
+      console.error(
+        `Error al obtener emociones: ${response.status} - ${errorText}`
+      );
+      throw new Error(
+        `Error al obtener emociones: ${response.status} - ${errorText}`
+      );
     }
 
-    const data = await response.json()
-    console.log("Emociones obtenidas:", data)
-    return data
+    const data = await response.json();
+    console.log("Emociones obtenidas:", data);
+    return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error)
-    throw error
+    console.error("Error al obtener emociones:", error);
+    throw error;
   }
 }
 export async function fetchPatologieGeneral(): Promise<Emotion[]> {
@@ -538,19 +585,23 @@ export async function fetchPatologieGeneral(): Promise<Emotion[]> {
       headers: {
         "Content-Type": "application/json",
       },
-    })
+    });
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`Error al obtener emociones: ${response.status} - ${errorText}`)
-      throw new Error(`Error al obtener emociones: ${response.status} - ${errorText}`)
+      const errorText = await response.text();
+      console.error(
+        `Error al obtener emociones: ${response.status} - ${errorText}`
+      );
+      throw new Error(
+        `Error al obtener emociones: ${response.status} - ${errorText}`
+      );
     }
 
-    const data = await response.json()
-    console.log("Emociones obtenidas:", data)
-    return data
+    const data = await response.json();
+    console.log("Emociones obtenidas:", data);
+    return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error)
-    throw error
+    console.error("Error al obtener emociones:", error);
+    throw error;
   }
 }
