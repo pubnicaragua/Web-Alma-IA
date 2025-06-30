@@ -1,25 +1,27 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Header } from "@/components/header"
-import { MobileSidebar } from "@/components/mobile-sidebar"
-import { AndroidNavMenu } from "@/components/android-nav-menu"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { NavigationMenu } from "@/components/navigation-menu"
+import { useState } from "react";
+import { Header } from "@/components/header";
+import { MobileSidebar } from "@/components/mobile-sidebar";
+import { AndroidNavMenu } from "@/components/android-nav-menu";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { NavigationMenu } from "@/components/navigation-menu";
+import { useSessionTimeout } from "@/hooks/use-session-timeout";
 
 interface AppLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const isMobile = useIsMobile()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen)
-  }
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+  useSessionTimeout();
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
@@ -40,10 +42,16 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Menú para Android (solo en dispositivos móviles) */}
       {isMobile ? (
-        <AndroidNavMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+        <AndroidNavMenu
+          isOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
+        />
       ) : (
-        <MobileSidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+        <MobileSidebar
+          isOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
+        />
       )}
     </div>
-  )
+  );
 }

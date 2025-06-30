@@ -1,4 +1,15 @@
+import { useEffect, useState } from "react";
+
 export function BarChartSkeleton() {
+  const [heights, setHeights] = useState<number[]>([]);
+
+  useEffect(() => {
+    // Solo generar alturas aleatorias en el cliente
+    setHeights(
+      [1, 2, 3, 4, 5, 6, 7, 8].map(() => Math.floor(Math.random() * 150) + 20)
+    );
+  }, []);
+
   return (
     <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200 animate-pulse">
       <div className="flex items-center justify-between mb-4">
@@ -15,7 +26,7 @@ export function BarChartSkeleton() {
             <div
               className="bg-gray-200 rounded-t"
               style={{
-                height: `${Math.floor(Math.random() * 150) + 20}px`,
+                height: heights[i - 1] ? `${heights[i - 1]}px` : "50px",
               }}
             ></div>
             <div className="h-4 bg-gray-200 rounded w-full mt-2"></div>
@@ -23,5 +34,5 @@ export function BarChartSkeleton() {
         ))}
       </div>
     </div>
-  )
+  );
 }

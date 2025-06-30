@@ -36,7 +36,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const [isClient, setIsClient] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const dataSchool = JSON.parse(localStorage.getItem("schoolData") || "");
+  const [dataSchool, setDataSchool] = useState<any>({});
 
   const handleBellClick = () => {
     if (notificationCount > 0) {
@@ -48,6 +48,10 @@ export function Header({ toggleSidebar }: HeaderProps) {
     setIsClient(true);
     loadUserProfile();
     loadNotifications();
+    // Acceder a localStorage solo después de verificar que estamos en el cliente
+    const schoolData =
+      typeof window !== "undefined" ? localStorage.getItem("schoolData") : null;
+    setDataSchool(schoolData ? JSON.parse(schoolData) : {});
   }, []);
 
   const loadUserProfile = async () => {
@@ -107,21 +111,18 @@ export function Header({ toggleSidebar }: HeaderProps) {
   };
 
   const handleLogout = () => {
-    if (isClient) {
+    if (typeof window !== "undefined") {
       localStorage.removeItem("isAuthenticated");
       localStorage.removeItem("selectedSchool");
       localStorage.removeItem("notificationsRead");
       localStorage.removeItem("notificationCount");
     }
-
     removeAuthToken();
-
     toast({
       title: "Sesión cerrada",
       description: "Has cerrado sesión correctamente",
       variant: "default",
     });
-
     router.push("/login");
   };
 
