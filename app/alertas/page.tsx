@@ -9,8 +9,6 @@ import Image from "next/image";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { type Alert, fetchAlerts } from "@/services/alerts-service";
 import { getSearchParam } from "@/lib/search-params";
-import { time } from "console";
-import { Input } from "@/components/ui/input";
 
 export default function AlertsPage({
   searchParams,
@@ -21,8 +19,6 @@ export default function AlertsPage({
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Estados para los filtros (solo para las columnas mostradas)
   const [typeFilter, setTypeFilter] = useState<string>("Todos");
   const [priorityFilter, setPriorityFilter] = useState<string>("Todos");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");

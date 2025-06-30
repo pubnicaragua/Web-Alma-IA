@@ -25,6 +25,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BarChartComparisonAlumno } from "@/components/bar-chart-comparison-alumno";
+import { ComparisonChart } from "@/components/comparison-chart";
 
 export default function StudentDetailPage() {
   const { id } = useParams();
@@ -49,7 +50,6 @@ export default function StudentDetailPage() {
         setError(null);
 
         const details = await fetchStudentDetails(id as string);
-        console.log("DETALLE alumno", details);
         if (details) {
           setStudentDetails(details);
         } else {
@@ -65,7 +65,6 @@ export default function StudentDetailPage() {
     loadStudentDetails();
   }, [id]);
 
-  // Función para manejar la selección de emociones
   const handleToggleEmotion = (emotion: string) => {
     if (selectedEmotions.includes(emotion)) {
       setSelectedEmotions(selectedEmotions.filter((e) => e !== emotion));
@@ -74,7 +73,6 @@ export default function StudentDetailPage() {
     }
   };
 
-  // Función para generar un nombre a partir del email
   const generateNameFromEmail = (email: string) => {
     if (!email) return "Estudiante";
 
@@ -115,7 +113,6 @@ export default function StudentDetailPage() {
     );
   }
 
-  // Extraer datos del estudiante
   const {
     alumno,
     ficha,
@@ -126,21 +123,16 @@ export default function StudentDetailPage() {
     datosComparativa,
   } = studentDetails;
 
-  // Generar nombre del estudiante (en un caso real vendría de la API)
-  // const studentName = generateNameFromEmail(alumno.email)
-  // si no existe el nomre
   const studentName =
     alumno.personas.nombres || generateNameFromEmail(alumno.email);
   const studentLastName = alumno.personas.apellidos;
 
-  // Convertir emociones al formato esperado por el componente StudentEmotions
   const comparisonData = datosComparativa.map((data) => ({
     emocion: data.emocion,
     alumno: data.alumno,
     promedio: data.promedio,
   }));
 
-  // Convertir alertas al formato esperado por el componente
   const alertsData = alertas.map((alerta) => ({
     alumno_alerta_id: alerta.alumno_alerta_id,
     fecha: formatDate(alerta.fecha_generada),
@@ -153,7 +145,7 @@ export default function StudentDetailPage() {
       " " +
       alerta?.persona_responsable_actual?.apellidos,
   }));
-  // Convertir informes al formato esperado por el componente
+
   const reportsData = informes.map((informe) => ({
     fecha: formatDate(informe.fecha),
     tipo: "Informe Mensual",
@@ -161,7 +153,6 @@ export default function StudentDetailPage() {
     url_reporte: informe.url_reporte,
     activo: informe.activo,
   }));
-  console.log("reportData", reportsData);
 
   return (
     <AppLayout>
@@ -251,9 +242,19 @@ export default function StudentDetailPage() {
                         </span>
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-sm text-gray-500">Email:</span>
+                        <span className="text-sm text-gray-500">
+                          Tipo de documento:
+                        </span>
                         <span className="text-gray-800 font-medium">
-                          {alumno.email}
+                          {alumno.personas.tipo_documento}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm text-gray-500">
+                          Numero de documento:
+                        </span>
+                        <span className="text-gray-800 font-medium">
+                          {alumno.personas.numero_documento}
                         </span>
                       </div>
                       <div className="flex flex-col">
@@ -497,7 +498,6 @@ export default function StudentDetailPage() {
                   </h3>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Primera gráfica: Emociones (reemplazada por la del menú principal) */}
                     <BarChartComparisonAlumno
                       title="Emociones"
                       selectedEmotions={selectedEmotions}
@@ -506,377 +506,7 @@ export default function StudentDetailPage() {
                       setSelectedEmotions={setSelectedEmotions}
                     />
 
-                    {/* Segunda gráfica: Comparativa (nueva versión con pentágono regular) */}
-                    <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
-                      <h4 className="text-lg font-medium mb-4">Comparativa</h4>
-
-                      <div className="flex items-center justify-end gap-4 mb-2">
-                        <div className="flex items-center">
-                          <div className="w-3 h-3 rounded-full bg-blue-500 mr-1"></div>
-                          <span className="text-sm">Alumno</span>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="w-3 h-3 rounded-full bg-gray-400 mr-1"></div>
-                          <span className="text-sm">Promedio</span>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-center mb-4">
-                        <div className="w-full max-w-md">
-                          <svg viewBox="0 0 400 400" width="100%" height="100%">
-                            {/* Círculos de fondo */}
-                            <circle
-                              cx="200"
-                              cy="200"
-                              r="120"
-                              fill="none"
-                              stroke="#e5e5e5"
-                              strokeWidth="1"
-                            />
-                            <circle
-                              cx="200"
-                              cy="200"
-                              r="90"
-                              fill="none"
-                              stroke="#e5e5e5"
-                              strokeWidth="1"
-                            />
-                            <circle
-                              cx="200"
-                              cy="200"
-                              r="60"
-                              fill="none"
-                              stroke="#e5e5e5"
-                              strokeWidth="1"
-                            />
-                            <circle
-                              cx="200"
-                              cy="200"
-                              r="30"
-                              fill="none"
-                              stroke="#e5e5e5"
-                              strokeWidth="1"
-                            />
-
-                            {/* Cálculo de coordenadas para un pentágono regular */}
-                            {/* 
-                              Usamos trigonometría para calcular las coordenadas de un pentágono regular
-                              x = cx + r * cos(ángulo)
-                              y = cy + r * sin(ángulo)
-                              donde:
-                              - cx, cy es el centro (200, 200)
-                              - r es el radio (120 para el círculo exterior)
-                              - ángulo está en radianes, comenzando desde -π/2 (arriba) y avanzando en sentido horario
-                            */}
-
-                            {/* Líneas radiales - distribuidas uniformemente en forma de pentágono */}
-                            <line
-                              x1="200"
-                              y1="200"
-                              x2="200"
-                              y2="80"
-                              stroke="#e5e5e5"
-                              strokeWidth="1"
-                            />
-                            <line
-                              x1="200"
-                              y1="200"
-                              x2="314"
-                              y2="163"
-                              stroke="#e5e5e5"
-                              strokeWidth="1"
-                            />
-                            <line
-                              x1="200"
-                              y1="200"
-                              x2="276"
-                              y2="297"
-                              stroke="#e5e5e5"
-                              strokeWidth="1"
-                            />
-                            <line
-                              x1="200"
-                              y1="200"
-                              x2="124"
-                              y2="297"
-                              stroke="#e5e5e5"
-                              strokeWidth="1"
-                            />
-                            <line
-                              x1="200"
-                              y1="200"
-                              x2="86"
-                              y2="163"
-                              stroke="#e5e5e5"
-                              strokeWidth="1"
-                            />
-
-                            {/* Etiquetas de escala */}
-                            <text
-                              x="205"
-                              y="85"
-                              textAnchor="middle"
-                              fontSize="10"
-                              fill="#888"
-                            >
-                              2.0
-                            </text>
-                            <text
-                              x="205"
-                              y="115"
-                              textAnchor="middle"
-                              fontSize="10"
-                              fill="#888"
-                            >
-                              1.5
-                            </text>
-                            <text
-                              x="205"
-                              y="145"
-                              textAnchor="middle"
-                              fontSize="10"
-                              fill="#888"
-                            >
-                              1.0
-                            </text>
-                            <text
-                              x="205"
-                              y="175"
-                              textAnchor="middle"
-                              fontSize="10"
-                              fill="#888"
-                            >
-                              0.5
-                            </text>
-
-                            {/* Polígono del promedio - pentágono regular */}
-                            <polygon
-                              points="200,128 272,163 248,257 152,257 128,163"
-                              fill="rgba(128, 128, 128, 0.2)"
-                              stroke="#888"
-                              strokeWidth="2"
-                              strokeDasharray="5,3"
-                            />
-
-                            {/* Polígono del alumno - pentágono regular */}
-                            <polygon
-                              points="200,110 290,153 260,277 140,277 110,153"
-                              fill="rgba(120, 182, 255, 0.3)"
-                              stroke="#78b6ff"
-                              strokeWidth="2"
-                            />
-
-                            {/* Puntos del alumno - pentágono regular */}
-                            <circle
-                              cx="200"
-                              cy="110"
-                              r="4"
-                              fill="white"
-                              stroke="#78b6ff"
-                              strokeWidth="2"
-                            />
-                            <circle
-                              cx="290"
-                              cy="153"
-                              r="4"
-                              fill="white"
-                              stroke="#78b6ff"
-                              strokeWidth="2"
-                            />
-                            <circle
-                              cx="260"
-                              cy="277"
-                              r="4"
-                              fill="white"
-                              stroke="#78b6ff"
-                              strokeWidth="2"
-                            />
-                            <circle
-                              cx="140"
-                              cy="277"
-                              r="4"
-                              fill="white"
-                              stroke="#78b6ff"
-                              strokeWidth="2"
-                            />
-                            <circle
-                              cx="110"
-                              cy="153"
-                              r="4"
-                              fill="white"
-                              stroke="#78b6ff"
-                              strokeWidth="2"
-                            />
-
-                            {/* Puntos del promedio - pentágono regular */}
-                            <circle
-                              cx="200"
-                              cy="128"
-                              r="4"
-                              fill="white"
-                              stroke="#888"
-                              strokeWidth="2"
-                            />
-                            <circle
-                              cx="272"
-                              cy="163"
-                              r="4"
-                              fill="white"
-                              stroke="#888"
-                              strokeWidth="2"
-                            />
-                            <circle
-                              cx="248"
-                              cy="257"
-                              r="4"
-                              fill="white"
-                              stroke="#888"
-                              strokeWidth="2"
-                            />
-                            <circle
-                              cx="152"
-                              cy="257"
-                              r="4"
-                              fill="white"
-                              stroke="#888"
-                              strokeWidth="2"
-                            />
-                            <circle
-                              cx="128"
-                              cy="163"
-                              r="4"
-                              fill="white"
-                              stroke="#888"
-                              strokeWidth="2"
-                            />
-
-                            {/* Etiquetas de emociones - pentágono regular */}
-                            <text
-                              x="200"
-                              y="60"
-                              textAnchor="middle"
-                              fontSize="12"
-                              fontWeight="bold"
-                              fill="#333"
-                            >
-                              Feliz
-                            </text>
-                            <text
-                              x="330"
-                              y="153"
-                              textAnchor="start"
-                              fontSize="12"
-                              fontWeight="bold"
-                              fill="#333"
-                            >
-                              Triste
-                            </text>
-                            <text
-                              x="276"
-                              y="317"
-                              textAnchor="middle"
-                              fontSize="12"
-                              fontWeight="bold"
-                              fill="#333"
-                            >
-                              Estresada
-                            </text>
-                            <text
-                              x="124"
-                              y="317"
-                              textAnchor="middle"
-                              fontSize="12"
-                              fontWeight="bold"
-                              fill="#333"
-                            >
-                              Enojada
-                            </text>
-                            <text
-                              x="70"
-                              y="153"
-                              textAnchor="end"
-                              fontSize="12"
-                              fontWeight="bold"
-                              fill="#333"
-                            >
-                              Ansiosa
-                            </text>
-                          </svg>
-                        </div>
-                      </div>
-
-                      {/* Tabla de comparación */}
-                      <div className="overflow-x-auto">
-                        <DataTable
-                          columns={[
-                            {
-                              key: "emocion",
-                              title: "Emoción",
-                              className: "text-left",
-                            },
-                            {
-                              key: "alumno",
-                              title: "Alumno",
-                              className: "text-center text-blue-500",
-                            },
-                            {
-                              key: "promedio",
-                              title: "Promedio",
-                              className: "text-center text-gray-500",
-                            },
-                            {
-                              key: "diferencia",
-                              title: "Dif.",
-                              className: "text-center",
-                            },
-                          ]}
-                          data={comparisonData.map((item) => ({
-                            emocion: item.emocion,
-                            alumno: item.alumno,
-                            promedio: item.promedio,
-                            diferencia: item.alumno - item.promedio,
-                          }))}
-                          renderCell={(row, column) => {
-                            if (column.key === "diferencia") {
-                              const diff = row[column.key] as number;
-                              const isPositive = diff > 0;
-                              return (
-                                <div
-                                  className={`text-center font-medium ${
-                                    isPositive
-                                      ? "text-green-500"
-                                      : "text-red-500"
-                                  }`}
-                                >
-                                  {isPositive ? "+" : ""}
-                                  {diff.toFixed(1)}
-                                </div>
-                              );
-                            }
-                            if (column.key === "alumno") {
-                              return (
-                                <div className="text-center font-medium text-blue-500">
-                                  {row[column.key]}
-                                </div>
-                              );
-                            }
-                            if (column.key === "promedio") {
-                              return (
-                                <div className="text-center text-gray-500">
-                                  {row[column.key]}
-                                </div>
-                              );
-                            }
-                            if (column.key === "emocion")
-                              return (
-                                <div className="text-center">
-                                  {row[column.key]}
-                                </div>
-                              );
-                          }}
-                        />
-                      </div>
-                    </div>
+                    <ComparisonChart comparisonData={comparisonData} />
                   </div>
                 </div>
               </TabsContent>
@@ -908,6 +538,7 @@ function formatDateMensual(dateString: string): string {
   });
   return formatted.charAt(0).toUpperCase() + formatted.slice(1);
 }
+
 function formatTime(dateString: string): string {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
