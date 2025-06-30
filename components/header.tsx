@@ -210,15 +210,15 @@ export function Header({ toggleSidebar }: HeaderProps) {
         </div>
 
         {pathname !== "/select-school" ? (
-          <form
-            onSubmit={handleSearch}
-            className="relative flex items-center justify-between w-full max-w-2xl mx-4"
-          >
-            <h2 className="text-xl font-semibold text-white whitespace-nowrap overflow-hidden text-ellipsis mr-4 min-w-[180px] max-w-[220px]">
+          <div className="flex items-center justify-between w-full max-w-2xl mx-4">
+            <h2 className="hidden md:block text-xl font-semibold text-white whitespace-nowrap overflow-hidden text-ellipsis mr-4 min-w-[180px] max-w-[220px]">
               {dataSchool.name}
             </h2>
 
-            <div className="relative flex-grow max-w-md">
+            <form
+              onSubmit={handleSearch}
+              className="relative flex-grow max-w-md"
+            >
               <button
                 type="submit"
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -239,8 +239,8 @@ export function Header({ toggleSidebar }: HeaderProps) {
                 className="w-full pl-10 border bg-white/90 rounded-md h-9 md:h-10 text-sm md:text-base"
                 disabled={isSearching}
               />
-            </div>
-          </form>
+            </form>
+          </div>
         ) : null}
 
         <div className="flex items-center space-x-4 flex-shrink-0">
