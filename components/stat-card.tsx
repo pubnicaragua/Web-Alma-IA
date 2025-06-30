@@ -1,3 +1,4 @@
+"use client";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation"; // Para App Router
 
@@ -25,10 +26,9 @@ export function StatCard({
 
   const handleClick = () => {
     if (index !== 0) {
-      router.push(`/alertas`, {
-        state: { title },
-      });
+      router.push(`/alertas`);
     }
+    localStorage.setItem("selectedTab", title);
   };
 
   return (

@@ -28,6 +28,7 @@ export default function AlertsPage({
 
   // Cargar datos solo cuando se accede a la página
   useEffect(() => {
+    selectByDefaul();
     const loadAlerts = async () => {
       try {
         setIsLoading(true);
@@ -48,6 +49,23 @@ export default function AlertsPage({
 
     loadAlerts();
   }, []);
+
+  const selectByDefaul = () => {
+    switch (localStorage.getItem("selectedTab")) {
+      case "Denuncias":
+        setTypeFilter("Denuncias");
+        break;
+      case "SOS Alma":
+        setTypeFilter("SOS Alma");
+        break;
+      case "Alertas Alma":
+        setTypeFilter("Amarilla");
+        break;
+      default:
+        setTypeFilter("Todos");
+        break;
+    }
+  };
 
   // Generar opciones para los filtros basadas en los datos
   const getUniqueValues = (key: keyof Alert): string[] => {
@@ -188,16 +206,12 @@ export default function AlertsPage({
           <div className="flex justify-start w-full">
             <Badge
               className={`whitespace-nowrap px-3 py-1 ${
-                alert.type === "SOS Alma" ||
-                alert.type === "Rendimiento Académico"
+                alert.type === "SOS Alma"
                   ? "bg-red-500"
-                  : alert.type === "Roja" ||
-                    alert.type === "Rendimiento Académico"
+                  : alert.type === "Roja"
                   ? "bg-red-500"
-                  : alert.type === "Amarilla" || alert.type === "Asistencia"
+                  : alert.type === "Amarilla"
                   ? "bg-yellow-400"
-                  : alert.type === "Naranja" || alert.type === "Comportamiento"
-                  ? "bg-orange-500"
                   : alert.type === "Denuncias"
                   ? "bg-purple-600"
                   : "bg-blue-500"

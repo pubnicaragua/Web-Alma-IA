@@ -1,29 +1,42 @@
-"use client"
-import { Check, ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { cn } from "@/lib/utils"
+"use client";
+import { Check, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface FilterDropdownProps {
-  label: string
-  options: string[]
-  value: string
-  onChange: (value: string) => void
-  className?: string
+  label: string;
+  options: string[];
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
 }
 
-export function FilterDropdown({ label, options, value, onChange, className }: FilterDropdownProps) {
+export function FilterDropdown({
+  label,
+  options,
+  value,
+  onChange,
+  className,
+}: FilterDropdownProps) {
   // Mostrar el valor seleccionado o la etiqueta si es "Todos"
-  const displayValue = value === "Todos" ? label : `${label}: ${value}`
+  const displayValue = value === "Todos" ? label : `${label}: ${value}`;
 
   return (
     <div className={cn("w-full", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full justify-between overflow-hidden"
-            aria-label={`Filtrar por ${label?.toString()?.toLowerCase() || 'filtro'}`}
+            aria-label={`Filtrar por ${
+              label?.toString()?.toLowerCase() || "filtro"
+            }`}
           >
             <span className="truncate">{displayValue}</span>
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -31,11 +44,14 @@ export function FilterDropdown({ label, options, value, onChange, className }: F
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-[200px] p-1">
           {options.map((option) => {
-            const isSelected = value === option
+            const isSelected = value === option;
             return (
               <DropdownMenuItem
                 key={option}
-                onSelect={() => onChange(option)}
+                onSelect={() => {
+                  onChange(option);
+                  localStorage.removeItem("selectedTab");
+                }}
                 className={cn(
                   "flex cursor-pointer items-center justify-between rounded-sm px-2 py-1.5 text-sm",
                   isSelected && "bg-accent font-medium"
@@ -46,10 +62,10 @@ export function FilterDropdown({ label, options, value, onChange, className }: F
                 </span>
                 {isSelected && <Check className="ml-2 h-4 w-4" />}
               </DropdownMenuItem>
-            )
+            );
           })}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  )
+  );
 }
