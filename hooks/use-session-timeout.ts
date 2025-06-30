@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { removeAuthToken } from "@/lib/api-config";
 
-const INACTIVITY_WARNING_TIME = 10000; // 10 segundos para prueba
+const INACTIVITY_WARNING_TIME = 1200000; // 10 segundos para prueba
 const INACTIVITY_LOGOUT_TIME = 15000; // 15 segundos para prueba
 
 export function useSessionTimeout() {
