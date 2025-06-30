@@ -1,7 +1,5 @@
 {
-  "build": {
-    "env": {
-      "PNPM_FLAGS": "--no-frozen-lockfile"
-    }
+  "scripts": {
+    "install": "pnpm install --no-frozen-lockfile"
   }
 }
