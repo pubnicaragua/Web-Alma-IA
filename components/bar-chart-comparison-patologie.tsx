@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -10,76 +10,87 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from "recharts"
-import { Badge } from "@/components/ui/badge"
-import { Smile, RefreshCw, AlertCircle } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { themeColors } from "@/lib/theme-colors"
-import { fetchEmotionsForGrade, fetchPatologieForGrade } from "@/services/home-service"
+} from "recharts";
+import { Badge } from "@/components/ui/badge";
+import { Smile, RefreshCw, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { themeColors } from "@/lib/theme-colors";
+import {
+  fetchEmotionsForGrade,
+  fetchPatologieForGrade,
+} from "@/services/home-service";
 
 interface EmotionData {
-  name: string // Ejemplo: "1° Medio A - Jornada Mañana"
-  [emotion: string]: string | number // Ejemplo: "Ansiedad": 3, "Felicidad": 2
+  name: string; // Ejemplo: "1° Medio A - Jornada Mañana"
+  [emotion: string]: string | number; // Ejemplo: "Ansiedad": 3, "Felicidad": 2
 }
 
 interface BarChartComparisonPatologieProps {
-  title: string
-  grado: number
+  title: string;
+  grado: number;
 }
 
-export function BarChartComparisonPatologie({ title, grado }: BarChartComparisonPatologieProps) {
-  const [data, setData] = useState<EmotionData[]>([])
-  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
+export function BarChartComparisonPatologie({
+  title,
+  grado,
+}: BarChartComparisonPatologieProps) {
+  const [data, setData] = useState<EmotionData[]>([]);
+  const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    loadData()
-  }, [grado])
+    loadData();
+  }, [grado]);
 
   const loadData = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
-      const emotionsData = await fetchPatologieForGrade(grado)
-      const allEmotions = new Set<string>()
+      setIsLoading(true);
+      setError(null);
+      const emotionsData = await fetchPatologieForGrade(grado);
+      const allEmotions = new Set<string>();
 
       // Normalizar datos y recopilar todas las patologias
       const normalizedData = emotionsData.map((item) => {
-        const { name, ...emotions } = item
-        Object.keys(emotions).forEach((emotion) => allEmotions.add(emotion))
-        return { name, ...emotions }
-      })
+        const { name, ...emotions } = item;
+        Object.keys(emotions).forEach((emotion) => allEmotions.add(emotion));
+        return { name, ...emotions };
+      });
 
       // Asegurar que cada entrada tenga todas las patologias con valor 0 si faltan
       const completeData = normalizedData.map((item) => {
-        const completeItem: EmotionData = { name: item.name }
+        const completeItem: EmotionData = { name: item.name };
         allEmotions.forEach((emotion) => {
-          completeItem[emotion] = item[emotion] ?? 0
-        })
-        return completeItem
-      })
+          completeItem[emotion] = item[emotion] ?? 0;
+        });
+        return completeItem;
+      });
 
-      setData(completeData)
-      setSelectedEmotions(Array.from(allEmotions))
+      setData(completeData);
+      setSelectedEmotions(Array.from(allEmotions));
     } catch (err) {
-      setError("No se pudieron cargar los datos de patologias. Intente nuevamente.")
+      setError(
+        "No se pudieron cargar los datos de patologias. Intente nuevamente."
+      );
       toast({
         title: "Error al cargar datos",
-        description: "No se pudieron cargar los datos de patologias. Intente nuevamente.",
+        description:
+          "No se pudieron cargar los datos de patologias. Intente nuevamente.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const toggleEmotion = (emotion: string) => {
     setSelectedEmotions((prev) =>
-      prev.includes(emotion) ? prev.filter((e) => e !== emotion) : [...prev, emotion]
-    )
-  }
+      prev.includes(emotion)
+        ? prev.filter((e) => e !== emotion)
+        : [...prev, emotion]
+    );
+  };
 
   if (isLoading) {
     return (
@@ -95,7 +106,7 @@ export function BarChartComparisonPatologie({ title, grado }: BarChartComparison
         </div>
         <div className="h-64 w-full bg-gray-100 rounded"></div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -113,7 +124,7 @@ export function BarChartComparisonPatologie({ title, grado }: BarChartComparison
           <RefreshCw className="w-4 h-4 mr-2" /> Reintentar
         </button>
       </div>
-    )
+    );
   }
 
   if (!data || data.length === 0) {
@@ -123,9 +134,11 @@ export function BarChartComparisonPatologie({ title, grado }: BarChartComparison
           <Smile className="mr-2 text-gray-700" />
           <h3 className="font-medium text-gray-800">{title}</h3>
         </div>
-        <div className="text-gray-500 text-center py-10">No hay datos de patologias disponibles.</div>
+        <div className="text-gray-500 text-center py-10">
+          No hay datos de patologias disponibles.
+        </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -146,7 +159,9 @@ export function BarChartComparisonPatologie({ title, grado }: BarChartComparison
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
             }`}
             style={{
-              backgroundColor: selectedEmotions.includes(emotion) ? getEmotionColor(emotion) : "",
+              backgroundColor: selectedEmotions.includes(emotion)
+                ? getEmotionColor(emotion)
+                : "",
               borderColor: getEmotionColor(emotion),
               color: selectedEmotions.includes(emotion) ? "white" : "",
             }}
@@ -195,19 +210,19 @@ export function BarChartComparisonPatologie({ title, grado }: BarChartComparison
         </ResponsiveContainer>
       </div>
     </div>
-  )
+  );
 }
 
 // Función auxiliar para asignar colores a las patologias
 function getEmotionColor(emotion: string): string {
   const colors: Record<string, string> = {
-  "Salud Mental": "#4DA6FF",
-  "Trastorno del Ánimo": "#6E6E6E",
-  "Trauma Complejo": "#B03A2E",
-  "Neurodivergencia": "#9B59B6",
-  "Trastorno del Sueño": "#2C3E50",
-  "Trastorno de Conducta Alimentaria": "#808000",
-  "Adicciones Conductuales": "#E67E22",
-}
-  return colors[emotion] || themeColors.chart.gray
+    "Salud Mental": "#4DA6FF",
+    "Trastorno del Ánimo": "#6E6E6E",
+    "Trauma Complejo": "#B03A2E",
+    Neurodivergencia: "#9B59B6",
+    "Trastorno del Sueño": "#2C3E50",
+    "Trastorno de Conducta Alimentaria": "#808000",
+    "Adicciones Conductuales": "#E67E22",
+  };
+  return colors[emotion] || themeColors.chart.gray;
 }

@@ -1,23 +1,36 @@
-"use client"
+"use client";
 
-import { useState, useEffect, Dispatch, SetStateAction } from "react"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
-import { Smile, RefreshCw, AlertCircle } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { fetchEmotions, fetchPatologieGeneral, type Emotion } from "@/services/home-service"
-import { useToast } from "@/hooks/use-toast"
-import { themeColors } from "@/lib/theme-colors"
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+import { Smile, RefreshCw, AlertCircle, Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  fetchEmotions,
+  fetchPatologieGeneral,
+  type Emotion,
+} from "@/services/home-service";
+import { useToast } from "@/hooks/use-toast";
+import { themeColors } from "@/lib/theme-colors";
 
 interface BarChartComparisonPatologieGeneralProps {
-  title: string
-  selectedEmotions: string[]
-  onToggleEmotion: (emotion: string) => void
-  setSelectedEmotions: Dispatch<SetStateAction<string[]>>
-  initialData?: Emotion[]
+  title: string;
+  selectedEmotions: string[];
+  onToggleEmotion: (emotion: string) => void;
+  setSelectedEmotions: Dispatch<SetStateAction<string[]>>;
+  initialData?: Emotion[];
   apiEmotions?: Array<{
-    nombre: string
-    valor: number
-  }>
+    nombre: string;
+    valor: number;
+  }>;
 }
 
 export function BarChartComparisonPatologieGeneral({
@@ -28,50 +41,52 @@ export function BarChartComparisonPatologieGeneral({
   initialData,
   apiEmotions,
 }: BarChartComparisonPatologieGeneralProps) {
-  const [data, setData] = useState<Emotion[]>(initialData || [])
-  const [isLoading, setIsLoading] = useState(!initialData && !apiEmotions)
-  const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
+  const [data, setData] = useState<Emotion[]>(initialData || []);
+  const [isLoading, setIsLoading] = useState(!initialData && !apiEmotions);
+  const [error, setError] = useState<string | null>(null);
+  const [dateFilter, setDateFilter] = useState("all");
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!initialData && !apiEmotions) {
-      loadData()
+      loadData();
     } else if (apiEmotions) {
-      // Transformar los datos de la API al formato que espera el componente
       const transformedData = apiEmotions.map((emotion) => ({
         name: emotion.nombre,
-        value: Math.round(emotion.valor / 100), // Normalizar para mejor visualización
+        value: Math.round(emotion.valor / 100),
         color: getEmotionColor(emotion.nombre),
-      }))
-      setData(transformedData)
+      }));
+      setData(transformedData);
     }
-  }, [initialData, apiEmotions])
+  }, [initialData, apiEmotions]);
 
   const loadData = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
-      const emotionsData = await fetchPatologieGeneral()
-      setSelectedEmotions(emotionsData.map((emotion) => emotion.name))
-      setData(emotionsData)
+      setIsLoading(true);
+      setError(null);
+      const emotionsData = await fetchPatologieGeneral();
+      setSelectedEmotions(emotionsData.map((emotion) => emotion.name));
+      setData(emotionsData);
     } catch (err) {
-      setError("No se pudieron cargar los datos de patologias. Intente nuevamente.")
-
-      // Mostrar notificación de error
+      setError(
+        "No se pudieron cargar los datos de patologias. Intente nuevamente."
+      );
       toast({
         title: "Error al cargar datos",
-        description: "No se pudieron cargar los datos de patologias. Intente nuevamente.",
+        description:
+          "No se pudieron cargar los datos de patologias. Intente nuevamente.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  // Filtrar los datos solo si hay datos disponibles
-  const filteredData = data && data.length > 0 ? data.filter((emotion) => selectedEmotions.includes(emotion.name)) : []
+  const filteredData =
+    data && data.length > 0
+      ? data.filter((emotion) => selectedEmotions.includes(emotion.name))
+      : [];
 
-  // Renderizar esqueleto durante la carga
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200 animate-pulse">
@@ -86,10 +101,9 @@ export function BarChartComparisonPatologieGeneral({
         </div>
         <div className="h-64 w-full bg-gray-100 rounded"></div>
       </div>
-    )
+    );
   }
 
-  // Renderizar mensaje de error
   if (error) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-red-200">
@@ -105,10 +119,9 @@ export function BarChartComparisonPatologieGeneral({
           <RefreshCw className="w-4 h-4 mr-2" /> Reintentar
         </button>
       </div>
-    )
+    );
   }
 
-  // Renderizar mensaje si no hay datos
   if (!data || data.length === 0) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
@@ -116,30 +129,54 @@ export function BarChartComparisonPatologieGeneral({
           <Smile className="mr-2 text-gray-700" />
           <h3 className="font-medium text-gray-800">{title}</h3>
         </div>
-        <div className="text-gray-500 text-center py-10">No hay datos de patologias disponibles.</div>
+        <div className="text-gray-500 text-center py-10">
+          No hay datos de patologias disponibles.
+        </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
-      <div className="flex items-center mb-4">
-        <Smile className="mr-2 text-gray-700" />
-        <h3 className="font-medium text-gray-800">{title}</h3>
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex items-center">
+          <Smile className="mr-2 text-gray-700" />
+          <h3 className="font-medium text-gray-800">{title}</h3>
+        </div>
+        <div className="relative">
+          <select
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="all">Todo el período</option>
+            <option value="today">Hoy</option>
+            <option value="week">Esta semana</option>
+            <option value="month">Este mes</option>
+            <option value="year">Este año</option>
+          </select>
+          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <Calendar className="w-4 h-4 text-gray-500" />
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
         {data.map((emotion) => (
           <Badge
             key={emotion.name}
-            variant={selectedEmotions.includes(emotion.name) ? "default" : "outline"}
+            variant={
+              selectedEmotions.includes(emotion.name) ? "default" : "outline"
+            }
             className={`cursor-pointer ${
               selectedEmotions.includes(emotion.name)
                 ? ""
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
             }`}
             style={{
-              backgroundColor: selectedEmotions.includes(emotion.name) ? emotion.color : "",
+              backgroundColor: selectedEmotions.includes(emotion.name)
+                ? emotion.color
+                : "",
               borderColor: emotion.color,
               color: selectedEmotions.includes(emotion.name) ? "white" : "",
             }}
@@ -152,18 +189,28 @@ export function BarChartComparisonPatologieGeneral({
 
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={filteredData} margin={{ top: 5, right: 5, left: 0, bottom: 20 }} maxBarSize={50}>
+          <BarChart
+            data={filteredData}
+            margin={{ top: 5, right: 5, left: 0, bottom: 20 }}
+            maxBarSize={50}
+          >
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="name"
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => (value.length > 6 ? `${value.substring(0, 6)}...` : value)}
+              tickFormatter={(value) =>
+                value.length > 6 ? `${value.substring(0, 6)}...` : value
+              }
             />
             <YAxis />
             <Tooltip
               formatter={(value) => [`${value}`, "Cantidad"]}
               labelFormatter={(name) => `${name}`}
-              contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
+              contentStyle={{
+                borderRadius: "8px",
+                border: "none",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              }}
             />
             <Bar dataKey="value" radius={[4, 4, 0, 0]}>
               {filteredData.map((entry) => (
@@ -174,10 +221,9 @@ export function BarChartComparisonPatologieGeneral({
         </ResponsiveContainer>
       </div>
     </div>
-  )
+  );
 }
 
-// Función auxiliar para asignar colores a las patologias
 function getEmotionColor(emotion: string): string {
   const colors: Record<string, string> = {
     Felicidad: themeColors.chart.yellow,
@@ -186,6 +232,6 @@ function getEmotionColor(emotion: string): string {
     Ansiedad: themeColors.chart.orange,
     Enojo: themeColors.chart.red,
     Otros: themeColors.chart.purple,
-  }
-  return colors[emotion] || themeColors.chart.gray
+  };
+  return colors[emotion] || themeColors.chart.gray;
 }

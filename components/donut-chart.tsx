@@ -1,56 +1,59 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts"
-import { AlertCircle, RefreshCw } from "lucide-react"
-import { fetchTotalAlerts, type TotalAlert } from "@/services/home-service"
-import { useToast } from "@/hooks/use-toast"
-import { DonutChartSkeleton } from "./donut-chart-skeleton"
+import { useState, useEffect } from "react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { fetchTotalAlerts, type TotalAlert } from "@/services/home-service";
+import { useToast } from "@/hooks/use-toast";
+import { DonutChartSkeleton } from "./donut-chart-skeleton";
 
 interface DonutChartProps {
-  title?: string
-  initialData?: TotalAlert[]
+  title?: string;
+  initialData?: TotalAlert[];
 }
 
-export function DonutChart({ title = "Distribución de alertas", initialData }: DonutChartProps) {
-  const [data, setData] = useState<TotalAlert[]>(initialData || [])
-  const [isLoading, setIsLoading] = useState(!initialData)
-  const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
+export function DonutChart({
+  title = "Distribución de alertas",
+  initialData,
+}: DonutChartProps) {
+  const [data, setData] = useState<TotalAlert[]>(initialData || []);
+  const [isLoading, setIsLoading] = useState(!initialData);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!initialData) {
-      loadData()
+      loadData();
     }
-  }, [initialData])
+  }, [initialData]);
 
   const loadData = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
-      const alertsData = await fetchTotalAlerts()
-      setData(alertsData)
+      setIsLoading(true);
+      setError(null);
+      const alertsData = await fetchTotalAlerts();
+      setData(alertsData);
     } catch (err) {
-      console.error("Error al cargar las alertas totales:", err)
-      setError("No se pudieron cargar los datos de alertas. Intente nuevamente.")
+      console.error("Error al cargar las alertas totales:", err);
+      setError(
+        "No se pudieron cargar los datos de alertas. Intente nuevamente."
+      );
 
-      // Mostrar notificación de error
       toast({
         title: "Error al cargar datos",
-        description: "No se pudieron cargar los datos de alertas. Intente nuevamente.",
+        description:
+          "No se pudieron cargar los datos de alertas. Intente nuevamente.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  // Renderizar esqueleto durante la carga
   if (isLoading) {
-    return <DonutChartSkeleton />
+    return <DonutChartSkeleton />;
   }
 
-  // Renderizar mensaje de error
   if (error) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-red-200">
@@ -66,10 +69,9 @@ export function DonutChart({ title = "Distribución de alertas", initialData }: 
           <RefreshCw className="w-4 h-4 mr-2" /> Reintentar
         </button>
       </div>
-    )
+    );
   }
 
-  // Renderizar mensaje si no hay datos
   if (!data || data.length === 0) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
@@ -80,55 +82,57 @@ export function DonutChart({ title = "Distribución de alertas", initialData }: 
           No hay datos de alertas disponibles.
         </div>
       </div>
-    )
+    );
   }
 
-  // Preparar datos para el gráfico
   const chartData = data.map((item) => ({
     name: item.label,
     value: item.value,
     color: item.color,
     percentage: item.percentage,
-  }))
+  }));
 
-  // Renderizar el gráfico
   return (
     <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
       <h3 className="font-medium text-gray-800 mb-4">{title}</h3>
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={80}
-              paddingAngle={5}
-              dataKey="value"
-              label={false} // Eliminar las etiquetas alrededor del gráfico
-              labelLine={false}
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-            <Legend
-              layout="vertical"
-              verticalAlign="middle"
-              align="right"
-              formatter={(value, entry, index) => {
-                const item = chartData[index]
-                return (
-                  <span className="text-sm">
-                    {item.name} ({item.percentage})
-                  </span>
-                )
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+      <div className="flex flex-col md:flex-row items-center">
+        <div className="h-48 w-full md:h-64 md:w-1/2">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+                label={false}
+                labelLine={false}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="w-full md:w-1/2 mt-4 md:mt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {chartData.map((item, index) => (
+              <div key={index} className="flex items-center">
+                <div
+                  className="w-3 h-3 rounded-full mr-2"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="text-sm">
+                  {item.name} ({item.percentage})
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
-  )
+  );
 }
