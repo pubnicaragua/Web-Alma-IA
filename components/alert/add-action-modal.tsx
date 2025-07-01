@@ -22,7 +22,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useModal } from "@/lib/modal-utils";
-import { ApiAlertPriority, ApiAlertSeverity, fetchPrority, fetchSeverity, fetchEquipoAlma } from "@/services/alerts-service";
+import {
+  ApiAlertPriority,
+  ApiAlertSeverity,
+  fetchPrority,
+  fetchSeverity,
+  fetchEquipoAlma,
+} from "@/services/alerts-service";
 import { Persona } from "@/services/teachers-service";
 
 interface AddActionModalProps {
@@ -33,10 +39,11 @@ interface AddActionModalProps {
     url_archivo?: string;
     alerta_prioridad_id: number;
     alerta_severidad_id: number;
-    responsable_id: number; 
+    responsable_id: number;
   }) => void;
   isMobile?: boolean;
 }
+
 export function AddActionModal({
   onAddAction,
   isMobile = false,
@@ -46,7 +53,7 @@ export function AddActionModal({
   const [fechaCompromiso, setFechaCompromiso] = useState("");
   const [fechaRealizacion, setFechaRealizacion] = useState("");
   const [urlArchivo, setUrlArchivo] = useState("");
-  const [responsableId, setResponsableId] = useState<number>(0); // Solo el ID
+  const [responsableId, setResponsableId] = useState<number>(0);
   const [prioridad, setPrioridad] = useState(0);
   const [severidad, setSeveridad] = useState(0);
   const [prioridades, setPrioridades] = useState<ApiAlertPriority[]>([]);
@@ -55,19 +62,16 @@ export function AddActionModal({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
-    // Simulando la carga de prioridades y severidades desde la API
     const fetchPrioridades = async () => {
       const data = await fetchPrority();
       setPrioridades(data);
     };
 
     const fetchSeveridades = async () => {
-      // Reemplazar con tu llamada real a la API
       const data = await fetchSeverity();
       setSeveridades(data);
-    };    
-    const fetchResponsables= async () => {
-      // Reemplazar con tu llamada real a la API
+    };
+    const fetchResponsables = async () => {
       const data = await fetchEquipoAlma();
       setResponsables(data);
     };
@@ -104,7 +108,6 @@ export function AddActionModal({
       return;
     }
 
-    // Enviar datos
     onAddAction({
       plan_accion: planAccion,
       fecha_compromiso: fechaCompromiso,
@@ -112,10 +115,9 @@ export function AddActionModal({
       url_archivo: urlArchivo || undefined,
       alerta_severidad_id: severidad,
       alerta_prioridad_id: prioridad,
-      responsable_id:responsableId,
+      responsable_id: responsableId,
     });
 
-    // Limpiar formulario y cerrar modal
     setPlanAccion("");
     setFechaCompromiso("");
     setFechaRealizacion("");
@@ -152,7 +154,7 @@ export function AddActionModal({
           <DialogHeader className="px-6 pt-6 pb-0">
             <div className="flex justify-between items-center w-full">
               <DialogTitle className="text-xl font-semibold">
-                Agregar nueva acción a la bitácora
+                Bitácora
               </DialogTitle>
               <DialogClose className="h-6 w-6 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
                 <X className="h-4 w-4" />
@@ -160,154 +162,159 @@ export function AddActionModal({
               </DialogClose>
             </div>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="planAccion" className="text-gray-700">
-                Plan de acción *
-              </Label>
-              <Textarea
-                id="planAccion"
-                value={planAccion}
-                onChange={(e) => setPlanAccion(e.target.value)}
-                placeholder="Describa el plan de acción a realizar"
-                required
-                className={`border-gray-300 min-h-[80px] ${
-                  errors.planAccion ? "border-red-500" : ""
-                }`}
-              />
-              {errors.planAccion && (
-                <p className="text-red-500 text-sm">{errors.planAccion}</p>
-              )}
+
+          <div className="px-6 py-4 space-y-4">
+            <div className="border-b pb-4">
+              <h3 className="font-medium">Alerta</h3>
+
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div>
+                  <Label className="text-sm text-gray-500">Responsable</Label>
+                  <Select
+                    value={responsableId.toString()}
+                    onValueChange={(value) => setResponsableId(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Seleccione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {responsables.map((p) => (
+                        <SelectItem
+                          key={p.persona_id}
+                          value={p.persona_id?.toString() || ""}
+                        >
+                          {p.nombres} {p.apellidos}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm text-gray-500">
+                    Descripción de la alerta
+                  </Label>
+                  <Input placeholder="Descripción" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-4 mt-4">
+                <div>
+                  <Label className="text-sm text-gray-500">Origen</Label>
+                  <Input value="Alumno" readOnly />
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-500">Tipo</Label>
+                  <Input value="SOS" readOnly />
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-500">Prioridad</Label>
+                  <Select
+                    value={prioridad.toString()}
+                    onValueChange={(value) => setPrioridad(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Alta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {prioridades.map((item) => (
+                        <SelectItem
+                          key={item.alerta_prioridad_id}
+                          value={item.alerta_prioridad_id.toString()}
+                        >
+                          {item.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-sm text-gray-500">Severidad</Label>
+                  <Select
+                    value={severidad.toString()}
+                    onValueChange={(value) => setSeveridad(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Alta" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {severidades.map((item) => (
+                        <SelectItem
+                          key={item.alerta_severidad_id}
+                          value={item.alerta_severidad_id.toString()}
+                        >
+                          {item.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="responsable" className="text-gray-700">
-                Responsable *
-              </Label>
-                <Select 
-                value={responsableId.toString()} 
-                onValueChange={(value) => setResponsableId(parseInt(value))}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <h3 className="font-medium">Bitácora</h3>
+
+                <div className="mt-2 space-y-4">
+                  <div>
+                    <Label className="text-sm text-gray-500">
+                      Plan de acción (texto)
+                    </Label>
+                    <Textarea
+                      value={planAccion}
+                      onChange={(e) => setPlanAccion(e.target.value)}
+                      placeholder="Describa el plan de acción"
+                      className="min-h-[80px]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm text-gray-500">
+                        Fecha compromiso
+                      </Label>
+                      <Input
+                        type="date"
+                        value={fechaCompromiso}
+                        onChange={(e) => setFechaCompromiso(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-gray-500">
+                        Fecha realización
+                      </Label>
+                      <Input
+                        type="date"
+                        value={fechaRealizacion}
+                        onChange={(e) => setFechaRealizacion(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm text-gray-500">URL archivo</Label>
+                    <Input
+                      type="text"
+                      value={urlArchivo}
+                      onChange={(e) => setUrlArchivo(e.target.value)}
+                      placeholder="URL del archivo"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      Cargar archivo no más allá de 2MB
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md"
               >
-                <SelectTrigger
-                  className={`w-full ${errors.responsable ? "border-red-500" : ""}`}
-                >
-                  <SelectValue placeholder="Seleccione responsable" />
-                </SelectTrigger>
-                <SelectContent>
-                  {responsables.map((p) => (
-                    <SelectItem 
-                      key={p.persona_id} 
-                      value={p.persona_id?.toString() || ""}
-                    >
-                      {p.nombres} {p.apellidos}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.responsable && (
-                <p className="text-red-500 text-sm">{errors.responsable}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="prioridad" className="text-gray-700">
-                  Prioridad *
-                </Label>
-                <Select value={prioridad} onValueChange={setPrioridad}>
-                  <SelectTrigger
-                    className={`w-full ${
-                      errors.prioridad ? "border-red-500" : ""
-                    }`}
-                  >
-                    <SelectValue placeholder="Seleccione prioridad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {prioridades.map((item) => (
-                      <SelectItem key={item.alerta_prioridad_id} value={item.alerta_prioridad_id.toString()}>
-                        {item.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.prioridad && (
-                  <p className="text-red-500 text-sm">{errors.prioridad}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="severidad" className="text-gray-700">
-                  Severidad *
-                </Label>
-                <Select value={severidad} onValueChange={setSeveridad}>
-                  <SelectTrigger
-                    className={`w-full ${
-                      errors.severidad ? "border-red-500" : ""
-                    }`}
-                  >
-                    <SelectValue placeholder="Seleccione severidad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {severidades.map((item) => (
-                      <SelectItem key={item.alerta_severidad_id} value={item.alerta_severidad_id.toString()}>
-                        {item.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.severidad && (
-                  <p className="text-red-500 text-sm">{errors.severidad}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="fechaCompromiso" className="text-gray-700">
-                Fecha de compromiso
-              </Label>
-              <Input
-                id="fechaCompromiso"
-                type="date"
-                value={fechaCompromiso}
-                onChange={(e) => setFechaCompromiso(e.target.value)}
-                className="border-gray-300"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="fechaRealizacion" className="text-gray-700">
-                Fecha de realización
-              </Label>
-              <Input
-                id="fechaRealizacion"
-                type="date"
-                value={fechaRealizacion}
-                onChange={(e) => setFechaRealizacion(e.target.value)}
-                className="border-gray-300"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="urlArchivo" className="text-gray-700">
-                URL del archivo
-              </Label>
-              <Input
-                id="urlArchivo"
-                type="url"
-                value={urlArchivo}
-                onChange={(e) => setUrlArchivo(e.target.value)}
-                placeholder="https://ejemplo.com/archivo.pdf"
-                className="border-gray-300"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-md"
-            >
-              Agregar acción a la bitácora
-            </Button>
-          </form>
+                Guardar
+              </Button>
+            </form>
+          </div>
         </DialogContent>
       </Dialog>
     </>

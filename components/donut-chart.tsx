@@ -118,7 +118,7 @@ export function DonutChart({
           </ResponsiveContainer>
         </div>
         <div className="w-full md:w-1/2 mt-4 md:mt-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2">
             {chartData.map((item, index) => (
               <div key={index} className="flex items-center">
                 <div

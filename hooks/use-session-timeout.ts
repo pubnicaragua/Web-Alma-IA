@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { removeAuthToken } from "@/lib/api-config";
 
-const INACTIVITY_WARNING_TIME = 1200000; // 10 segundos para prueba
-const INACTIVITY_LOGOUT_TIME = 15000; // 15 segundos para prueba
+const WARNING_AFTER = 20 * 60 * 1000; // 20 minutos (1200000 ms)
+const LOGOUT_AFTER_WARNING = 20 * 1000; // 20 segundos (20000 ms)
 
 export function useSessionTimeout() {
   const router = useRouter();
@@ -27,23 +27,24 @@ export function useSessionTimeout() {
 
   const resetTimeout = useCallback(() => {
     if (typeof window !== "undefined") {
-      console.log("Timer reiniciado por actividad del usuario");
       clearTimeout(warningTimeoutRef.current);
       clearTimeout(logoutTimeoutRef.current);
 
+      // Configurar advertencia a los 20 minutos
       warningTimeoutRef.current = setTimeout(() => {
         toast({
           title: "Sesión por expirar",
           description:
-            "Tu sesión expirará en 5 segundos. Mueve el mouse para extender.",
+            "Tu sesión expirará en 20 segundos. Realiza alguna acción para continuar.",
           variant: "destructive",
         });
-      }, INACTIVITY_WARNING_TIME);
 
-      logoutTimeoutRef.current = setTimeout(
-        handleLogout,
-        INACTIVITY_LOGOUT_TIME
-      );
+        // Configurar logout 20 segundos DESPUÉS del warning
+        logoutTimeoutRef.current = setTimeout(
+          handleLogout,
+          LOGOUT_AFTER_WARNING
+        );
+      }, WARNING_AFTER);
     }
   }, [handleLogout, toast]);
 
@@ -64,7 +65,7 @@ export function useSessionTimeout() {
         document.addEventListener(event, resetOnActivity, true);
       });
 
-      resetTimeout(); // Iniciar el timer
+      resetTimeout(); // Iniciar temporizadores
 
       return () => {
         events.forEach((event) => {
