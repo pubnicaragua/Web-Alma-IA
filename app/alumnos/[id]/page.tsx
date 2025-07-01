@@ -121,6 +121,7 @@ export default function StudentDetailPage() {
     emociones,
     apoderados,
     datosComparativa,
+    tipo_informe,
   } = studentDetails;
 
   const studentName =
@@ -148,7 +149,7 @@ export default function StudentDetailPage() {
 
   const reportsData = informes.map((informe) => ({
     fecha: formatDate(informe.fecha),
-    tipo: "Informe Mensual",
+    tipo: informe.tipo_informe,
     resumen: `${formatDateMensual(informe.fecha)}`,
     url_reporte: informe.url_reporte,
     activo: informe.activo,

@@ -2,13 +2,16 @@
 import { DataTable } from "@/components/data-table";
 import { FilterDropdown } from "@/components/filter-dropdown";
 import { AppLayout } from "@/components/layout/app-layout";
-import { Badge } from "@/components/ui/badge";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { AlertCircle, RefreshCw } from "lucide-react";
 import { type Alert, fetchAlerts } from "@/services/alerts-service";
 import { getSearchParam } from "@/lib/search-params";
+import { DatePicker } from "@/components/ui/date-picker";
+import { AlertBadge } from "@/components/alerts/alert-badge";
+import { StudentCell } from "@/components/alerts/student-cell";
+import { LoadingState } from "@/components/alerts/loading-state";
+import { ErrorState } from "@/components/alerts/error-state";
+import { NoResults } from "@/components/alerts/no-results";
 
 export default function AlertsPage({
   searchParams,
@@ -23,10 +26,10 @@ export default function AlertsPage({
   const [priorityFilter, setPriorityFilter] = useState<string>("Todos");
   const [statusFilter, setStatusFilter] = useState<string>("Todos");
   const [dateFilter, setDateFilter] = useState<string>("Todos");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [horaFilter, setHoraFilter] = useState<string>();
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Cargar datos solo cuando se accede a la página
   useEffect(() => {
     selectByDefaul();
     const loadAlerts = async () => {
@@ -67,18 +70,15 @@ export default function AlertsPage({
     }
   };
 
-  // Generar opciones para los filtros basadas en los datos
   const getUniqueValues = (key: keyof Alert): string[] => {
     const values = alerts
       .map((alert) => {
         const value = alert[key];
-        // Asegurarse de manejar valores undefined o null
         if (value === undefined || value === null) return null;
         return String(value);
       })
       .filter((value): value is string => value !== null);
 
-    // Eliminar duplicados y ordenar alfabéticamente
     const uniqueValues = Array.from(new Set(values)).sort();
     return ["Todos", ...uniqueValues];
   };
@@ -86,9 +86,15 @@ export default function AlertsPage({
   const typeOptions = getUniqueValues("type");
   const priorityOptions = getUniqueValues("priority");
   const statusOptions = getUniqueValues("status");
-  const dateOptions = ["Todos", "Hoy", "Ayer", "Esta semana", "Este mes"];
+  const dateOptions = ["Todos", "Hoy", "Hasta..."];
 
-  // Filtrar los datos según los filtros seleccionados
+  const parseAlertDate = (dateString: string): Date | null => {
+    if (!dateString) return null;
+    const [day, month, year] = dateString.split("/");
+    // Crear fecha en UTC para evitar problemas de zona horaria
+    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  };
+
   const filteredAlerts = useMemo(() => {
     setCurrentPage(1);
 
@@ -101,36 +107,27 @@ export default function AlertsPage({
 
       if (dateFilter !== "Todos" && alert.date) {
         try {
-          const today = new Date();
-          const alertDate = new Date(alert.date.split("/").reverse().join("-"));
+          const alertDate = parseAlertDate(alert.date);
+          if (!alertDate) return false;
 
-          const isToday = alertDate.toDateString() === today.toDateString();
-          const yesterday = new Date(today);
-          yesterday.setDate(today.getDate() - 1);
-          const isYesterday =
-            alertDate.toDateString() === yesterday.toDateString();
-          const startOfWeek = new Date(today);
-          startOfWeek.setDate(today.getDate() - today.getDay());
-          const endOfWeek = new Date(startOfWeek);
-          endOfWeek.setDate(startOfWeek.getDate() + 6);
-          const isThisWeek = alertDate >= startOfWeek && alertDate <= endOfWeek;
-          const isThisMonth =
-            alertDate.getMonth() === today.getMonth() &&
-            alertDate.getFullYear() === today.getFullYear();
+          const today = new Date();
+          today.setUTCHours(0, 0, 0, 0);
 
           switch (dateFilter) {
             case "Hoy":
-              if (!isToday) return false;
-              break;
-            case "Ayer":
-              if (!isYesterday) return false;
-              break;
-            case "Esta semana":
-              if (!isThisWeek) return false;
-              break;
-            case "Este mes":
-              if (!isThisMonth) return false;
-              break;
+              // Corrección para el filtro "Hoy"
+              const todayStart = new Date();
+              todayStart.setUTCHours(0, 0, 0, 0);
+              const todayEnd = new Date();
+              todayEnd.setUTCHours(23, 59, 59, 999);
+              return alertDate >= todayStart && alertDate <= todayEnd;
+
+            case "Hasta...":
+              if (!selectedDate) return false;
+              const untilDate = new Date(selectedDate);
+              untilDate.setUTCHours(23, 59, 59, 999);
+              // Comparación segura en UTC
+              return alertDate.getTime() <= untilDate.getTime();
           }
         } catch (error) {
           console.error("Error al procesar fechas:", error);
@@ -146,7 +143,6 @@ export default function AlertsPage({
       return true;
     });
 
-    // Orden descendente por fecha y hora
     return filtered.sort((a, b) => {
       const dateTimeA = new Date(
         `${a.date?.split("/").reverse().join("-")}T${a.time || "00:00"}`
@@ -162,10 +158,10 @@ export default function AlertsPage({
     priorityFilter,
     statusFilter,
     dateFilter,
+    selectedDate,
     horaFilter,
   ]);
 
-  // Columnas para la tabla
   const columns = [
     { key: "student", title: "Alumno" },
     { key: "type", title: "Tipo de Alerta" },
@@ -175,84 +171,32 @@ export default function AlertsPage({
     { key: "time", title: "Hora" },
   ];
 
-  // Función para navegar a la vista detallada de la alerta
   const handleAlertClick = (alert: Alert) => {
     router.push(`/alertas/${alert.id}`);
   };
 
-  // Renderizar celdas de la tabla
   const renderCell = (alert: Alert, column: { key: string; title: string }) => {
     switch (column.key) {
       case "student":
         return (
-          <div
-            className="flex items-center space-x-3 cursor-pointer text-center hover:text-blue-500"
-            onClick={() => handleAlertClick(alert)}
-          >
-            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
-              <Image
-                src={alert.student?.avatar || "/placeholder.svg"}
-                alt={alert.student?.name || "image"}
-                width={32}
-                height={32}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="text-center">{alert?.student?.name}</span>
-          </div>
+          <StudentCell alert={alert} onClick={() => handleAlertClick(alert)} />
         );
       case "type":
         return (
           <div className="flex justify-start w-full">
-            <Badge
-              className={`whitespace-nowrap px-3 py-1 ${
-                alert.type === "SOS Alma"
-                  ? "bg-red-500"
-                  : alert.type === "Roja"
-                  ? "bg-red-500"
-                  : alert.type === "Amarilla"
-                  ? "bg-yellow-400"
-                  : alert.type === "Denuncias"
-                  ? "bg-purple-600"
-                  : "bg-blue-500"
-              }`}
-            >
-              {alert.type}
-            </Badge>
+            <AlertBadge type="type" value={alert.type} />
           </div>
         );
       case "priority":
         return (
           <div className="flex justify-start w-full">
-            <Badge
-              variant="outline"
-              className={`whitespace-nowrap px-3 py-1 text-center ${
-                alert.priority === "Alta"
-                  ? "border-red-500 text-red-500"
-                  : alert.priority === "Media"
-                  ? "border-yellow-500 text-yellow-500"
-                  : "border-green-500 text-green-500"
-              }`}
-            >
-              {alert.priority}
-            </Badge>
+            <AlertBadge type="priority" value={alert.priority} />
           </div>
         );
       case "status":
         return (
           <div className="flex justify-start w-full">
-            <Badge
-              variant="outline"
-              className={`whitespace-nowrap px-3 py-1 text-center ${
-                alert.status === "Pendiente"
-                  ? "border-red-500 text-red-500"
-                  : alert.status === "En curso"
-                  ? "border-blue-500 text-blue-500"
-                  : "border-green-500 text-green-500"
-              }`}
-            >
-              {alert.status}
-            </Badge>
+            <AlertBadge type="status" value={alert.status} />
           </div>
         );
       case "time":
@@ -266,42 +210,23 @@ export default function AlertsPage({
     }
   };
 
-  // Renderizar mensaje de carga
   if (isLoading) {
     return (
       <AppLayout>
         <div className="container mx-auto px-2 sm:px-6 py-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Alertas</h2>
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Cargando alertas...</p>
-          </div>
+          <LoadingState />
         </div>
       </AppLayout>
     );
   }
 
-  // Renderizar mensaje de error
   if (error) {
     return (
       <AppLayout>
         <div className="container mx-auto px-2 sm:px-6 py-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Alertas</h2>
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <div className="flex items-center justify-center mb-4 text-red-500">
-              <AlertCircle className="w-8 h-8 mr-2" />
-              <h3 className="text-xl font-medium">Error</h3>
-            </div>
-            <p className="text-gray-600 text-center mb-6">{error}</p>
-            <div className="flex justify-center">
-              <button
-                onClick={() => window.location.reload()}
-                className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" /> Reintentar
-              </button>
-            </div>
-          </div>
+          <ErrorState error={error} onRetry={() => window.location.reload()} />
         </div>
       </AppLayout>
     );
@@ -312,7 +237,6 @@ export default function AlertsPage({
       <div className="container mx-auto px-2 sm:px-6 py-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Alertas</h2>
 
-        {/* Filtros */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <FilterDropdown
             label="Tipo"
@@ -332,15 +256,31 @@ export default function AlertsPage({
             value={statusFilter}
             onChange={setStatusFilter}
           />
-          <FilterDropdown
-            label="Fecha"
-            options={dateOptions}
-            value={dateFilter}
-            onChange={setDateFilter}
-          />
+          <div className="flex flex-col">
+            <FilterDropdown
+              label="Fecha"
+              options={dateOptions}
+              value={dateFilter}
+              onChange={(value) => {
+                setDateFilter(value);
+                if (value !== "Hasta...") {
+                  setSelectedDate(null);
+                }
+              }}
+            />
+            {dateFilter === "Hasta..." && (
+              <div className="mt-2">
+                <DatePicker
+                  selected={selectedDate}
+                  onChange={setSelectedDate}
+                  placeholderText="Seleccione una fecha"
+                  className="w-full p-2 border rounded-md"
+                />
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Tabla de alertas */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {filteredAlerts.length > 0 ? (
             <DataTable
@@ -353,10 +293,7 @@ export default function AlertsPage({
               className="mt-4"
             />
           ) : (
-            <div className="p-8 text-center text-gray-500">
-              No se encontraron alertas que coincidan con los filtros
-              seleccionados.
-            </div>
+            <NoResults />
           )}
         </div>
       </div>

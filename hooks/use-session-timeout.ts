@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { removeAuthToken } from "@/lib/api-config";
 
-const WARNING_AFTER = 20 * 60 * 1000; // 20 minutos (1200000 ms)
+const WARNING_AFTER = 2 * 60 * 1000; // 20 minutos (1200000 ms)
 const LOGOUT_AFTER_WARNING = 20 * 1000; // 20 segundos (20000 ms)
 
 export function useSessionTimeout() {
