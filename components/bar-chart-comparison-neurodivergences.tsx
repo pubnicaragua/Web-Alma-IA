@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -14,19 +14,18 @@ import {
 import { Smile, RefreshCw, AlertCircle, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
-  fetchPatologieGeneral,
-  fetchPatologieByDate,
+  fetchNeurodivergences,
+  fetchfetchNeurodivergencesByDate,
   type Emotion,
 } from "@/services/home-service";
 import { useToast } from "@/hooks/use-toast";
 import { themeColors } from "@/lib/theme-colors";
-import { DatePicker } from "@/components/ui/date-picker"; // Asegúrate que este componente existe
+import { DatePicker } from "@/components/ui/date-picker";
 
-interface BarChartComparisonPatologieGeneralProps {
+interface BarChartComparisonNeurodivergencesProps {
   title: string;
-  selectedEmotions: string[];
-  onToggleEmotion: (emotion: string) => void;
-  setSelectedEmotions: Dispatch<SetStateAction<string[]>>;
+  initialSelectedEmotions?: string[];
+  onEmotionsChange: (emotions: string[]) => void;
   initialData?: Emotion[];
   apiEmotions?: Array<{
     nombre: string;
@@ -34,23 +33,31 @@ interface BarChartComparisonPatologieGeneralProps {
   }>;
 }
 
-export function BarChartComparisonPatologieGeneral({
+export function BarChartComparisonNeurodivergences({
   title,
-  selectedEmotions,
-  onToggleEmotion,
-  setSelectedEmotions,
+  initialSelectedEmotions = [
+    "Tristeza",
+    "Felicidad",
+    "Estrés",
+    "Ansiedad",
+    "Enojo",
+    "Otros",
+  ],
+  onEmotionsChange,
   initialData,
   apiEmotions,
-}: BarChartComparisonPatologieGeneralProps) {
+}: BarChartComparisonNeurodivergencesProps) {
   const [data, setData] = useState<Emotion[]>(initialData || []);
   const [isLoading, setIsLoading] = useState(!initialData && !apiEmotions);
   const [error, setError] = useState<string | null>(null);
-
-  // Nuevo: seleccionador de filtro (hoy o fecha)
+  const [selectedEmotions, setSelectedEmotions] = useState<string[]>(
+    initialSelectedEmotions
+  );
   const [dateMode, setDateMode] = useState<"today" | "date">("today");
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  // Valor final del filtro a usar en la petición
+  const { toast } = useToast();
+
   const dateFilterValue =
     dateMode === "today"
       ? "today"
@@ -58,16 +65,9 @@ export function BarChartComparisonPatologieGeneral({
       ? selectedDate.toISOString().slice(0, 10)
       : "today";
 
-  const { toast } = useToast();
-
-  function formatDateToYYYYMMDD(date: Date): string {
-    const year = date.getFullYear();
-    // getMonth() devuelve de 0 a 11, por eso sumamos 1
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-
-    return `${year}/${month}/${day}`;
-  }
+  useEffect(() => {
+    setSelectedEmotions(initialSelectedEmotions);
+  }, [initialSelectedEmotions]);
 
   useEffect(() => {
     if (!initialData && !apiEmotions) {
@@ -76,17 +76,14 @@ export function BarChartComparisonPatologieGeneral({
       const transformedData = apiEmotions.map((emotion) => ({
         name: emotion.nombre,
         value: Math.round(emotion.valor / 100),
-        color: getPatologieColor(emotion.nombre),
+        color: getNeurodivergenceColor(emotion.nombre),
       }));
       setData(transformedData);
+      const apiEmotionNames = apiEmotions.map((e) => e.nombre);
+      setSelectedEmotions(apiEmotionNames);
+      if (onEmotionsChange) onEmotionsChange(apiEmotionNames);
     }
   }, [initialData, apiEmotions, selectedDate]);
-
-  useEffect(() => {
-    if (!initialData && !apiEmotions) {
-      loadData(dateFilterValue);
-    }
-  }, [dateFilterValue, selectedDate]);
 
   const loadData = async (filter: string) => {
     try {
@@ -96,23 +93,25 @@ export function BarChartComparisonPatologieGeneral({
       let emotionsData: Emotion[];
 
       if (filter === "today") {
-        emotionsData = await fetchPatologieGeneral();
+        emotionsData = await fetchNeurodivergences();
       } else {
-        emotionsData = await fetchPatologieByDate(
-          formatDateToYYYYMMDD(selectedDate)
+        emotionsData = await fetchfetchNeurodivergencesByDate(
+          formatDateToYYYYMMDD(selectedDate as Date)
         );
       }
 
-      setSelectedEmotions(emotionsData.map((emotion) => emotion.name));
+      const emotionNames = emotionsData.map((emotion) => emotion.name);
+      setSelectedEmotions(emotionNames);
+      if (onEmotionsChange) onEmotionsChange(emotionNames);
       setData(emotionsData);
     } catch (err) {
       setError(
-        "No se pudieron cargar los datos de patologías. Intente nuevamente."
+        "No se pudieron cargar los datos de neurodivergencias. Intente nuevamente."
       );
       toast({
         title: "Error al cargar datos",
         description:
-          "No se pudieron cargar los datos de patologías. Intente nuevamente.",
+          "No se pudieron cargar los datos de neurodivergencias. Intente nuevamente.",
         variant: "destructive",
       });
     } finally {
@@ -120,17 +119,34 @@ export function BarChartComparisonPatologieGeneral({
     }
   };
 
+  const handleToggleEmotion = (emotion: string) => {
+    const newEmotions = selectedEmotions.includes(emotion)
+      ? selectedEmotions.filter((e) => e !== emotion)
+      : [...selectedEmotions, emotion];
+
+    setSelectedEmotions(newEmotions);
+    if (onEmotionsChange) onEmotionsChange(newEmotions);
+  };
+
   const filteredData =
     data && data.length > 0
       ? data.filter((emotion) => selectedEmotions.includes(emotion.name))
       : [];
 
-  // UI de carga y error igual que antes...
-
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200 animate-pulse">
-        {/* ... */}
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-gray-200 rounded-full mr-2"></div>
+            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+          </div>
+          <div className="flex gap-2 items-center">
+            <div className="h-8 bg-gray-200 rounded w-24"></div>
+            <div className="h-8 bg-gray-200 rounded w-8"></div>
+          </div>
+        </div>
+        <div className="h-64 w-full bg-gray-100 rounded"></div>
       </div>
     );
   }
@@ -138,7 +154,20 @@ export function BarChartComparisonPatologieGeneral({
   if (error) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-red-200">
-        {/* ... */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <AlertCircle className="mr-2 text-red-500" />
+            <h3 className="font-medium text-gray-800">{title}</h3>
+          </div>
+          <button
+            onClick={() => loadData(dateFilterValue)}
+            className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+          >
+            <RefreshCw className="mr-1 h-4 w-4" />
+            Reintentar
+          </button>
+        </div>
+        <div className="text-red-500">{error}</div>
       </div>
     );
   }
@@ -146,7 +175,22 @@ export function BarChartComparisonPatologieGeneral({
   if (!data || data.length === 0) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
-        {/* ... */}
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex items-center">
+            <Smile className="mr-2 text-gray-700" />
+            <h3 className="font-medium text-gray-800">{title}</h3>
+          </div>
+          <button
+            onClick={() => loadData(dateFilterValue)}
+            className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+          >
+            <RefreshCw className="mr-1 h-4 w-4" />
+            Recargar
+          </button>
+        </div>
+        <div className="text-gray-500 text-center py-8">
+          No hay datos disponibles
+        </div>
       </div>
     );
   }
@@ -201,7 +245,7 @@ export function BarChartComparisonPatologieGeneral({
               borderColor: emotion.color,
               color: selectedEmotions.includes(emotion.name) ? "white" : "",
             }}
-            onClick={() => onToggleEmotion(emotion.name)}
+            onClick={() => handleToggleEmotion(emotion.name)}
           >
             {emotion.name}
           </Badge>
@@ -245,7 +289,14 @@ export function BarChartComparisonPatologieGeneral({
   );
 }
 
-function getPatologieColor(emotion: string): string {
+function formatDateToYYYYMMDD(date: Date): string {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}/${month}/${day}`;
+}
+
+function getNeurodivergenceColor(emotion: string): string {
   const colors: Record<string, string> = {
     Felicidad: themeColors.chart.yellow,
     Tristeza: themeColors.chart.blue,

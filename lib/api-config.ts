@@ -252,10 +252,13 @@ export const fetchApi = async (
   endpoint: string,
   options: RequestInit = {}
 ): Promise<Response> => {
+  const token = getAuthToken();
+
   const method = options.method || "GET";
 
   const headers = {
     "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
 

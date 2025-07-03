@@ -265,7 +265,7 @@ export default function AlertDetailPage({
 
             <Card className="mb-6">
               <CardHeader className="flex justify-end w-full space-y-0 pb-2">
-                <Button
+                {/* <Button
                   variant="outline"
                   size="sm"
                   className="w-fit"
@@ -273,7 +273,7 @@ export default function AlertDetailPage({
                 >
                   <Edit className="h-4 w-4" />
                   Editar
-                </Button>
+                </Button> */}
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>

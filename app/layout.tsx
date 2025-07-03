@@ -1,15 +1,15 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { ThemeColorsProvider } from "@/lib/theme-colors"
-import { Toaster } from "@/components/ui/toaster"
-import { AuthProvider } from "@/components/auth-provider"
-import { SessionTimeout } from "@/components/session-timeout"
-import { UserProvider } from "@/lib/user-context"
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeColorsProvider } from "@/lib/theme-colors";
+import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/components/auth-provider";
+import { SessionTimeout } from "@/components/session-timeout";
+import { UserProvider } from "@/lib/user-context";
+import ClientWrapper from "@/components/ClientWrapper";
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Alma IA",
@@ -18,23 +18,23 @@ export const metadata: Metadata = {
     icon: "/favicon.png",
     apple: "/favicon.png",
   },
-    generator: 'v0.dev'
-}
+  generator: "v0.dev",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="es" suppressHydrationWarning={true}>
-
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light">
           <ThemeColorsProvider>
             <AuthProvider>
               <UserProvider>
-                {children}
+                {/* ClientWrapper manejará el splash screen */}
+                <ClientWrapper>{children}</ClientWrapper>
                 <Toaster />
                 <SessionTimeout />
               </UserProvider>
@@ -43,5 +43,5 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }

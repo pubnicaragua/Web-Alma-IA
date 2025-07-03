@@ -13,9 +13,14 @@ import {
 } from "recharts";
 import { Smile, RefreshCw, AlertCircle, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { fetchEmotions, type Emotion } from "@/services/home-service";
+import {
+  fetchEmotions,
+  fetchEmotionsByDate,
+  type Emotion,
+} from "@/services/home-service";
 import { useToast } from "@/hooks/use-toast";
 import { themeColors } from "@/lib/theme-colors";
+import { DatePicker } from "@/components/ui/date-picker"; // Asegúrate que este componente esté disponible
 
 interface BarChartComparisonProps {
   title: string;
@@ -40,36 +45,68 @@ export function BarChartComparison({
   const [data, setData] = useState<Emotion[]>(initialData || []);
   const [isLoading, setIsLoading] = useState(!initialData && !apiEmotions);
   const [error, setError] = useState<string | null>(null);
-  const [dateFilter, setDateFilter] = useState<string>("all");
+
+  // Estado para controlar modo de filtro: "today" o "date"
+  const [dateMode, setDateMode] = useState<"today" | "date">("today");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  // Valor final del filtro para usar en peticiones (formato YYYY/MM/DD)
+  const dateFilterValue =
+    dateMode === "today"
+      ? "today"
+      : selectedDate
+      ? formatDateToYYYYMMDD(selectedDate)
+      : "today";
+
   const { toast } = useToast();
 
   useEffect(() => {
     if (!initialData && !apiEmotions) {
-      loadData();
+      loadData(dateFilterValue);
     } else if (apiEmotions) {
-      // Transformar los datos de la API al formato que espera el componente
       const transformedData = apiEmotions.map((emotion) => ({
         name: emotion.nombre,
-        value: Math.round(emotion.valor / 100), // Normalizar para mejor visualización
+        value: Math.round(emotion.valor / 100),
         color: getEmotionColor(emotion.nombre),
       }));
       setData(transformedData);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, apiEmotions]);
 
-  const loadData = async () => {
+  useEffect(() => {
+    if (!initialData && !apiEmotions) {
+      loadData(dateFilterValue);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateFilterValue]);
+
+  const loadData = async (filter: string) => {
+    console.log(filter);
     try {
       setIsLoading(true);
       setError(null);
-      const emotionsData = await fetchEmotions();
+
+      let emotionsData: Emotion[];
+
+      if (filter === "today") {
+        emotionsData = await fetchEmotions();
+      } else {
+        emotionsData = await fetchEmotionsByDate(filter);
+      }
+
       setSelectedEmotions(emotionsData.map((emotion) => emotion.name));
-      setData(emotionsData);
+      setData(
+        emotionsData.map((emotion) => ({
+          ...emotion,
+          color: getEmotionColor(emotion.name),
+        }))
+      );
     } catch (err) {
       setError(
         "No se pudieron cargar los datos de emociones. Intente nuevamente."
       );
 
-      // Mostrar notificación de error
       toast({
         title: "Error al cargar datos",
         description:
@@ -81,13 +118,11 @@ export function BarChartComparison({
     }
   };
 
-  // Filtrar los datos solo si hay datos disponibles
   const filteredData =
     data && data.length > 0
       ? data.filter((emotion) => selectedEmotions.includes(emotion.name))
       : [];
 
-  // Renderizar esqueleto durante la carga
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200 animate-pulse">
@@ -105,7 +140,6 @@ export function BarChartComparison({
     );
   }
 
-  // Renderizar mensaje de error
   if (error) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-red-200">
@@ -115,7 +149,7 @@ export function BarChartComparison({
         </div>
         <div className="text-red-500 mb-4">{error}</div>
         <button
-          onClick={loadData}
+          onClick={() => loadData(dateFilterValue)}
           className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
         >
           <RefreshCw className="w-4 h-4 mr-2" /> Reintentar
@@ -124,7 +158,6 @@ export function BarChartComparison({
     );
   }
 
-  // Renderizar mensaje si no hay datos
   if (!data || data.length === 0) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
@@ -144,21 +177,27 @@ export function BarChartComparison({
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center">
           <Smile className="mr-2 text-gray-700" />
-          <h3 className="font-medium text-gray-800">{title}s</h3>
+          <h3 className="font-medium text-gray-800">{title}</h3>
         </div>
-        <div className="relative">
+        <div className="flex gap-2 items-center">
           <select
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
+            value={dateMode}
+            onChange={(e) => setDateMode(e.target.value as "today" | "date")}
             className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="all">Todo el período</option>
-            <option value="today">Hoy</option>
-            <option value="week">Esta semana</option>
-            <option value="month">Este mes</option>
-            <option value="year">Este año</option>
+            <option value="today">Hasta hoy</option>
+            <option value="date">Elegir fecha</option>
           </select>
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
+          {dateMode === "date" && (
+            <DatePicker
+              selected={selectedDate}
+              onChange={setSelectedDate}
+              maxDate={new Date()}
+              placeholderText="Seleccione una fecha"
+              className="w-full p-2 border rounded-md"
+            />
+          )}
+          <div className="pointer-events-none ml-2">
             <Calendar className="w-4 h-4 text-gray-500" />
           </div>
         </div>
@@ -227,7 +266,14 @@ export function BarChartComparison({
   );
 }
 
-// Función auxiliar para asignar colores a las emociones
+// Función para formatear fecha a YYYY/MM/DD
+function formatDateToYYYYMMDD(date: Date): string {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}/${month}/${day}`;
+}
+
 function getEmotionColor(emotion: string): string {
   const colors: Record<string, string> = {
     Felicidad: themeColors.chart.yellow,

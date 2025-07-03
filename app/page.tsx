@@ -18,6 +18,7 @@ import { type CardData, fetchCardData } from "@/services/home-service";
 import { useToast } from "@/hooks/use-toast";
 import { getSchoolById } from "@/services/school-service";
 import { BarChartComparisonPatologieGeneral } from "@/components/bar-chart-comparison-patologie-general";
+import { BarChartComparisonNeurodivergences } from "@/components/bar-chart-comparison-neurodivergences";
 
 export default function Home() {
   const router = useRouter();
@@ -38,6 +39,14 @@ export default function Home() {
     "Enojo",
     "Otros",
   ]);
+  const [selectedEmotionsneuro, setSelectedEmotionsneuro] = useState<string[]>([
+    "Tristeza",
+    "Felicidad",
+    "Estrés",
+    "Ansiedad",
+    "Enojo",
+    "Otros",
+  ]);
 
   // Funciones para manejar la selección de emociones
   const handleToggleEmotionGeneral = (emotion: string) => {
@@ -47,6 +56,16 @@ export default function Home() {
       );
     } else {
       setSelectedEmotionsGeneral([...selectedEmotionsGeneral, emotion]);
+    }
+  };
+
+  const handleToggleEmotionNeuro = (emotion: string) => {
+    if (selectedEmotions.includes(emotion)) {
+      setSelectedEmotionsneuro(
+        selectedEmotionsneuro.filter((e) => e !== emotion)
+      );
+    } else {
+      setSelectedEmotionsneuro([...selectedEmotionsneuro, emotion]);
     }
   };
 
@@ -292,10 +311,16 @@ export default function Home() {
             onToggleEmotion={handleToggleEmotion}
             setSelectedEmotions={setSelectedEmotions}
           />
-          <DonutChart />
+          <BarChartComparisonNeurodivergences
+            title="Neurodivergencias"
+            initialSelectedEmotions={selectedEmotions}
+            onEmotionsChange={handleToggleEmotionNeuro}
+            setSelectedEmotions={setSelectedEmotions}
+          />
         </div>
+        <DonutChart />
         {/* Fechas importantes y alertas recientes */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
           <ImportantDates title="Fechas importantes" />
           <RecentAlerts />
         </div>

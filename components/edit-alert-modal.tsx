@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,12 +16,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AlertPage } from "@/services/alerts-service";
+import { useState } from "react";
+import { updateAlert } from "@/services/alerts-service";
 
 interface EditAlertModalProps {
   isOpen: boolean;
   onClose: () => void;
   alert: AlertPage | null;
-  onSave: (data: any) => Promise<void>;
+  onSave?: (data: any) => Promise<void>;
 }
 
 export function EditAlertModal({
@@ -32,33 +32,80 @@ export function EditAlertModal({
   alert,
   onSave,
 }: EditAlertModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    prioridad_id: alert?.prioridad_id.toString() || "1",
+    severidad_id: alert?.severidad_id.toString() || "1",
+    tipo_id: alert?.tipo.toString() || "1",
+    accion_tomada: alert?.description || "",
+    fecha_resolucion: "",
+  });
+
   if (!alert) return null;
+
+  function formatAlertDateTime(dateStr: string, timeStr: string): string {
+    const [day, month, year] = dateStr.split("-");
+    let [time, period] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":");
+
+    if (period === "p." && hours !== "12") {
+      hours = String(Number(hours) + 12);
+    } else if (period === "a." && hours === "12") {
+      hours = "00";
+    }
+
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(
+      2,
+      "0"
+    )}T${hours.padStart(2, "0")}:${minutes}`;
+  }
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+    setIsSubmitting(true);
+    setError(null);
 
-    await onSave({
-      accion_tomada: (formData.get("accion_tomada") as string) || null,
-      fecha_resolucion: (formData.get("fecha_resolucion") as string) || null,
-      alertas_prioridades: {
-        alerta_prioridad_id:
-          parseInt(formData.get("prioridad_id") as string) || 1,
-      },
-      alertas_severidades: {
-        alerta_severidad_id:
-          parseInt(formData.get("severidad_id") as string) || 1,
-      },
-      alertas_tipos: {
-        alerta_tipo_id: parseInt(formData.get("tipo_id") as string) || 1,
-      },
-      alertas_reglas: {
-        alerta_regla_id: parseInt(formData.get("regla_id") as string) || 1,
-        descripcion: (formData.get("regla_descripcion") as string) || "",
-        tipo_emocion: (formData.get("regla_emocion") as string) || "",
-        umbral: (formData.get("regla_umbral") as string) || "",
-      },
-    });
+    try {
+      const updateData = {
+        alumno_alerta_id: alert.id,
+        alumno_id: alert.student.alumno_id,
+        prioridad_id: parseInt(formData.prioridad_id) || 1,
+        severidad_id: parseInt(formData.severidad_id) || 1,
+        responsable_actual_id: 1,
+        accion_tomada: formData.accion_tomada || null,
+      };
+
+      const updatedAlert = await updateAlert(updateData);
+
+      if (onSave) {
+        await onSave(updatedAlert);
+      }
+
+      onClose();
+    } catch (err) {
+      console.error("Error al actualizar la alerta:", err);
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -74,7 +121,10 @@ export function EditAlertModal({
               <Input
                 type="datetime-local"
                 name="fecha_generada"
-                defaultValue={alert.fecha_generada?.split(".")[0] || ""}
+                defaultValue={formatAlertDateTime(
+                  alert.generationDate,
+                  alert.generationTime
+                )}
                 disabled
               />
             </div>
@@ -83,7 +133,8 @@ export function EditAlertModal({
               <Input
                 type="datetime-local"
                 name="fecha_resolucion"
-                defaultValue={alert.fecha_resolucion?.split(".")[0] || ""}
+                value={formData.fecha_resolucion}
+                onChange={handleChange}
               />
             </div>
           </div>
@@ -93,9 +144,9 @@ export function EditAlertModal({
               <Label>Prioridad</Label>
               <Select
                 name="prioridad_id"
-                defaultValue={
-                  alert.alertas_prioridades?.alerta_prioridad_id.toString() ||
-                  "1"
+                value={formData.prioridad_id}
+                onValueChange={(value) =>
+                  handleSelectChange("prioridad_id", value)
                 }
               >
                 <SelectTrigger>
@@ -112,9 +163,9 @@ export function EditAlertModal({
               <Label>Severidad</Label>
               <Select
                 name="severidad_id"
-                defaultValue={
-                  alert.alertas_severidades?.alerta_severidad_id.toString() ||
-                  "1"
+                value={formData.severidad_id}
+                onValueChange={(value) =>
+                  handleSelectChange("severidad_id", value)
                 }
               >
                 <SelectTrigger>
@@ -131,20 +182,27 @@ export function EditAlertModal({
               <Label>Tipo</Label>
               <Select
                 name="tipo_id"
-                defaultValue={
-                  alert.alertas_tipos?.alerta_tipo_id.toString() || "1"
-                }
+                value={formData.tipo_id}
+                onValueChange={(value) => handleSelectChange("tipo_id", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">SOS Alma</SelectItem>
-                  <SelectItem value="2">Alerta Emocional</SelectItem>
-                  <SelectItem value="5">Roja</SelectItem>
+                  <SelectItem value="SOS Alma">SOS Alma</SelectItem>
+                  <SelectItem value="Denuncias">Denuncia</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Acción tomada</Label>
+            <Textarea
+              name="accion_tomada"
+              value={formData.accion_tomada}
+              onChange={handleChange}
+            />
           </div>
 
           <div className="space-y-2 h-40">
@@ -152,7 +210,8 @@ export function EditAlertModal({
             <Textarea
               className="flex h-full"
               name="regla_descripcion"
-              defaultValue={alert.alertas_reglas?.descripcion || ""}
+              defaultValue={alert.description || ""}
+              disabled
             />
           </div>
 
@@ -160,7 +219,9 @@ export function EditAlertModal({
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit">Guardar Cambios</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Guardando..." : "Guardar Cambios"}
+            </Button>
           </div>
         </form>
       </DialogContent>

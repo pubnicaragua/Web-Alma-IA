@@ -4,7 +4,11 @@ import { FilterDropdown } from "@/components/filter-dropdown";
 import { AppLayout } from "@/components/layout/app-layout";
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { type Alert, fetchAlerts } from "@/services/alerts-service";
+import {
+  type Alert,
+  fetchAlerts,
+  getPowerUsers,
+} from "@/services/alerts-service";
 import { getSearchParam } from "@/lib/search-params";
 import { DatePicker } from "@/components/ui/date-picker";
 import { AlertBadge } from "@/components/alerts/alert-badge";
@@ -37,6 +41,8 @@ export default function AlertsPage({
         setIsLoading(true);
         setError(null);
         let data = await fetchAlerts();
+        let powerUsers = await getPowerUsers();
+        localStorage.setItem("powerUsers", JSON.stringify(powerUsers));
         const params = getSearchParam(searchParams, "notifications");
         if (params) {
           data = data.filter((alert) => alert.status === "Pendiente");
