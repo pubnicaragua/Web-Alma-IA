@@ -850,10 +850,8 @@ export async function updateAlert(
           estado: alertData.estado,
           accion_tomada: alertData.accion_tomada,
           // fecha_resolucion: alertData.fecha_resolucion || null,
-          actualizado_por: 1,
-          alertas_tipos: {
-            alerta_tipo_id: alertData.tipo_id ? parseInt(alertData.tipo_id) : 1,
-          },
+          actualizado_por: alertData.responsable_actual_id,
+
           alertas_prioridades: {
             alerta_prioridad_id: alertData.prioridad_id,
           },

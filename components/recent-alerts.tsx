@@ -119,7 +119,9 @@ export function RecentAlerts() {
                           alert.alumnos?.personas?.nombres || "Estudiante"
                         }`}
                         fill
-                        className="object-cover"
+                        className={`object-cover ${
+                          alert.anonimo ? "blur-xl" : null
+                        }`}
                       />
                     </div>
                   )}

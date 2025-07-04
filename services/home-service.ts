@@ -8,6 +8,7 @@ export interface Student {
 // Actualizada para coincidir con la estructura de la API
 export interface RecentAlert {
   alumno_alerta_id: number;
+  anonimo: boolean;
   alumno_id: number;
   fecha_generada: string;
   estado: string;
@@ -242,85 +243,6 @@ export const FALLBACK_IMPORTANT_DATES: ImportantDate[] = [
     fecha_creacion: "2025-05-12T17:36:28.764228",
     fecha_actualizacion: "2025-05-12T17:36:28.764228",
     activo: true,
-  },
-];
-
-// Datos de ejemplo para alertas recientes
-export const FALLBACK_RECENT_ALERTS: RecentAlert[] = [
-  {
-    alumno_alerta_id: 16,
-    alumno_id: 7,
-    fecha_generada: "2025-05-12T20:13:12.302209",
-    estado: "pendiente",
-    alumnos: {
-      personas: {
-        nombres: "Carlos",
-        apellidos: "Muñoz",
-      },
-      url_foto_perfil: "https://example.com/foto.jpg",
-    },
-    alertas_tipos: {
-      nombre: "SOS ALMA",
-    },
-    alertas_severidades: {
-      nombre: "Media",
-    },
-    alertas_prioridades: {
-      nombre: "Alta",
-    },
-    alertas_origenes: {
-      nombre: "Denuncia",
-    },
-  },
-  {
-    alumno_alerta_id: 14,
-    alumno_id: 7,
-    fecha_generada: "2025-05-11T20:13:12.302209",
-    estado: "pendiente",
-    alumnos: {
-      personas: {
-        nombres: "Carlos",
-        apellidos: "Muñoz",
-      },
-      url_foto_perfil: "https://example.com/foto.jpg",
-    },
-    alertas_tipos: {
-      nombre: "",
-    },
-    alertas_severidades: {
-      nombre: "Baja",
-    },
-    alertas_prioridades: {
-      nombre: "Media",
-    },
-    alertas_origenes: {
-      nombre: "SOS",
-    },
-  },
-  {
-    alumno_alerta_id: 15,
-    alumno_id: 7,
-    fecha_generada: "2025-05-10T20:13:12.302209",
-    estado: "pendiente",
-    alumnos: {
-      personas: {
-        nombres: "Carlos",
-        apellidos: "Muñoz",
-      },
-      url_foto_perfil: "https://example.com/foto.jpg",
-    },
-    alertas_tipos: {
-      nombre: "SOS ALMA",
-    },
-    alertas_severidades: {
-      nombre: "Media",
-    },
-    alertas_prioridades: {
-      nombre: "Media",
-    },
-    alertas_origenes: {
-      nombre: "SOS",
-    },
   },
 ];
 
