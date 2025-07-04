@@ -25,22 +25,16 @@ import {
   ApiAlertSeverity,
   fetchPrority,
   fetchSeverity,
-  fetchEquipoAlma,
+  fetchStates,
   updateAlertAndBitacora,
 } from "@/services/alerts-service";
-import { Persona } from "@/services/teachers-service";
+import { AlertPage } from "@/services/alerts-service";
 
 interface AddActionModalProps {
   onAddAction: () => void;
   isMobile?: boolean;
   users?: Array<{ usuario_id: number; nombre_social: string }>;
-  alertData: {
-    alumno_alerta_id: number;
-    alumno_id: number;
-    alerta_regla_id: number;
-    estado: string;
-    tipo_id?: string;
-  };
+  alertData: AlertPage;
 }
 
 interface PowerUser {
@@ -54,6 +48,16 @@ interface PowerUser {
   };
 }
 
+interface AlertState {
+  alerta_estado_id: number;
+  nombre_alerta_estado: string;
+  creado_por: number;
+  fecha_creacion: string;
+  actualizado_por: number;
+  fecha_actualizacion: string;
+  activo: boolean;
+}
+
 export function AddActionModal({
   onAddAction,
   isMobile = false,
@@ -61,19 +65,20 @@ export function AddActionModal({
   alertData,
 }: AddActionModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false);
-  const [alertDescription, setAlertDescription] = useState("");
   const [planAccion, setPlanAccion] = useState("");
   const [fechaCompromiso, setFechaCompromiso] = useState("");
   const [fechaRealizacion, setFechaRealizacion] = useState("");
   const [urlArchivo, setUrlArchivo] = useState("");
   const [responsableName, setResponsableName] = useState("");
-  const [prioridad, setPrioridad] = useState(0);
-  const [severidad, setSeveridad] = useState(0);
+  const [prioridad, setPrioridad] = useState(alertData.prioridad_id);
+  const [severidad, setSeveridad] = useState(alertData.severidad_id);
   const [prioridades, setPrioridades] = useState<ApiAlertPriority[]>([]);
   const [severidades, setSeveridades] = useState<ApiAlertSeverity[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [powerUsers, setPowerUsers] = useState<PowerUser[]>([]);
+  const [alertStates, setAlertStates] = useState<AlertState[]>([]);
+  const [selectedEstado, setSelectedEstado] = useState<number>(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,6 +96,10 @@ export function AddActionModal({
 
         setPrioridades(prioridadesData);
         setSeveridades(severidadesData);
+
+        const loadstates: AlertState[] = await fetchStates();
+
+        setAlertStates(loadstates);
       } catch (error) {
         console.error("Error al cargar datos:", error);
       }
@@ -98,6 +107,14 @@ export function AddActionModal({
 
     fetchData();
   }, []);
+
+  // Función para validar URL con expresión regular básica
+  const isValidUrl = (url: string) => {
+    // Permite http, https, ftp y localhost con puertos y paths
+    const urlRegex =
+      /^(https?:\/\/|ftp:\/\/|localhost)([\w\-]+(\.[\w\-]+)+)(:\d+)?(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i;
+    return urlRegex.test(url);
+  };
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -113,6 +130,16 @@ export function AddActionModal({
     }
     if (!severidad) {
       newErrors.severidad = "La severidad es obligatoria";
+    }
+    if (!selectedEstado) {
+      newErrors.estado = "El estado es obligatorio";
+    }
+
+    // Validar urlArchivo solo si tiene valor
+    if (urlArchivo.trim()) {
+      if (!isValidUrl(urlArchivo.trim())) {
+        newErrors.urlArchivo = "Debe ingresar una URL válida";
+      }
     }
 
     setErrors(newErrors);
@@ -130,8 +157,8 @@ export function AddActionModal({
 
     try {
       const bitacoraData = {
-        alumno_alerta_id: alertData.alumno_alerta_id,
-        alumno_id: alertData.alumno_id,
+        alumno_alerta_id: alertData.id,
+        alumno_id: alertData.student.alumno_id,
         plan_accion: planAccion,
         fecha_compromiso: fechaCompromiso,
         fecha_realizacion: fechaRealizacion || undefined,
@@ -140,17 +167,17 @@ export function AddActionModal({
 
       const alertUpdateData = {
         ...alertData,
+        alumno_alerta_id: alertData.student.alumno_id,
         prioridad_id: prioridad,
         severidad_id: severidad,
         responsable_actual_id: responsableName,
-        accion_tomada: alertDescription,
-        estado: "EN_PROCESO", // O el estado que corresponda
+        estado_id: selectedEstado,
+        estado: selectedEstado, // Ajustar según necesidad
       };
-
+      console.log("XXXXX" + JSON.stringify(alertData));
       await updateAlertAndBitacora(alertUpdateData, bitacoraData);
 
       // Resetear el formulario
-      setAlertDescription("");
       setPlanAccion("");
       setFechaCompromiso("");
       setFechaRealizacion("");
@@ -158,13 +185,13 @@ export function AddActionModal({
       setResponsableName("");
       setPrioridad(0);
       setSeveridad(0);
+      setSelectedEstado(0);
       setErrors({});
 
-      onAddAction(); // Notificar que se completó la acción
+      onAddAction();
       onClose();
     } catch (error) {
       console.error("Error al guardar los datos:", error);
-      // Aquí podrías mostrar un mensaje de error al usuario
     } finally {
       setIsLoading(false);
     }
@@ -208,7 +235,7 @@ export function AddActionModal({
             <div className="border-b pb-4">
               <h3 className="font-medium">Alerta</h3>
 
-              <div className="grid grid-cols-2 gap-4 mt-2">
+              <div className="grid grid-cols-3 gap-4 mt-2">
                 <div>
                   <Label className="text-sm text-gray-500">Responsable</Label>
                   <Select
@@ -231,7 +258,7 @@ export function AddActionModal({
                       {powerUsers.map((user) => (
                         <SelectItem
                           key={user.usuario_id}
-                          value={user.persona_id.toString()} // O user.usuario_id según lo que necesite la API
+                          value={user.persona_id.toString()}
                         >
                           {user.nombre_social} ({user.personas.nombres}{" "}
                           {user.personas.apellidos})
@@ -245,22 +272,51 @@ export function AddActionModal({
                     </p>
                   )}
                 </div>
+
+                <div>
+                  <Label className="text-sm text-gray-500">Estado</Label>
+                  <Select
+                    value={selectedEstado.toString()}
+                    onValueChange={(value) =>
+                      setSelectedEstado(parseInt(value))
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Seleccione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {alertStates.map((estado) => (
+                        <SelectItem
+                          key={estado.alerta_estado_id}
+                          value={estado.alerta_estado_id.toString()}
+                        >
+                          {estado.nombre_alerta_estado}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.estado && (
+                    <p className="text-red-500 text-xs mt-1">{errors.estado}</p>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-4 gap-4 mt-4">
                 <div>
                   <Label className="text-sm text-gray-500">Origen</Label>
-                  <Input value="Alumno" readOnly />
+                  <Input value={alertData.origen} readOnly disabled />
                 </div>
                 <div>
                   <Label className="text-sm text-gray-500">Tipo</Label>
-                  <Input value="SOS" readOnly />
+                  <Input value={alertData.tipo} readOnly disabled />
                 </div>
                 <div>
                   <Label className="text-sm text-gray-500">Prioridad</Label>
                   <Select
                     value={prioridad.toString()}
-                    onValueChange={(value) => setPrioridad(parseInt(value))}
+                    onValueChange={(value) => {
+                      setPrioridad(parseInt(value));
+                    }}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Seleccione" />
@@ -310,19 +366,20 @@ export function AddActionModal({
                 </div>
               </div>
             </div>
+
             <div>
-              <Label className="text-sm text-gray-500">
+              <Label
+                className="text-sm text-gray-500"
+                onClick={() => console.log(alertData)}
+              >
                 Descripción de la alerta
               </Label>
               <Textarea
-                value={alertDescription}
-                onChange={(e) => setAlertDescription(e.target.value)}
+                value={alertData.description}
                 placeholder="Descripción"
                 className="min-h-[120px]"
+                disabled
               />
-              {errors.planAccion && (
-                <p className="text-red-500 text-xs mt-1">{errors.planAccion}</p>
-              )}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -381,6 +438,11 @@ export function AddActionModal({
                     <p className="text-xs text-gray-400 mt-1">
                       Cargar archivo no más allá de 2MB
                     </p>
+                    {errors.urlArchivo && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.urlArchivo}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

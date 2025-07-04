@@ -154,10 +154,10 @@ const getSelectedSchoolId = (): string | null => {
   return null;
 };
 
-// Helper function to make authenticated API requests
 export const fetchWithAuth = async (
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  addSchoolId: boolean = true // nuevo parámetro para controlar si se agrega colegio_id
 ): Promise<Response> => {
   const token = getAuthToken();
   const method = options.method || "GET";
@@ -168,16 +168,15 @@ export const fetchWithAuth = async (
     ...options.headers,
   };
 
-  // Procesar el endpoint y agregar colegio_id si es necesario
   let processedEndpoint = endpoint;
 
-  // Solo agregar colegio_id para ciertos endpoints
-  const shouldAddSchoolId =
+  // Solo agregar colegio_id si addSchoolId es true y se cumplen las condiciones originales
+  if (
+    addSchoolId &&
     !endpoint.endsWith("/colegios") &&
     !endpoint.includes("/preguntas") &&
-    !endpoint.includes("/colegios/usuarios_colegios");
-
-  if (shouldAddSchoolId) {
+    !endpoint.includes("/colegios/usuarios_colegios")
+  ) {
     const selectedSchool = getSelectedSchoolId();
     if (selectedSchool) {
       const separator = endpoint.includes("?") ? "&" : "?";
@@ -185,7 +184,6 @@ export const fetchWithAuth = async (
     }
   }
 
-  // Asegurar que el endpoint comience con /
   const normalizedEndpoint = processedEndpoint.startsWith("/")
     ? processedEndpoint
     : `/${processedEndpoint}`;
@@ -201,15 +199,12 @@ export const fetchWithAuth = async (
       headers,
     });
 
-    // Si recibimos un 401 Unauthorized, podría ser que el token expiró
     if (response.status === 401) {
       console.error("Error de autenticación: Token inválido o expirado");
       throw new ApiError("Token inválido o expirado", 401);
     }
 
-    // Si la respuesta no es exitosa, lanzar un error con detalles
     if (!response.ok) {
-      // Intentar leer el cuerpo de la respuesta para obtener más detalles
       let errorDetails = `${response.status} ${response.statusText}`;
       try {
         const errorBody = await response.text();
@@ -237,12 +232,10 @@ export const fetchWithAuth = async (
   } catch (error) {
     console.error("API request error:", error);
 
-    // Si es un ApiError, lo propagamos
     if (error instanceof ApiError) {
       throw error;
     }
 
-    // Si es otro tipo de error, lo envolvemos en un ApiError
     throw new ApiError(`Error de red: ${error}`, 0);
   }
 };

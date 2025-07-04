@@ -8,6 +8,7 @@ import {
   type Alert,
   fetchAlerts,
   getPowerUsers,
+  fetchStates, // <-- Importar la función para obtener estados
 } from "@/services/alerts-service";
 import { getSearchParam } from "@/lib/search-params";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -34,19 +35,36 @@ export default function AlertsPage({
   const [horaFilter, setHoraFilter] = useState<string>();
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Nuevo estado para almacenar los estados de alerta desde la BD
+  const [alertStates, setAlertStates] = useState<
+    { alerta_estado_id: number; nombre_alerta_estado: string }[]
+  >([]);
+
   useEffect(() => {
     selectByDefaul();
-    const loadAlerts = async () => {
+
+    const loadAlertsAndStates = async () => {
       try {
         setIsLoading(true);
         setError(null);
+
+        // Cargar alertas
         let data = await fetchAlerts();
+
+        // Cargar power users
         let powerUsers = await getPowerUsers();
         localStorage.setItem("powerUsers", JSON.stringify(powerUsers));
+
+        // Cargar estados desde la base de datos
+        const statesData = await fetchStates();
+        setAlertStates(statesData);
+
+        // Filtrar por notificaciones si aplica
         const params = getSearchParam(searchParams, "notifications");
         if (params) {
           data = data.filter((alert) => alert.status === "Pendiente");
         }
+
         setAlerts(data);
       } catch (err) {
         console.error("Error al cargar alertas:", err);
@@ -56,7 +74,7 @@ export default function AlertsPage({
       }
     };
 
-    loadAlerts();
+    loadAlertsAndStates();
   }, []);
 
   const selectByDefaul = () => {
@@ -91,7 +109,11 @@ export default function AlertsPage({
 
   const typeOptions = getUniqueValues("type");
   const priorityOptions = getUniqueValues("priority");
-  const statusOptions = getUniqueValues("status");
+  // Cambiamos statusOptions para que venga de alertStates con el nombre de estado
+  const statusOptions = [
+    "Todos",
+    ...alertStates.map((s) => s.nombre_alerta_estado),
+  ];
   const dateOptions = ["Todos", "Hoy", "Hasta..."];
 
   const parseAlertDate = (dateString: string): Date | null => {

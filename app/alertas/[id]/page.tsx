@@ -10,17 +10,13 @@ import { useToast } from "@/hooks/use-toast";
 import {
   AlertPage,
   changeLeida,
-  createAccionAlert,
-  CreateAccionAlertParams,
   fetchAlertById,
   createAlertBitacora,
-  fetchAlertDetail,
   fetchAlertBitacoras,
   type AlumnoAlertaBitacora,
   type BitacoraResponse,
-  type AlertDetailResponse,
 } from "@/services/alerts-service";
-import { ArrowLeft, Edit, Lock } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -64,7 +60,6 @@ export default function AlertDetailPage({
         if (hasSearchParam(searchParams, "notifications")) {
           try {
             await changeLeida(id);
-            console.log("change leida bien");
           } catch (error) {
             console.log("Error al marcar alerta como leida", error);
           }
@@ -72,7 +67,6 @@ export default function AlertDetailPage({
         setAlert(data);
         await loadAlertBitacoras(id);
       } catch (err) {
-        console.error("Error al cargar alertas:", err);
         setError(
           (err as Error).message || "error en la petición intente más tarde"
         );
@@ -87,8 +81,7 @@ export default function AlertDetailPage({
     try {
       const bitacorasData = await fetchAlertBitacoras(alertaId);
       setBitacoras(bitacorasData);
-    } catch (error) {
-      console.error("Error al cargar bitácoras:", error);
+    } catch {
       setBitacoras([]);
     }
   };
@@ -109,9 +102,7 @@ export default function AlertDetailPage({
     try {
       await loadAlert(alert.id);
       setIsEditModalOpen(false);
-    } catch (error) {
-      console.error("Error updating alert:", error);
-    }
+    } catch {}
   };
 
   const handleGoBack = () => {
@@ -152,8 +143,7 @@ export default function AlertDetailPage({
         description: "Acción agregada a la bitácora correctamente",
         variant: "default",
       });
-    } catch (error) {
-      console.error("Error al agregar acción:", error);
+    } catch {
       toast({
         title: "Error",
         description: "No se pudo agregar la acción a la bitácora",
@@ -164,28 +154,19 @@ export default function AlertDetailPage({
     }
   };
 
-  const formatBitacorasForTable = (bitacoras: BitacoraResponse[]): Action[] => {
-    return bitacoras.map((bitacora) => {
-      const fecha = new Date(bitacora.fecha_compromiso);
-      const fechaFormateada = fecha.toLocaleDateString("es-ES");
-      const horaFormateada = fecha.toLocaleTimeString("es-ES", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-ES");
+  };
 
-      return {
-        fecha: fechaFormateada,
-        hora: horaFormateada,
-        accionRealizada: bitacora.plan_accion,
-        fechaCompromiso: bitacora.fecha_compromiso
-          ? new Date(bitacora.fecha_compromiso).toLocaleDateString("es-ES")
-          : "-",
-        plan_accion: bitacora.plan_accion,
-        fecha_compromiso: bitacora.fecha_compromiso,
-        fecha_realizacion: bitacora.fecha_realizacion || "",
-        url_archivo: bitacora.url_archivo || "",
-      };
+  const formatTime = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleTimeString("es-ES", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -208,11 +189,6 @@ export default function AlertDetailPage({
       </AppLayout>
     );
   }
-
-  const actionsToShow =
-    bitacoras.length > 0
-      ? formatBitacorasForTable(bitacoras)
-      : alert?.actions || [];
 
   return (
     <>
@@ -264,17 +240,7 @@ export default function AlertDetailPage({
             </Card>
 
             <Card className="mb-6">
-              <CardHeader className="flex justify-end w-full space-y-0 pb-2">
-                {/* <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-fit"
-                  onClick={handleEditClick}
-                >
-                  <Edit className="h-4 w-4" />
-                  Editar
-                </Button> */}
-              </CardHeader>
+              <CardHeader className="flex justify-end w-full space-y-0 pb-2"></CardHeader>
               <CardContent className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-3">
@@ -349,6 +315,7 @@ export default function AlertDetailPage({
                 <AddActionModal
                   onAddAction={handleAddAction}
                   isMobile={isMobile}
+                  alertData={alert}
                 />
               </CardHeader>
               <CardContent>
@@ -357,7 +324,7 @@ export default function AlertDetailPage({
                     <thead>
                       <tr className="bg-blue-300">
                         <th className="px-4 py-3 text-left font-medium text-white">
-                          Fecha
+                          Fecha Realización
                         </th>
                         <th className="px-4 py-3 text-left font-medium text-white">
                           Hora
@@ -371,34 +338,61 @@ export default function AlertDetailPage({
                         <th className="px-4 py-3 text-left font-medium text-white">
                           Fecha de Compromiso
                         </th>
+                        <th className="px-4 py-3 text-left font-medium text-white">
+                          Estado Seguimiento
+                        </th>
+                        <th className="px-4 py-3 text-left font-medium text-white">
+                          Archivo
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {actionsToShow.length > 0 ? (
-                        actionsToShow.map((action, index) => (
+                      {bitacoras.length > 0 ? (
+                        bitacoras.map((bitacora) => (
                           <tr
-                            key={index}
+                            key={bitacora.alumno_alerta_bitacora_id}
                             className="border-b border-gray-100 hover:bg-gray-50"
                           >
                             <td className="px-4 py-3 text-sm">
-                              {action.fecha}
-                            </td>
-                            <td className="px-4 py-3 text-sm">{action.hora}</td>
-                            <td className="px-4 py-3 text-sm">
-                              {action.usuarioResponsable}
+                              {formatDate(bitacora.fecha_realizacion) !== "-"
+                                ? formatDate(bitacora.fecha_realizacion)
+                                : formatDate(bitacora.fecha_compromiso)}
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              {action.accionRealizada}
+                              {formatTime(bitacora.fecha_realizacion)}
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              {action.fechaCompromiso}
+                              {bitacora.observaciones || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              {bitacora.plan_accion}
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              {formatDate(bitacora.fecha_compromiso)}
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              {bitacora.estado_seguimiento}
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              {bitacora.url_archivo ? (
+                                <a
+                                  href={bitacora.url_archivo}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  Ver archivo
+                                </a>
+                              ) : (
+                                "-"
+                              )}
                             </td>
                           </tr>
                         ))
                       ) : (
                         <tr>
                           <td
-                            colSpan={5}
+                            colSpan={7}
                             className="px-4 py-6 text-center text-gray-500"
                           >
                             No hay acciones registradas para esta alerta

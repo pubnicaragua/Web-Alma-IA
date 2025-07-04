@@ -39,6 +39,16 @@ export interface ApiAlertPriority {
   alerta_prioridad_id: number;
 }
 
+interface AlertState {
+  alerta_estado_id: number;
+  nombre_alerta_estado: string;
+  creado_por: number;
+  fecha_creacion: string;
+  actualizado_por: number;
+  fecha_actualizacion: string;
+  activo: boolean;
+}
+
 interface ApiAlertType {
   nombre: string;
   alerta_tipo_id: number;
@@ -394,9 +404,6 @@ export async function fetchTotalAlertsHistoricoChartLine(): Promise<
 export interface CreateAccionAlertParams {
   alumno_alerta_id: number;
   alumno_id: number;
-  alerta_prioridad_id: number;
-  alerta_severidad_id: number;
-  responsable_id: number;
   plan_accion: string;
   fecha_compromiso: string;
   fecha_realizacion: string;
@@ -410,23 +417,24 @@ export interface CreateAccionAlertParams {
  */
 export const createAccionAlert = async (data: CreateAccionAlertParams) => {
   try {
-    const response = await fetchWithAuth("/alumnos/alertas_bitacoras", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        alumno_alerta_id: data.alumno_alerta_id,
-        alumno_id: data.alumno_id,
-        alerta_severidad_id: data.alerta_severidad_id,
-        alerta_prioridad_id: data.alerta_prioridad_id,
-        responsable_id: data.responsable_id,
-        plan_accion: data.plan_accion,
-        fecha_compromiso: data.fecha_compromiso,
-        fecha_realizacion: data.fecha_realizacion,
-        url_archivo: data.url_archivo || "",
-      }),
-    });
+    const response = await fetch(
+      "https://api-almaia.onrender.com/api/v1/alumnos/alertas_bitacoras",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+        body: JSON.stringify({
+          alumno_alerta_id: data.alumno_alerta_id,
+          alumno_id: data.alumno_id,
+          plan_accion: data.plan_accion,
+          fecha_compromiso: data.fecha_compromiso,
+          fecha_realizacion: data.fecha_realizacion,
+          url_archivo: data.url_archivo || "",
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -602,7 +610,7 @@ export async function fetchAlertBitacoras(
     endpoint += `?alumno_alerta_id=${alertaId}`;
   }
 
-  const response = await fetchWithAuth(endpoint, {
+  const response = await fetchApi(endpoint, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -743,6 +751,32 @@ export async function fetchPrority(): Promise<ApiAlertPriority[]> {
     throw error; // Propagar el error para que se maneje en el componente
   }
 }
+export async function fetchStates(): Promise<AlertState[]> {
+  try {
+    const response = await fetchApi("/alertas/alertas_estado", {
+      method: "GET",
+    });
+    // Si la respuesta no es exitosa, lanzar un error
+    if (!response.ok) {
+      // Intentar leer el mensaje de error
+      const errorText = await response.text();
+      throw new Error(
+        `Error al obtener alumnos: ${response.status} - ${errorText}`
+      );
+    }
+
+    // Intentar parsear la respuesta como JSON
+    const apiStudents = await response.json();
+
+    // Transformar los datos de la API a nuestro modelo de Student
+    console.log("Estudiantes transformados:", apiStudents);
+    return apiStudents;
+  } catch (error) {
+    console.error("Error al obtener estudiantes:", error);
+    throw error; // Propagar el error para que se maneje en el componente
+  }
+}
+
 export async function fetchEquipoAlma(): Promise<Persona[]> {
   try {
     console.log("Obteniendo lista de grados desde la API...");
@@ -773,6 +807,7 @@ export async function fetchEquipoAlma(): Promise<Persona[]> {
 }
 
 export interface UpdateAlertParams {
+  id: number;
   alumno_alerta_id: number;
   alumno_id: number;
   alerta_regla_id: number;
@@ -797,8 +832,8 @@ export async function updateAlert(
   alertData: UpdateAlertParams
 ): Promise<ApiAlert> {
   try {
-    const response = await fetchApi(
-      `/alumnos/alertas/${alertData.alumno_alerta_id}`,
+    const response = await fetch(
+      "https://api-almaia.onrender.com/api/v1/alumnos/alertas/" + alertData.id,
       {
         method: "PUT",
         headers: {
@@ -906,7 +941,7 @@ export async function updateAlertAndBitacora(
     // Ejecutar ambas actualizaciones en paralelo
     const [alertResponse, bitacoraResponse] = await Promise.all([
       updateAlert(alertData),
-      updateBitacora(bitacoraData),
+      createAccionAlert(bitacoraData),
     ]);
 
     return [alertResponse, bitacoraResponse];

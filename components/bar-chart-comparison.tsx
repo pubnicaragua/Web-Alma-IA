@@ -21,6 +21,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { themeColors } from "@/lib/theme-colors";
 import { DatePicker } from "@/components/ui/date-picker"; // Asegúrate que este componente esté disponible
+import { Console } from "console";
 
 interface BarChartComparisonProps {
   title: string;
@@ -47,8 +48,8 @@ export function BarChartComparison({
   const [error, setError] = useState<string | null>(null);
 
   // Estado para controlar modo de filtro: "today" o "date"
-  const [dateMode, setDateMode] = useState<"today" | "date">("today");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [dateMode, setDateMode] = useState<"today" | "date">("date");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
   // Valor final del filtro para usar en peticiones (formato YYYY/MM/DD)
   const dateFilterValue =
@@ -180,14 +181,17 @@ export function BarChartComparison({
           <h3 className="font-medium text-gray-800">{title}</h3>
         </div>
         <div className="flex gap-2 items-center">
-          <select
+          {/* <select
             value={dateMode}
             onChange={(e) => setDateMode(e.target.value as "today" | "date")}
             className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="today">Hasta hoy</option>
             <option value="date">Elegir fecha</option>
-          </select>
+          </select> */}
+          <label className="text-right text-gray-700" htmlFor="">
+            Seleccione la fecha:
+          </label>
           {dateMode === "date" && (
             <DatePicker
               selected={selectedDate}
@@ -197,9 +201,9 @@ export function BarChartComparison({
               className="w-full p-2 border rounded-md"
             />
           )}
-          <div className="pointer-events-none ml-2">
+          {/* <div className="pointer-events-none ml-2">
             <Calendar className="w-4 h-4 text-gray-500" />
-          </div>
+          </div> */}
         </div>
       </div>
 

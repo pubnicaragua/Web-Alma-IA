@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { Smile, RefreshCw, AlertCircle, Calendar } from "lucide-react";
+import { Smile } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   fetchPatologieGeneral,
@@ -20,37 +20,38 @@ import {
 } from "@/services/home-service";
 import { useToast } from "@/hooks/use-toast";
 import { themeColors } from "@/lib/theme-colors";
-import { DatePicker } from "@/components/ui/date-picker"; // Asegúrate que este componente existe
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface BarChartComparisonPatologieGeneralProps {
   title: string;
-  selectedEmotions: string[];
-  onToggleEmotion: (emotion: string) => void;
-  setSelectedEmotions: Dispatch<SetStateAction<string[]>>;
+  onEmotionsLoaded?: (emotions: string[]) => void;
   initialData?: Emotion[];
-  apiEmotions?: Array<{
-    nombre: string;
-    valor: number;
-  }>;
+  apiEmotions?: Array<{ nombre: string; valor: number }>;
 }
 
 export function BarChartComparisonPatologieGeneral({
   title,
-  selectedEmotions,
-  onToggleEmotion,
-  setSelectedEmotions,
+  onEmotionsLoaded,
   initialData,
   apiEmotions,
 }: BarChartComparisonPatologieGeneralProps) {
+  // Inicializar selectedEmotions con datos disponibles para evitar parpadeo
+  const initialNames = initialData
+    ? initialData.map((e) => e.name)
+    : apiEmotions
+    ? apiEmotions.map((e) => e.nombre)
+    : [];
+
   const [data, setData] = useState<Emotion[]>(initialData || []);
+  const [selectedEmotions, setSelectedEmotions] =
+    useState<string[]>(initialNames);
   const [isLoading, setIsLoading] = useState(!initialData && !apiEmotions);
   const [error, setError] = useState<string | null>(null);
+  const [dateMode, setDateMode] = useState<"today" | "date">("date");
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
-  // Nuevo: seleccionador de filtro (hoy o fecha)
-  const [dateMode, setDateMode] = useState<"today" | "date">("today");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const { toast } = useToast();
 
-  // Valor final del filtro a usar en la petición
   const dateFilterValue =
     dateMode === "today"
       ? "today"
@@ -58,14 +59,10 @@ export function BarChartComparisonPatologieGeneral({
       ? selectedDate.toISOString().slice(0, 10)
       : "today";
 
-  const { toast } = useToast();
-
   function formatDateToYYYYMMDD(date: Date): string {
     const year = date.getFullYear();
-    // getMonth() devuelve de 0 a 11, por eso sumamos 1
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const day = date.getDate().toString().padStart(2, "0");
-
     return `${year}/${month}/${day}`;
   }
 
@@ -79,6 +76,16 @@ export function BarChartComparisonPatologieGeneral({
         color: getPatologieColor(emotion.nombre),
       }));
       setData(transformedData);
+
+      const names = transformedData.map((e) => e.name);
+      // Solo actualizar si cambian para evitar render extra
+      if (
+        names.length !== selectedEmotions.length ||
+        !names.every((name) => selectedEmotions.includes(name))
+      ) {
+        setSelectedEmotions(names);
+        if (onEmotionsLoaded) onEmotionsLoaded(names);
+      }
     }
   }, [initialData, apiEmotions, selectedDate]);
 
@@ -99,12 +106,20 @@ export function BarChartComparisonPatologieGeneral({
         emotionsData = await fetchPatologieGeneral();
       } else {
         emotionsData = await fetchPatologieByDate(
-          formatDateToYYYYMMDD(selectedDate)
+          formatDateToYYYYMMDD(selectedDate!)
         );
       }
 
-      setSelectedEmotions(emotionsData.map((emotion) => emotion.name));
       setData(emotionsData);
+
+      const names = emotionsData.map((e) => e.name);
+      if (
+        names.length !== selectedEmotions.length ||
+        !names.every((name) => selectedEmotions.includes(name))
+      ) {
+        setSelectedEmotions(names);
+        if (onEmotionsLoaded) onEmotionsLoaded(names);
+      }
     } catch (err) {
       setError(
         "No se pudieron cargar los datos de patologías. Intente nuevamente."
@@ -120,17 +135,23 @@ export function BarChartComparisonPatologieGeneral({
     }
   };
 
+  const handleToggleEmotion = (emotion: string) => {
+    const newEmotions = selectedEmotions.includes(emotion)
+      ? selectedEmotions.filter((e) => e !== emotion)
+      : [...selectedEmotions, emotion];
+    setSelectedEmotions(newEmotions);
+    if (onEmotionsLoaded) onEmotionsLoaded(newEmotions);
+  };
+
   const filteredData =
     data && data.length > 0
       ? data.filter((emotion) => selectedEmotions.includes(emotion.name))
       : [];
 
-  // UI de carga y error igual que antes...
-
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200 animate-pulse">
-        {/* ... */}
+        Cargando datos...
       </div>
     );
   }
@@ -138,7 +159,7 @@ export function BarChartComparisonPatologieGeneral({
   if (error) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-red-200">
-        {/* ... */}
+        <p className="text-red-600">{error}</p>
       </div>
     );
   }
@@ -146,7 +167,7 @@ export function BarChartComparisonPatologieGeneral({
   if (!data || data.length === 0) {
     return (
       <div className="bg-white rounded-lg p-3 sm:p-6 shadow-sm border border-blue-200">
-        {/* ... */}
+        No hay datos disponibles
       </div>
     );
   }
@@ -159,14 +180,9 @@ export function BarChartComparisonPatologieGeneral({
           <h3 className="font-medium text-gray-800">{title}</h3>
         </div>
         <div className="flex gap-2 items-center">
-          <select
-            value={dateMode}
-            onChange={(e) => setDateMode(e.target.value as "today" | "date")}
-            className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="today">Hasta hoy</option>
-            <option value="date">Elegir fecha</option>
-          </select>
+          <label className="text-right text-gray-700" htmlFor="">
+            Seleccione la fecha:
+          </label>
           {dateMode === "date" && (
             <DatePicker
               selected={selectedDate}
@@ -176,9 +192,6 @@ export function BarChartComparisonPatologieGeneral({
               className="w-full p-2 border rounded-md"
             />
           )}
-          <div className="pointer-events-none ml-2">
-            <Calendar className="w-4 h-4 text-gray-500" />
-          </div>
         </div>
       </div>
 
@@ -201,7 +214,7 @@ export function BarChartComparisonPatologieGeneral({
               borderColor: emotion.color,
               color: selectedEmotions.includes(emotion.name) ? "white" : "",
             }}
-            onClick={() => onToggleEmotion(emotion.name)}
+            onClick={() => handleToggleEmotion(emotion.name)}
           >
             {emotion.name}
           </Badge>
