@@ -127,9 +127,11 @@ export function RecentAlerts() {
                   )}
                   <div className="min-w-0 cursor-pointer">
                     <h4 className="text-sm font-medium truncate">
-                      {alert.alumnos?.personas
-                        ? `${alert.alumnos.personas.nombres} ${alert.alumnos.personas.apellidos}`
-                        : "Estudiante"}
+                      {!alert.anonimo
+                        ? alert.alumnos?.personas
+                          ? `${alert.alumnos.personas.nombres} ${alert.alumnos.personas.apellidos}`
+                          : "Estudiante"
+                        : "Anonimo"}
                     </h4>
                     <p className="text-xs text-gray-500 truncate">
                       {alert.alertas_tipos?.nombre || "Alerta"}

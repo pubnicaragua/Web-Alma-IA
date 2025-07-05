@@ -29,12 +29,11 @@ import {
   updateAlertAndBitacora,
 } from "@/services/alerts-service";
 import { AlertPage } from "@/services/alerts-service";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddActionModalProps {
-  onAddAction: () => void;
-  isMobile?: boolean;
-  users?: Array<{ usuario_id: number; nombre_social: string }>;
   alertData: AlertPage;
+  setRefresh: () => void;
 }
 
 interface PowerUser {
@@ -58,12 +57,7 @@ interface AlertState {
   activo: boolean;
 }
 
-export function AddActionModal({
-  onAddAction,
-  isMobile = false,
-  users = [],
-  alertData,
-}: AddActionModalProps) {
+export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false);
   const [planAccion, setPlanAccion] = useState("");
   const [fechaCompromiso, setFechaCompromiso] = useState("");
@@ -78,7 +72,8 @@ export function AddActionModal({
   const [isLoading, setIsLoading] = useState(false);
   const [powerUsers, setPowerUsers] = useState<PowerUser[]>([]);
   const [alertStates, setAlertStates] = useState<AlertState[]>([]);
-  const [selectedEstado, setSelectedEstado] = useState<number>(1);
+  const [selectedEstado, setSelectedEstado] = useState<string>("");
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -172,28 +167,24 @@ export function AddActionModal({
         severidad_id: severidad,
         responsable_actual_id: responsableName,
         estado_id: selectedEstado,
-        estado: selectedEstado, // Ajustar según necesidad
+        estado: selectedEstado,
       };
-      console.log("XXXXX" + JSON.stringify(alertData));
       await updateAlertAndBitacora(alertUpdateData, bitacoraData);
-
-      // Resetear el formulario
-      setPlanAccion("");
-      setFechaCompromiso("");
-      setFechaRealizacion("");
-      setUrlArchivo("");
-      setResponsableName("");
-      setPrioridad(0);
-      setSeveridad(0);
-      setSelectedEstado(0);
-      setErrors({});
-
-      onAddAction();
-      onClose();
+      toast({
+        title: "Éxito",
+        description: "Acción agregada a la bitácora correctamente",
+        variant: "default",
+      });
+      setRefresh();
     } catch (error) {
-      console.error("Error al guardar los datos:", error);
+      toast({
+        title: "Error",
+        description: "Error al agregar la bitácora",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
+      onClose();
     }
   };
 
@@ -210,11 +201,10 @@ export function AddActionModal({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={isMobile ? "" : "mr-2"}
         >
           <path d="M12 5v14M5 12h14" />
         </svg>
-        {!isMobile && <span>Agregar nueva acción</span>}
+        <span>Agregar nueva acción</span>
       </Button>
 
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -246,15 +236,6 @@ export function AddActionModal({
                       <SelectValue placeholder="Seleccione" />
                     </SelectTrigger>
                     <SelectContent>
-                      {users.map((user) => (
-                        <SelectItem
-                          key={user.usuario_id}
-                          value={user.usuario_id.toString()}
-                        >
-                          {user.nombre_social}
-                        </SelectItem>
-                      ))}
-
                       {powerUsers.map((user) => (
                         <SelectItem
                           key={user.usuario_id}
@@ -276,10 +257,8 @@ export function AddActionModal({
                 <div>
                   <Label className="text-sm text-gray-500">Estado</Label>
                   <Select
-                    value={selectedEstado.toString()}
-                    onValueChange={(value) =>
-                      setSelectedEstado(parseInt(value))
-                    }
+                    value={selectedEstado}
+                    onValueChange={(value) => setSelectedEstado(value)}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Seleccione" />
@@ -288,13 +267,14 @@ export function AddActionModal({
                       {alertStates.map((estado) => (
                         <SelectItem
                           key={estado.alerta_estado_id}
-                          value={estado.alerta_estado_id.toString()}
+                          value={estado.nombre_alerta_estado} // Aquí pasas el string literal
                         >
                           {estado.nombre_alerta_estado}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+
                   {errors.estado && (
                     <p className="text-red-500 text-xs mt-1">{errors.estado}</p>
                   )}

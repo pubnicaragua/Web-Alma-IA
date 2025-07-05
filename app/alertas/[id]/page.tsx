@@ -11,9 +11,7 @@ import {
   AlertPage,
   changeLeida,
   fetchAlertById,
-  createAlertBitacora,
   fetchAlertBitacoras,
-  type AlumnoAlertaBitacora,
   type BitacoraResponse,
 } from "@/services/alerts-service";
 import { ArrowLeft, Lock } from "lucide-react";
@@ -48,7 +46,7 @@ export default function AlertDetailPage({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const isMobile = useIsMobile();
+  const [refresh, setRefresh] = useState(false);
 
   const loadAlert = useCallback(
     async (id: number) => {
@@ -90,7 +88,7 @@ export default function AlertDetailPage({
     if (id) {
       loadAlert(Number(id));
     }
-  }, [id, loadAlert]);
+  }, [id, loadAlert, refresh]);
 
   const handleEditClick = () => {
     setIsEditModalOpen(true);
@@ -107,51 +105,6 @@ export default function AlertDetailPage({
 
   const handleGoBack = () => {
     router.back();
-  };
-
-  const handleAddAction = async (newAction: {
-    plan_accion: string;
-    fecha_compromiso: string;
-    fecha_realizacion?: string;
-    url_archivo?: string;
-    alerta_severidad_id: number;
-    alerta_prioridad_id: number;
-    responsable_id: number;
-  }) => {
-    if (!alert) return;
-
-    try {
-      setIsLoading(true);
-
-      const bitacoraData: AlumnoAlertaBitacora = {
-        alumno_alerta_id: Number(id),
-        alumno_id: alert.student?.alumno_id || 0,
-        plan_accion: newAction.plan_accion,
-        fecha_compromiso: newAction.fecha_compromiso || undefined,
-        fecha_realizacion: newAction.fecha_realizacion || undefined,
-        url_archivo: newAction.url_archivo || undefined,
-        alerta_prioridad_id: newAction.alerta_prioridad_id,
-        alerta_severidad_id: newAction.alerta_severidad_id,
-        responsable_id: newAction.responsable_id,
-      };
-
-      await createAlertBitacora(bitacoraData);
-      await loadAlertBitacoras(Number(id));
-
-      toast({
-        title: "Éxito",
-        description: "Acción agregada a la bitácora correctamente",
-        variant: "default",
-      });
-    } catch {
-      toast({
-        title: "Error",
-        description: "No se pudo agregar la acción a la bitácora",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const formatDate = (dateString: string | null | undefined) => {
@@ -313,9 +266,8 @@ export default function AlertDetailPage({
               <CardHeader className="pb-2 flex flex-row items-center justify-between">
                 <CardTitle className="text-xl">Bitácora de acciones</CardTitle>
                 <AddActionModal
-                  onAddAction={handleAddAction}
-                  isMobile={isMobile}
                   alertData={alert}
+                  setRefresh={() => setRefresh(!refresh)}
                 />
               </CardHeader>
               <CardContent>

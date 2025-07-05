@@ -577,30 +577,6 @@ export interface AlertDetailResponse {
   };
 }
 
-// Crear nueva bitácora
-export async function createAlertBitacora(
-  bitacoraData: AlumnoAlertaBitacora
-): Promise<BitacoraResponse> {
-  console.log(bitacoraData);
-
-  const response = await fetchWithAuth("/alumnos/alertas_bitacoras", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(bitacoraData),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Error al crear bitácora: ${response.status} - ${errorText}`
-    );
-  }
-
-  return await response.json();
-}
-
 // Obtener bitácoras de una alerta
 export async function fetchAlertBitacoras(
   alertaId?: number
@@ -725,8 +701,6 @@ export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
 }
 export async function fetchPrority(): Promise<ApiAlertPriority[]> {
   try {
-    console.log("Obteniendo lista de grados desde la API...");
-
     // Realizar la solicitud GET a la API
     const response = await fetchWithAuth("/alertas/alertas_prioridades", {
       method: "GET",
@@ -843,14 +817,14 @@ export async function updateAlert(
         body: JSON.stringify({
           alumno_alerta_id: alertData.alumno_alerta_id,
           alumno_id: alertData.alumno_id,
-          alerta_regla_id: alertData.alerta_regla_id,
+          alerta_regla_id: alertData.alerta_regla_id || 2,
           prioridad_id: alertData.prioridad_id,
           severidad_id: alertData.severidad_id,
           responsable_actual_id: alertData.responsable_actual_id,
-          estado: alertData.estado,
+          estado: `"${alertData.estado}"`,
           accion_tomada: alertData.accion_tomada,
-          // fecha_resolucion: alertData.fecha_resolucion || null,
-          actualizado_por: alertData.responsable_actual_id,
+          leida: true,
+          actualizado_por: parseInt(alertData.responsable_actual_id),
 
           alertas_prioridades: {
             alerta_prioridad_id: alertData.prioridad_id,
@@ -859,6 +833,9 @@ export async function updateAlert(
             alerta_severidad_id: alertData.severidad_id,
           },
         }),
+
+        //     "estado": "En proceso",
+        //     "alerta_regla_id": 2,
       }
     );
 
