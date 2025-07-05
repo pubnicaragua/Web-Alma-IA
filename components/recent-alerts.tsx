@@ -101,65 +101,67 @@ export function RecentAlerts() {
       </CardHeader>
       <CardContent>
         <div className="space-y-0">
-          {getCurrentPageAlerts().map((alert, index) => (
-            <div
-              key={alert.alumno_alerta_id || index}
-              onClick={() => handleAlertClick(alert.alumno_alerta_id)}
-            >
-              <div className="flex items-center justify-between py-3">
-                <div className="flex items-center gap-3 w-[45%]">
-                  {isClient && (
-                    <div className="relative h-10 w-10 overflow-hidden rounded-full flex-shrink-0 cursor-pointer">
-                      <Image
-                        src={
-                          alert.alumnos?.url_foto_perfil ||
-                          "/diverse-students-studying.png"
-                        }
-                        alt={`${
-                          alert.alumnos?.personas?.nombres || "Estudiante"
-                        }`}
-                        fill
-                        className={`object-cover ${
-                          alert.anonimo ? "blur-xl" : null
-                        }`}
-                      />
+          {getCurrentPageAlerts()
+            .slice(1)
+            .map((alert, index) => (
+              <div
+                key={alert.alumno_alerta_id || index}
+                onClick={() => handleAlertClick(alert.alumno_alerta_id)}
+              >
+                <div className="flex items-center justify-between py-3">
+                  <div className="flex items-center gap-3 w-[45%]">
+                    {isClient && (
+                      <div className="relative h-10 w-10 overflow-hidden rounded-full flex-shrink-0 cursor-pointer">
+                        <Image
+                          src={
+                            alert.alumnos?.url_foto_perfil ||
+                            "/diverse-students-studying.png"
+                          }
+                          alt={`${
+                            alert.alumnos?.personas?.nombres || "Estudiante"
+                          }`}
+                          fill
+                          className={`object-cover ${
+                            alert.anonimo ? "blur-xl" : null
+                          }`}
+                        />
+                      </div>
+                    )}
+                    <div className="min-w-0 cursor-pointer">
+                      <h4 className="text-sm font-medium truncate">
+                        {!alert.anonimo
+                          ? alert.alumnos?.personas
+                            ? `${alert.alumnos.personas.nombres} ${alert.alumnos.personas.apellidos}`
+                            : "Estudiante"
+                          : "Anonimo"}
+                      </h4>
+                      <p className="text-xs text-gray-500 truncate">
+                        {alert.alertas_tipos?.nombre || "Alerta"}
+                        {alert.alertas_origenes?.nombre &&
+                          ` - ${alert.alertas_origenes.nombre}`}
+                      </p>
                     </div>
-                  )}
-                  <div className="min-w-0 cursor-pointer">
-                    <h4 className="text-sm font-medium truncate">
-                      {!alert.anonimo
-                        ? alert.alumnos?.personas
-                          ? `${alert.alumnos.personas.nombres} ${alert.alumnos.personas.apellidos}`
-                          : "Estudiante"
-                        : "Anonimo"}
-                    </h4>
-                    <p className="text-xs text-gray-500 truncate">
-                      {alert.alertas_tipos?.nombre || "Alerta"}
-                      {alert.alertas_origenes?.nombre &&
-                        ` - ${alert.alertas_origenes.nombre}`}
-                    </p>
+                  </div>
+
+                  <div className="w-[25%] flex justify-center">
+                    <Badge
+                      className={`text-xs text-white ${getPriorityColor(
+                        alert.alertas_prioridades?.nombre
+                      )}`}
+                    >
+                      {alert.alertas_prioridades?.nombre || "Sin prioridad"}
+                    </Badge>
+                  </div>
+
+                  <div className="text-xs text-gray-500 text-right w-[30%]">
+                    {isClient ? formatDate(alert.fecha_generada) : ""}
                   </div>
                 </div>
-
-                <div className="w-[25%] flex justify-center">
-                  <Badge
-                    className={`text-xs text-white ${getPriorityColor(
-                      alert.alertas_prioridades?.nombre
-                    )}`}
-                  >
-                    {alert.alertas_prioridades?.nombre || "Sin prioridad"}
-                  </Badge>
-                </div>
-
-                <div className="text-xs text-gray-500 text-right w-[30%]">
-                  {isClient ? formatDate(alert.fecha_generada) : ""}
-                </div>
+                {index < getCurrentPageAlerts().length - 1 && (
+                  <div className="border-t border-gray-100"></div>
+                )}
               </div>
-              {index < getCurrentPageAlerts().length - 1 && (
-                <div className="border-t border-gray-100"></div>
-              )}
-            </div>
-          ))}
+            ))}
           {alerts.length > itemsPerPage && (
             <div className="flex items-center space-x-2 pt-4 justify-end ">
               <Button
