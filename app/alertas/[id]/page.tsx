@@ -20,18 +20,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { EditAlertModal } from "@/components/edit-alert-modal";
 import { hasSearchParam } from "@/lib/search-params";
-
-interface Action {
-  plan_accion: string;
-  fecha_compromiso: string;
-  fecha_realizacion: string;
-  url_archivo: string;
-  fecha: string;
-  hora: string;
-  usuarioResponsable: string;
-  accionRealizada: string;
-  fechaCompromiso: string;
-}
+import { Alert } from "@/components/ui/alert";
 
 export default function AlertDetailPage({
   searchParams,
@@ -175,12 +164,14 @@ export default function AlertDetailPage({
                         alt={alert.student.name}
                         fill
                         sizes="96px"
-                        className="object-cover"
+                        className={`object-cover ${
+                          alert.isAnonymous ? "blur-xl" : ""
+                        }`}
                       />
                     </div>
                     <div>
                       <h1 className="text-2xl font-bold text-gray-800">
-                        {alert.student.name}
+                        {alert.isAnonymous ? "Anonimo" : alert.student.name}
                       </h1>
                       <p className="text-sm text-gray-500">
                         Fecha de generación: {alert.generationDate} -{" "}
