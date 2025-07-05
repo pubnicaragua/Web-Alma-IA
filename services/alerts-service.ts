@@ -80,6 +80,31 @@ export interface AlertPage {
   severidad_id: number;
 }
 
+export interface AlertPagev1 {
+  alumno_alerta_id: number;
+  alumno: {
+    alumno_id: number;
+    nombre: string;
+    cursos: string;
+    imagen: string;
+  };
+  fecha_generada: string;
+  responsable: {
+    nombre: string;
+    imagen: string;
+  };
+  anonimo: boolean;
+  regla: string;
+  origen: string;
+  tipo: string;
+  prioridad: string;
+  prioridad_id: number;
+  severidad: string;
+  severidad_id: number;
+  descripcion: string;
+  accion_tomada: any[];
+}
+
 export interface ApiAlert {
   alumno_alerta_id: number;
   alumno_id: number;

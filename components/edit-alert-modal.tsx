@@ -15,14 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertPage } from "@/services/alerts-service";
+import { AlertPagev1 } from "@/services/alerts-service";
 import { useState } from "react";
 import { updateAlert } from "@/services/alerts-service";
 
 interface EditAlertModalProps {
   isOpen: boolean;
   onClose: () => void;
-  alert: AlertPage | null;
+  alert: AlertPagev1 | null;
   onSave?: (data: any) => Promise<void>;
 }
 
@@ -38,28 +38,11 @@ export function EditAlertModal({
     prioridad_id: alert?.prioridad_id.toString() || "1",
     severidad_id: alert?.severidad_id.toString() || "1",
     tipo_id: alert?.tipo.toString() || "1",
-    accion_tomada: alert?.description || "",
+    accion_tomada: alert?.descripcion || "",
     fecha_resolucion: "",
   });
 
   if (!alert) return null;
-
-  function formatAlertDateTime(dateStr: string, timeStr: string): string {
-    const [day, month, year] = dateStr.split("-");
-    let [time, period] = timeStr.split(" ");
-    let [hours, minutes] = time.split(":");
-
-    if (period === "p." && hours !== "12") {
-      hours = String(Number(hours) + 12);
-    } else if (period === "a." && hours === "12") {
-      hours = "00";
-    }
-
-    return `${year}-${month.padStart(2, "0")}-${day.padStart(
-      2,
-      "0"
-    )}T${hours.padStart(2, "0")}:${minutes}`;
-  }
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -85,8 +68,8 @@ export function EditAlertModal({
 
     try {
       const updateData = {
-        alumno_alerta_id: alert.id,
-        alumno_id: alert.student.alumno_id,
+        alumno_alerta_id: alert.alumno_alerta_id,
+        alumno_id: alert.alumno.alumno_id,
         prioridad_id: parseInt(formData.prioridad_id) || 1,
         severidad_id: parseInt(formData.severidad_id) || 1,
         responsable_actual_id: 1,
@@ -121,10 +104,7 @@ export function EditAlertModal({
               <Input
                 type="datetime-local"
                 name="fecha_generada"
-                defaultValue={formatAlertDateTime(
-                  alert.generationDate,
-                  alert.generationTime
-                )}
+                defaultValue={alert.fecha_generada}
                 disabled
               />
             </div>
@@ -210,7 +190,7 @@ export function EditAlertModal({
             <Textarea
               className="flex h-full"
               name="regla_descripcion"
-              defaultValue={alert.description || ""}
+              defaultValue={alert.descripcion || ""}
               disabled
             />
           </div>

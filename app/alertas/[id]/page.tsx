@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import {
-  AlertPage,
   changeLeida,
   fetchAlertById,
   fetchAlertBitacoras,
@@ -19,7 +18,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { EditAlertModal } from "@/components/edit-alert-modal";
 import { hasSearchParam } from "@/lib/search-params";
-import { Alert } from "@/components/ui/alert";
+import { AlertPagev1 } from "@/services/alerts-service";
 
 export default function AlertDetailPage({
   searchParams,
@@ -29,7 +28,7 @@ export default function AlertDetailPage({
   const { id } = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const [alert, setAlert] = useState<AlertPage | null>(null);
+  const [alert, setAlert] = useState<AlertPagev1 | null>(null);
   const [bitacoras, setBitacoras] = useState<BitacoraResponse[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -155,26 +154,25 @@ export default function AlertDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {alert.student && (
+                {alert && (
                   <div className="flex items-center">
                     <div className="relative w-24 h-24 rounded-full overflow-hidden mr-6 flex-shrink-0">
                       <Image
-                        src={alert.student.image || "/placeholder.svg"}
-                        alt={alert.student.name}
+                        src={alert.alumno.imagen}
+                        alt={alert.alumno.nombre}
                         fill
                         sizes="96px"
                         className={`object-cover ${
-                          alert.isAnonymous ? "blur-xl" : ""
+                          alert.anonimo ? "blur-xl" : ""
                         }`}
                       />
                     </div>
                     <div>
                       <h1 className="text-2xl font-bold text-gray-800">
-                        {alert.isAnonymous ? "Anonimo" : alert.student.name}
+                        {alert.anonimo ? "Anonimo" : alert.alumno.nombre}
                       </h1>
                       <p className="text-sm text-gray-500">
-                        Fecha de generación: {alert.generationDate} -{" "}
-                        {alert.generationTime}
+                        Fecha de generación: {alert.fecha_generada}
                       </p>
                     </div>
                   </div>
@@ -192,20 +190,17 @@ export default function AlertDetailPage({
                   <div className="flex items-center">
                     <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
                       <Image
-                        src={
-                          alert.responsible?.image?.trim() || "/placeholder.svg"
-                        }
-                        alt={alert.responsible?.name?.trim() || "No disponible"}
-                        fill
+                        src={alert.responsable.imagen.trim()}
+                        alt={alert.responsable.nombre.trim()}
                         sizes="40px"
                         className="object-cover"
                       />
                     </div>
                     <span className="text-gray-700">
-                      {alert.responsible?.name?.trim() || "No disponible"}
+                      {alert.responsable.nombre.trim() || "No disponible"}
                     </span>
                   </div>
-                  {!alert.isAnonymous && (
+                  {!alert.anonimo && (
                     <div className="flex items-center mt-2 text-gray-600">
                       <Lock className="h-4 w-4 mr-1" />
                       <span className="text-sm">No es anónimo</span>
@@ -246,7 +241,7 @@ export default function AlertDetailPage({
                   <p className="text-sm text-gray-500">Mensaje</p>
 
                   <p className="text-gray-700 bg-gray-50 p-3 rounded-md">
-                    {alert.description}
+                    {alert.descripcion}
                   </p>
                 </div>
               </CardContent>
