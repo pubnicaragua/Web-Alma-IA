@@ -190,7 +190,7 @@ export function BarChartComparison({
             <option value="date">Elegir fecha</option>
           </select> */}
           <label className="text-right text-gray-700" htmlFor="">
-            Dastos hasta:
+            Datos al:
           </label>
           {dateMode === "date" && (
             <DatePicker

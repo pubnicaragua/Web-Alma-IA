@@ -59,7 +59,7 @@ interface AlertState {
 
 export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false);
-  const [planAccion, setPlanAccion] = useState(alertData.descripcion);
+  const [planAccion, setPlanAccion] = useState("");
   const [fechaCompromiso, setFechaCompromiso] = useState("");
   const [fechaRealizacion, setFechaRealizacion] = useState("");
   const [urlArchivo, setUrlArchivo] = useState("");
@@ -242,8 +242,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                           key={user.usuario_id}
                           value={user.persona_id.toString()}
                         >
-                          {user.nombre_social} ({user.personas.nombres}{" "}
-                          {user.personas.apellidos})
+                          {user.personas.nombres} {user.personas.apellidos}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -356,7 +355,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                 Descripción de la alerta
               </Label>
               <Textarea
-                value={alertData.description}
+                value={alertData.descripcion}
                 placeholder="Descripción"
                 className="min-h-[120px]"
                 disabled

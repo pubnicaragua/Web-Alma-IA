@@ -181,7 +181,7 @@ export function BarChartComparisonPatologieGeneral({
         </div>
         <div className="flex gap-2 items-center">
           <label className="text-right text-gray-700" htmlFor="">
-            Dastos hasta:
+            Datos al:
           </label>
           {dateMode === "date" && (
             <DatePicker
