@@ -59,7 +59,7 @@ interface AlertState {
 
 export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false);
-  const [planAccion, setPlanAccion] = useState("");
+  const [planAccion, setPlanAccion] = useState(alertData.descripcion);
   const [fechaCompromiso, setFechaCompromiso] = useState("");
   const [fechaRealizacion, setFechaRealizacion] = useState("");
   const [urlArchivo, setUrlArchivo] = useState("");
@@ -147,13 +147,11 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
     if (!validateForm()) {
       return;
     }
-
     setIsLoading(true);
-
     try {
       const bitacoraData = {
-        alumno_alerta_id: alertData.id,
-        alumno_id: alertData.student.alumno_id,
+        alumno_alerta_id: alertData.alumno_alerta_id,
+        alumno_id: alertData.alumno.alumno_id,
         plan_accion: planAccion,
         fecha_compromiso: fechaCompromiso,
         fecha_realizacion: fechaRealizacion || undefined,
@@ -162,14 +160,16 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
 
       const alertUpdateData = {
         ...alertData,
-        alumno_alerta_id: alertData.student.alumno_id,
+        alumno_alerta_id: alertData.alumno_alerta_id,
         prioridad_id: prioridad,
         severidad_id: severidad,
         responsable_actual_id: responsableName,
         estado_id: selectedEstado,
         estado: selectedEstado,
       };
+
       await updateAlertAndBitacora(alertUpdateData, bitacoraData);
+
       toast({
         title: "Éxito",
         description: "Acción agregada a la bitácora correctamente",
@@ -177,6 +177,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
       });
       setRefresh();
     } catch (error) {
+      console.error(error);
       toast({
         title: "Error",
         description: "Error al agregar la bitácora",

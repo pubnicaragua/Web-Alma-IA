@@ -18,9 +18,13 @@ export const StudentCell = ({ alert, onClick }: StudentCellProps) => (
         alt={alert.student?.name || "image"}
         width={32}
         height={32}
-        className="w-full h-full object-cover"
+        className={`w-full h-full object-cover ${
+          alert.isAnonymous ? "blur-lg" : null
+        }`}
       />
     </div>
-    <span className="text-center">{alert?.student?.name}</span>
+    <span className="text-center">
+      {alert.isAnonymous ? "Anonimo" : alert?.student?.name}
+    </span>
   </div>
 );

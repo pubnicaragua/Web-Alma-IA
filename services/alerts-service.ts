@@ -55,29 +55,30 @@ interface ApiAlertType {
 }
 
 export interface AlertPage {
-  id: number;
-  student: {
-    name: string;
-    image: string;
+  alumno_alerta_id: number;
+  responsable_actual_id: string;
+  alumno: {
     alumno_id: number;
-    course: string;
+    nombre: string;
+    cursos: string;
+    imagen: string;
   };
-  generationDate: string;
-  generationTime: string;
-  responsible?: {
-    name: string;
-    image: string;
+  fecha_generada: string;
+  responsable: {
+    nombre: string;
+    imagen: string;
   };
-  isAnonymous: boolean;
-  description: string;
-  actions: any[];
-  regla: string;
+  anonimo: boolean;
   origen: string;
   tipo: string;
   prioridad: string;
   prioridad_id: number;
   severidad: string;
   severidad_id: number;
+  descripcion: string;
+  accion_tomada: Record<string, any>;
+  estado_id: string;
+  estado: string;
 }
 
 export interface AlertPagev1 {
@@ -106,6 +107,7 @@ export interface AlertPagev1 {
 }
 
 export interface ApiAlert {
+  anonimo: boolean;
   alumno_alerta_id: number;
   alumno_id: number;
   alerta_regla_id: number;
@@ -144,6 +146,7 @@ export interface Alert {
   time: string;
   status: string;
   priority: string;
+  isAnonymous: boolean;
   type: string;
   student?: {
     id: string;
@@ -152,7 +155,6 @@ export interface Alert {
   };
 }
 
-// Función para convertir el formato de la API al formato de la UI
 function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
   return apiAlerts.map((apiAlert) => {
     try {
@@ -174,6 +176,8 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
       // Extraer la hora y fecha de fecha_generada con manejo seguro
       let formattedDate = "01/01/2023";
       let formattedTime = "00:00";
+      let resolutionDate = null;
+      let resolutionTime = null;
 
       try {
         if (apiAlert.fecha_generada) {
@@ -184,6 +188,19 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
             year: "numeric",
           });
           formattedTime = generatedDate.toLocaleTimeString("es-ES", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+
+        if (apiAlert.fecha_resolucion) {
+          const resolvedDate = new Date(apiAlert.fecha_resolucion);
+          resolutionDate = resolvedDate.toLocaleDateString("es-ES", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          });
+          resolutionTime = resolvedDate.toLocaleTimeString("es-ES", {
             hour: "2-digit",
             minute: "2-digit",
           });
@@ -206,7 +223,6 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
 
       // Mapear prioridad
       let priority = "Media";
-
       if (apiAlert.alertas_prioridades) {
         if (apiAlert.alertas_prioridades.nombre) {
           const nivel = apiAlert.alertas_prioridades.nombre.toLowerCase();
@@ -216,35 +232,78 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
         }
       }
 
+      // Mapear severidad
+      let severity = "Media";
+      if (apiAlert.alertas_severidades) {
+        if (apiAlert.alertas_severidades.nombre) {
+          const nivel = apiAlert.alertas_severidades.nombre.toLowerCase();
+          if (nivel === "alta") severity = "Alta";
+          else if (nivel === "media") severity = "Media";
+          else if (nivel === "baja") severity = "Baja";
+        }
+      }
+
       // Mapear el estado
       let status = apiAlert.estado || "Pendiente";
       // Asegurarse de que la primera letra sea mayúscula
       status = status.charAt(0).toUpperCase() + status.slice(1);
 
-      // Crear la imagen del estudiante (aleatoria)
-      // const studentImages = ["/smiling-woman-garden.png", "/young-man-city.png", "/confident-businessman.png"]
+      // Mapear si la alerta ha sido leída
+      const isRead = apiAlert.leida || false;
+
+      // Mapear mensaje de la alerta
+      const message = apiAlert.mensaje || "No hay mensaje disponible";
+
+      // Mapear si es anónimo
+      const isAnonymous = apiAlert.anonimo || false;
+
+      // Mapear acción tomada
+      const actionTaken = apiAlert.accion_tomada || "Ninguna acción registrada";
+
+      // Mapear responsable actual
+      const currentResponsible = apiAlert.responsable_actual_id
+        ? apiAlert.responsable_actual_id.toString()
+        : "Sin responsable asignado";
+
+      // Crear la imagen del estudiante
       const studentImage =
         apiAlert.alumnos.url_foto_perfil || "/confident-businessman.png";
 
       return {
         id: apiAlert.alumno_alerta_id.toString(),
         title: alertType,
-        description: alertType, // Using tipo_alerta as description
+        description: alertType,
+        detailedDescription: message, // Nuevo campo para el mensaje detallado
         date: formattedDate,
         time: formattedTime,
+        resolutionDate: resolutionDate, // Nuevo campo
+        resolutionTime: resolutionTime, // Nuevo campo
         status: status,
         priority: priority,
+        severity: severity, // Nuevo campo
         type: alertType,
+        isRead: isRead, // Nuevo campo
+        isAnonymous: isAnonymous, // Nuevo campo
+        actionTaken: actionTaken, // Nuevo campo
+        currentResponsible: currentResponsible, // Nuevo campo
         student: {
           id: studentId,
           name: studentName,
           lastName: studentLastName,
           avatar: studentImage,
         },
+        // Nuevos campos adicionales
+        alertRuleId: apiAlert.alerta_regla_id?.toString() || "0",
+        alertOriginId: apiAlert.alerta_origen_id?.toString() || "0",
+        createdBy: apiAlert.creado_por?.toString() || "0",
+        updatedBy: apiAlert.actualizado_por?.toString() || "0",
+        creationDate: apiAlert.fecha_creacion,
+        updateDate: apiAlert.fecha_actualizacion,
+        isActive: apiAlert.activo || false,
+        alertTypeId: apiAlert.alertas_tipo_alerta_tipo_id?.toString() || "0",
       };
     } catch (error) {
       console.error("Error mapping alert:", error);
-      // Devolver un objeto de alerta por defecto en caso de error
       throw error;
     }
   });
@@ -274,7 +333,6 @@ export async function fetchAlerts(): Promise<Alert[]> {
 
     // Intentar parsear la respuesta como JSON
     const apiAlerts: ApiAlert[] = await response.json();
-    console.log("Datos reales de alertas obtenidos:", apiAlerts);
 
     // Convertir los datos de la API al formato de la UI
     const alerts = mapApiAlertsToAlerts(apiAlerts);
@@ -289,8 +347,6 @@ export async function fetchAlerts(): Promise<Alert[]> {
 // Función para obtener una alerta por ID
 export async function fetchAlertById(id: number): Promise<AlertPage | null> {
   try {
-    console.log(`Obteniendo alerta con ID ${id}...`);
-
     // Intentar obtener todas las alertas
     const response = await fetchWithAuth(`/alumnos/alertas/${id}`, {
       method: "GET",
@@ -301,7 +357,6 @@ export async function fetchAlertById(id: number): Promise<AlertPage | null> {
 
     if (!response.ok) throw new Error("error en la petición");
     const alert = await response.json();
-    console.log("detalle Alerta", alert);
 
     if (!alert) {
       console.error(`No se encontró ninguna alerta con ID ${id}`);
@@ -317,7 +372,6 @@ export async function fetchAlertById(id: number): Promise<AlertPage | null> {
 
 export async function fetchRecentAlerts(): Promise<Alert[]> {
   try {
-    console.log("Fetching recent alerts from API...");
     const response = await fetchWithAuth("/alertas/recientes", {
       method: "GET",
     });
@@ -329,7 +383,6 @@ export async function fetchRecentAlerts(): Promise<Alert[]> {
     }
 
     const data = await response.json();
-    console.log("Recent alerts data:", data);
     return data;
   } catch (error) {
     console.error("Error in fetchRecentAlerts:", error);
@@ -369,7 +422,6 @@ export async function changeLeida(alertId: string | number): Promise<boolean> {
 //funcion para la data del chartLine de comparativo
 export async function fetchTotalAlertsChartLine(): Promise<DataPoint[]> {
   try {
-    console.log("Obteniendo Alertas...");
     const response = await fetchWithAuth("/comparativa/alerts/totales", {
       method: "GET",
       headers: {
@@ -388,7 +440,6 @@ export async function fetchTotalAlertsChartLine(): Promise<DataPoint[]> {
     }
 
     const data = await response.json();
-    console.log("Alertas totales obtenodas:", data);
     return data;
   } catch (error) {
     console.error("Error al obtener emociones:", error);
@@ -399,7 +450,6 @@ export async function fetchTotalAlertsHistoricoChartLine(): Promise<
   DataPoint[]
 > {
   try {
-    console.log("Obteniendo Alertas...");
     const response = await fetchWithAuth("/comparativa/alerts/historial", {
       method: "GET",
       headers: {
@@ -418,7 +468,6 @@ export async function fetchTotalAlertsHistoricoChartLine(): Promise<
     }
 
     const data = await response.json();
-    console.log("Alertas totales obtenodas:", data);
     return data;
   } catch (error) {
     console.error("Error al obtener emociones:", error);
@@ -698,8 +747,6 @@ export async function deleteAlertBitacora(bitacoraId: number): Promise<void> {
 }
 export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
   try {
-    console.log("Obteniendo lista de grados desde la API...");
-
     // Realizar la solicitud GET a la API
     const response = await fetchWithAuth("/alertas/alertas_severidades", {
       method: "GET",
@@ -717,7 +764,6 @@ export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
     const apiStudents = await response.json();
 
     // Transformar los datos de la API a nuestro modelo de Student
-    console.log("Estudiantes transformados:", apiStudents);
     return apiStudents;
   } catch (error) {
     console.error("Error al obtener estudiantes:", error);
@@ -743,7 +789,6 @@ export async function fetchPrority(): Promise<ApiAlertPriority[]> {
     const apiStudents = await response.json();
 
     // Transformar los datos de la API a nuestro modelo de Student
-    console.log("Estudiantes transformados:", apiStudents);
     return apiStudents;
   } catch (error) {
     console.error("Error al obtener estudiantes:", error);
@@ -768,7 +813,6 @@ export async function fetchStates(): Promise<AlertState[]> {
     const apiStudents = await response.json();
 
     // Transformar los datos de la API a nuestro modelo de Student
-    console.log("Estudiantes transformados:", apiStudents);
     return apiStudents;
   } catch (error) {
     console.error("Error al obtener estudiantes:", error);
@@ -778,8 +822,6 @@ export async function fetchStates(): Promise<AlertState[]> {
 
 export async function fetchEquipoAlma(): Promise<Persona[]> {
   try {
-    console.log("Obteniendo lista de grados desde la API...");
-
     // Realizar la solicitud GET a la API
     const response = await fetchWithAuth("/personas?rol_id=3", {
       method: "GET",
@@ -797,7 +839,6 @@ export async function fetchEquipoAlma(): Promise<Persona[]> {
     const apiStudents = await response.json();
 
     // Transformar los datos de la API a nuestro modelo de Student
-    console.log("Estudiantes transformados:", apiStudents);
     return apiStudents;
   } catch (error) {
     console.error("Error al obtener estudiantes:", error);
@@ -827,12 +868,11 @@ export interface UpdateBitacoraParams {
   url_archivo?: string;
 }
 
-export async function updateAlert(
-  alertData: UpdateAlertParams
-): Promise<ApiAlert> {
+export async function updateAlert(alertData: AlertPage): Promise<ApiAlert> {
   try {
     const response = await fetch(
-      "https://api-almaia.onrender.com/api/v1/alumnos/alertas/" + alertData.id,
+      "https://api-almaia.onrender.com/api/v1/alumnos/alertas/" +
+        alertData.alumno_alerta_id,
       {
         method: "PUT",
         headers: {
@@ -841,12 +881,12 @@ export async function updateAlert(
         },
         body: JSON.stringify({
           alumno_alerta_id: alertData.alumno_alerta_id,
-          alumno_id: alertData.alumno_id,
-          alerta_regla_id: alertData.alerta_regla_id || 2,
+          alumno_id: alertData.alumno.alumno_id,
+          // alerta_regla_id: alertData.alerta_regla_id || 2,
           prioridad_id: alertData.prioridad_id,
           severidad_id: alertData.severidad_id,
           responsable_actual_id: alertData.responsable_actual_id,
-          estado: `"${alertData.estado}"`,
+          estado: alertData.estado,
           accion_tomada: alertData.accion_tomada,
           leida: true,
           actualizado_por: parseInt(alertData.responsable_actual_id),
@@ -858,9 +898,6 @@ export async function updateAlert(
             alerta_severidad_id: alertData.severidad_id,
           },
         }),
-
-        //     "estado": "En proceso",
-        //     "alerta_regla_id": 2,
       }
     );
 
@@ -934,7 +971,7 @@ export async function updateBitacora(
 }
 
 export async function updateAlertAndBitacora(
-  alertData: UpdateAlertParams,
+  alertData: AlertPage,
   bitacoraData: UpdateBitacoraParams
 ): Promise<[any, any]> {
   try {

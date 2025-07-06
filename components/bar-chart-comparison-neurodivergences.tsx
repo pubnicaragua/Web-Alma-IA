@@ -166,7 +166,7 @@ export function BarChartComparisonNeurodivergences({
         </div>
         <div className="flex gap-2 items-center">
           <label className="text-right text-gray-700" htmlFor="">
-            Seleccione la fecha:
+            Dastos hasta:
           </label>
           {dateMode === "date" && (
             <DatePicker
@@ -174,7 +174,7 @@ export function BarChartComparisonNeurodivergences({
               onChange={setSelectedDate}
               maxDate={new Date()}
               placeholderText="Seleccione una fecha"
-              className="w-full p-2 border rounded-md"
+              className="w-40 p-2 rounded-md text-center"
             />
           )}
         </div>

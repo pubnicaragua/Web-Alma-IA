@@ -190,9 +190,13 @@ export default function AlertDetailPage({
                   <div className="flex items-center">
                     <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
                       <Image
-                        src={alert.responsable.imagen.trim()}
+                        src={
+                          alert.responsable.imagen.trim() ||
+                          "/default-avatar.png"
+                        } // Agrega un fallback
                         alt={alert.responsable.nombre.trim()}
-                        sizes="40px"
+                        width={40} // Ancho explícito
+                        height={40} // Alto explícito
                         className="object-cover"
                       />
                     </div>
