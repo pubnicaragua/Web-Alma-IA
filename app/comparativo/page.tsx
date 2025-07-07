@@ -1,30 +1,30 @@
 "use client";
 
-import { BarChartComparison } from "@/components/bar-chart-comparison";
+import { useRef, useEffect, useMemo, useState } from "react";
+import { AddActionModal } from "@/components/alerts/add-action-modal";
+import { AlertDetailSkeleton } from "@/components/alerts/alert-detail-skeleton";
+import { AppLayout } from "@/components/layout/app-layout";
+import { Button } from "@/components/ui/button";
 import { BarChartComparisonCategory } from "@/components/bar-chart-comparison-category";
 import { BarChartComparisonPatologie } from "@/components/bar-chart-comparison-patologie";
 import { FilterDropdown } from "@/components/filter-dropdown";
 import { FilterDropdownObject } from "@/components/filter-dropdown-object";
-import { AppLayout } from "@/components/layout/app-layout";
 import { LineChartComparison } from "@/components/line-chart-comparison";
 import { LineChartHistory } from "@/components/line-chart-history";
-import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { colors } from "@/lib/colors";
-import { fetchTotalAlertsHistoricoChartLine } from "@/services/alerts-service";
 import { fetchGrade, Grade } from "@/services/grade-service";
 import { Download } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
 
 export default function ComparativePage() {
   // Estados para los filtros
-const [levelFilter, setLevelFilter] = useState<Grade>({
-  grado_id: 1,
-  nombre: "Primero", 
-  creado_por: 1,
-  estado: "activo"
-})  
- const [courseFilter, setCourseFilter] = useState<string>("Todos");
+  const [levelFilter, setLevelFilter] = useState<Grade>({
+    grado_id: 1,
+    nombre: "Primero",
+    creado_por: 1,
+    estado: "activo",
+  });
+  const [courseFilter, setCourseFilter] = useState<string>("Todos");
   const [yearFilter, setYearFilter] = useState<string>("2025");
   const [monthFilter, setMonthFilter] = useState<string>("Abril");
 
@@ -48,45 +48,16 @@ const [levelFilter, setLevelFilter] = useState<Grade>({
     "Diciembre",
   ];
 
-  // Usar useMemo para evitar recálculos innecesarios de los datos
-  const emotionsDataCourseA = useMemo(
-    () => [
-      { name: "Tristeza", value: 1500, color: colors.chart.blue },
-      { name: "Felicidad", value: 3000, color: colors.chart.yellow },
-      { name: "Estrés", value: 1000, color: colors.chart.gray },
-      { name: "Ansiedad", value: 2500, color: colors.chart.orange },
-      { name: "Enojo", value: 800, color: colors.chart.red },
-      { name: "Otros", value: 2000, color: colors.chart.gray },
-    ],
-    []
-  );
-
-  const emotionsDataCourseB = useMemo(
-    () => [
-      { name: "Tristeza", value: 1200, color: colors.chart.blue },
-      { name: "Felicidad", value: 2800, color: colors.chart.yellow },
-      { name: "Estrés", value: 1200, color: colors.chart.gray },
-      { name: "Ansiedad", value: 2700, color: colors.chart.orange },
-      { name: "Enojo", value: 1500, color: colors.chart.red },
-      { name: "Otros", value: 1800, color: colors.chart.gray },
-    ],
-    []
-  );
   const loadData = async () => {
     try {
-      console.log("load data comparativa");
-
       const grados = await fetchGrade();
       setLevelOptions(grados);
     } catch (err) {
-      // Mostrar notificación de error
       console.log(err);
-    } finally {
     }
   };
 
   useEffect(() => {
-    console.log("level filtrado", levelFilter);
     loadData();
   }, []);
 
@@ -94,18 +65,18 @@ const [levelFilter, setLevelFilter] = useState<Grade>({
   const [selectedEmotionsCourseA, setSelectedEmotionsCourseA] = useState<
     string[]
   >(["Tristeza", "Felicidad", "Estrés", "Ansiedad", "Enojo", "Otros"]);
-
   const [selectedEmotionsCourseB, setSelectedEmotionsCourseB] = useState<
     string[]
   >(["Tristeza", "Felicidad", "Estrés", "Ansiedad", "Enojo", "Otros"]);
 
-  // Estado para los cursos seleccionados en el gráfico de líneas
-  const [selectedCourses, setSelectedCourses] = useState<string[]>([
-    "vencidas",
-    "atendidas",
-  ]);
+  // ESTADOS INDEPENDIENTES para los cursos seleccionados en cada gráfico de líneas
+  const [selectedCoursesComparison, setSelectedCoursesComparison] = useState<
+    string[]
+  >(["vencidas", "atendidas"]);
+  const [selectedCoursesHistory, setSelectedCoursesHistory] = useState<
+    string[]
+  >(["vencidas", "atendidas"]);
 
-  // Funciones para manejar la selección de emociones
   const handleToggleEmotionCourseA = (emotion: string) => {
     if (selectedEmotionsCourseA.includes(emotion)) {
       setSelectedEmotionsCourseA(
@@ -126,34 +97,52 @@ const [levelFilter, setLevelFilter] = useState<Grade>({
     }
   };
 
-  // Función para manejar la selección de cursos en el gráfico de líneas
-  const handleToggleCourse = (course: string) => {
-    if (selectedCourses.includes(course)) {
-      setSelectedCourses(selectedCourses.filter((c) => c !== course));
+  const handleToggleCourseComparison = (course: string) => {
+    if (selectedCoursesComparison.includes(course)) {
+      setSelectedCoursesComparison(
+        selectedCoursesComparison.filter((c) => c !== course)
+      );
     } else {
-      setSelectedCourses([...selectedCourses, course]);
+      setSelectedCoursesComparison([...selectedCoursesComparison, course]);
+    }
+  };
+  const handleToggleCourseHistory = (course: string) => {
+    if (selectedCoursesHistory.includes(course)) {
+      setSelectedCoursesHistory(
+        selectedCoursesHistory.filter((c) => c !== course)
+      );
+    } else {
+      setSelectedCoursesHistory([...selectedCoursesHistory, course]);
     }
   };
 
-  // Función para descargar la comparación
-  const handleDownloadComparison = () => {
-    alert("Descargando comparación...");
-    // Aquí iría la lógica para descargar la comparación
+  // Función para imprimir la sección de comparativos (nativa)
+  const comparativoRef = useRef<HTMLDivElement>(null);
+  const handlePrintComparison = () => {
+    if (!comparativoRef.current) return;
+
+    const printContents = comparativoRef.current.innerHTML;
+    const originalContents = document.body.innerHTML;
+
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload(); // recarga para restaurar estado React
   };
 
   const isMobile = useIsMobile();
 
   return (
     <AppLayout>
-      <div className="container mx-auto px-3 sm:px-6 py-8">
+      <div className="container mx-auto px-3 sm:px-6 py-8" ref={comparativoRef}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Comparativos</h2>
           <Button
-            onClick={handleDownloadComparison}
+            onClick={handlePrintComparison}
             className="bg-blue-500 hover:bg-blue-600"
           >
             <Download className="h-4 w-4 md:mr-2" />
-            <span className="hidden md:inline">Descargar comparación</span>
+            <span className="hidden md:inline">Imprimir comparación</span>
           </Button>
         </div>
 
@@ -199,20 +188,20 @@ const [levelFilter, setLevelFilter] = useState<Grade>({
           />
         </div>
 
-        {/* Gráfico de líneas */}
+        {/* Gráficos de líneas, cada uno con su estado independiente */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="mb-6">
             <LineChartComparison
               title="Gestor Alertas Hoy"
-              selectedCourses={selectedCourses}
-              onToggleCourse={handleToggleCourse}
+              selectedCourses={selectedCoursesComparison}
+              onToggleCourse={handleToggleCourseComparison}
             />
           </div>
           <div className="mb-6">
             <LineChartHistory
               title="Gestor Historial"
-              selectedCourses={selectedCourses}
-              onToggleCourse={handleToggleCourse}
+              selectedCourses={selectedCoursesHistory}
+              onToggleCourse={handleToggleCourseHistory}
             />
           </div>
         </div>

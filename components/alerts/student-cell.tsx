@@ -14,7 +14,7 @@ export const StudentCell = ({ alert, onClick }: StudentCellProps) => (
   >
     <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
       <Image
-        src={alert.student?.avatar || "/placeholder.svg"}
+        src={alert.student?.avatar || ""}
         alt={alert.student?.name || "image"}
         width={32}
         height={32}

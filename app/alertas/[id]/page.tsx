@@ -185,14 +185,18 @@ export default function AlertDetailPage({
             </Card>
 
             <Card className="mb-6">
+              {/* Aquí agregamos el estado de la alerta encima del tipo de denuncia */}
               <CardHeader className="flex justify-end w-full space-y-0 pb-2"></CardHeader>
               <CardContent className="space-y-6">
                 <div>
                   <h3
-                    className="text-lg font-semibold text-gray-800 mb-3"
+                    className="text-lg font-semibold text-gray-800 mb-3 flex items-center justify-between"
                     onClick={() => console.log(alert)}
                   >
                     Responsable Actual:
+                    <span className="ml-4 px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
+                      Estado: {alert.estado || "PDN"}
+                    </span>
                   </h3>
                   <div className="flex items-center">
                     <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
@@ -231,6 +235,14 @@ export default function AlertDetailPage({
                       </p>
                     </div>
                     <div>
+                      {/* Estado de la alerta encima del tipo de denuncia */}
+                      <div className="mb-1">
+                        <span className="text-sm font-semibold text-blue-700">
+                          {/* Variable para estado de alerta - reemplazar con dato real */}
+                          {/* Ejemplo: alert.estado */}
+                          Estado: Pendiente
+                        </span>
+                      </div>
                       <p className="text-sm text-gray-500">Tipo</p>
                       <p className="text-base font-medium text-gray-800">
                         {alert.tipo}

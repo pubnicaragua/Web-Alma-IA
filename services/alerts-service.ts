@@ -104,6 +104,7 @@ export interface AlertPagev1 {
   severidad_id: number;
   descripcion: string;
   accion_tomada: any[];
+  estado: string;
 }
 
 export interface ApiAlert {
