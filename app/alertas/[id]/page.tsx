@@ -159,20 +159,24 @@ export default function AlertDetailPage({
                     <div className="relative w-24 h-24 rounded-full overflow-hidden mr-6 flex-shrink-0">
                       <Image
                         src={alert.alumno.imagen}
-                        alt={alert.alumno.nombre}
-                        fill
-                        sizes="96px"
+                        alt={alert.alumno.nombre || "Alumno"}
+                        width={96}
+                        height={96}
                         className={`object-cover ${
                           alert.anonimo ? "blur-xl" : ""
                         }`}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = "";
+                        }}
                       />
                     </div>
                     <div>
                       <h1 className="text-2xl font-bold text-gray-800">
-                        {alert.anonimo ? "Anonimo" : alert.alumno.nombre}
+                        {alert.anonimo ? "Anónimo" : alert.alumno.nombre}
                       </h1>
                       <p className="text-sm text-gray-500">
-                        Fecha de generación: {alert.fecha_generada}
+                        Fecha de generación: {formatDate(alert.fecha_generada)}
                       </p>
                     </div>
                   </div>
@@ -184,24 +188,27 @@ export default function AlertDetailPage({
               <CardHeader className="flex justify-end w-full space-y-0 pb-2"></CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                  <h3
+                    className="text-lg font-semibold text-gray-800 mb-3"
+                    onClick={() => console.log(alert)}
+                  >
                     Responsable Actual:
                   </h3>
                   <div className="flex items-center">
                     <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
                       <Image
-                        src={
-                          alert.responsable.imagen.trim() ||
-                          "/default-avatar.png"
-                        } // Agrega un fallback
-                        alt={alert.responsable.nombre.trim()}
-                        width={40} // Ancho explícito
-                        height={40} // Alto explícito
+                        src={alert.responsable.imagen?.trim()}
+                        alt={alert.responsable.nombre?.trim() || "Responsable"}
+                        width={40}
+                        height={40}
                         className="object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                        }}
                       />
                     </div>
                     <span className="text-gray-700">
-                      {alert.responsable.nombre.trim() || "No disponible"}
+                      {alert.responsable.nombre?.trim() || "No disponible"}
                     </span>
                   </div>
                   {!alert.anonimo && (

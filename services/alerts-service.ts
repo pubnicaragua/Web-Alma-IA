@@ -880,17 +880,13 @@ export async function updateAlert(alertData: AlertPage): Promise<ApiAlert> {
           Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
         body: JSON.stringify({
-          alumno_alerta_id: alertData.alumno_alerta_id,
-          alumno_id: alertData.alumno.alumno_id,
-          // alerta_regla_id: alertData.alerta_regla_id || 2,
+          leida: true,
+          alerta_regla_id: 1,
+          estado: alertData.estado,
           prioridad_id: alertData.prioridad_id,
           severidad_id: alertData.severidad_id,
-          responsable_actual_id: alertData.responsable_actual_id,
-          estado: alertData.estado,
-          accion_tomada: alertData.accion_tomada,
-          leida: true,
-          actualizado_por: parseInt(alertData.responsable_actual_id),
-
+          alumno_id: alertData.alumno.alumno_id,
+          responsable_actual_id: parseInt(alertData.responsable_actual_id),
           alertas_prioridades: {
             alerta_prioridad_id: alertData.prioridad_id,
           },

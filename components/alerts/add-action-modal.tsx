@@ -75,6 +75,33 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
   const [selectedEstado, setSelectedEstado] = useState<string>("");
   const { toast } = useToast();
 
+  // Función para formatear el año a 4 dígitos
+  const formatYearTo4Digits = (dateString: string): string => {
+    if (!dateString) return dateString;
+
+    const parts = dateString.split("-");
+    if (parts.length !== 3) return dateString;
+
+    parts[0] = parts[0].padStart(4, "0");
+    return parts.join("-");
+  };
+
+  // Función para validar que el año tenga 4 dígitos
+  const validateYear = (dateString: string): boolean => {
+    if (!dateString) return true;
+    const year = dateString.split("-")[0];
+    return year.length === 4 && /^\d+$/.test(year);
+  };
+
+  // Manejador de cambio para fechas
+  const handleDateChange = (
+    value: string,
+    setter: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    const formattedDate = formatYearTo4Digits(value);
+    setter(formattedDate);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -103,9 +130,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
     fetchData();
   }, []);
 
-  // Función para validar URL con expresión regular básica
   const isValidUrl = (url: string) => {
-    // Permite http, https, ftp y localhost con puertos y paths
     const urlRegex =
       /^(https?:\/\/|ftp:\/\/|localhost)([\w\-]+(\.[\w\-]+)+)(:\d+)?(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i;
     return urlRegex.test(url);
@@ -130,7 +155,14 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
       newErrors.estado = "El estado es obligatorio";
     }
 
-    // Validar urlArchivo solo si tiene valor
+    // Validar formato de año para fechas
+    if (fechaCompromiso && !validateYear(fechaCompromiso)) {
+      newErrors.fechaCompromiso = "El año debe tener 4 dígitos (ej: 0001)";
+    }
+    if (fechaRealizacion && !validateYear(fechaRealizacion)) {
+      newErrors.fechaRealizacion = "El año debe tener 4 dígitos (ej: 0001)";
+    }
+
     if (urlArchivo.trim()) {
       if (!isValidUrl(urlArchivo.trim())) {
         newErrors.urlArchivo = "Debe ingresar una URL válida";
@@ -267,7 +299,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                       {alertStates.map((estado) => (
                         <SelectItem
                           key={estado.alerta_estado_id}
-                          value={estado.nombre_alerta_estado} // Aquí pasas el string literal
+                          value={estado.nombre_alerta_estado}
                         >
                           {estado.nombre_alerta_estado}
                         </SelectItem>
@@ -348,10 +380,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
             </div>
 
             <div>
-              <Label
-                className="text-sm text-gray-500"
-                onClick={() => console.log(alertData)}
-              >
+              <Label className="text-sm text-gray-500">
                 Descripción de la alerta
               </Label>
               <Textarea
@@ -392,8 +421,29 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                       <Input
                         type="date"
                         value={fechaCompromiso}
-                        onChange={(e) => setFechaCompromiso(e.target.value)}
+                        onChange={(e) =>
+                          handleDateChange(e.target.value, setFechaCompromiso)
+                        }
+                        onBlur={(e) => {
+                          if (e.target.value && !validateYear(e.target.value)) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              fechaCompromiso:
+                                "El año debe tener 4 dígitos (ej: 0001)",
+                            }));
+                          } else {
+                            setErrors((prev) => ({
+                              ...prev,
+                              fechaCompromiso: "",
+                            }));
+                          }
+                        }}
                       />
+                      {errors.fechaCompromiso && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.fechaCompromiso}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <Label className="text-sm text-gray-500">
@@ -402,8 +452,29 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                       <Input
                         type="date"
                         value={fechaRealizacion}
-                        onChange={(e) => setFechaRealizacion(e.target.value)}
+                        onChange={(e) =>
+                          handleDateChange(e.target.value, setFechaRealizacion)
+                        }
+                        onBlur={(e) => {
+                          if (e.target.value && !validateYear(e.target.value)) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              fechaRealizacion:
+                                "El año debe tener 4 dígitos (ej: 0001)",
+                            }));
+                          } else {
+                            setErrors((prev) => ({
+                              ...prev,
+                              fechaRealizacion: "",
+                            }));
+                          }
+                        }}
                       />
+                      {errors.fechaRealizacion && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.fechaRealizacion}
+                        </p>
+                      )}
                     </div>
                   </div>
 
