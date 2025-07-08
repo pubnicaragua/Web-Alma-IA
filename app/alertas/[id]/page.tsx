@@ -94,10 +94,14 @@ export default function AlertDetailPage({
     router.back();
   };
 
+  // Función para formatear fecha en dd/mm/yyyy con ceros a la izquierda
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES");
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Mes empieza en 0
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   const formatTime = (dateString: string | null | undefined) => {
@@ -185,7 +189,6 @@ export default function AlertDetailPage({
             </Card>
 
             <Card className="mb-6">
-              {/* Aquí agregamos el estado de la alerta encima del tipo de denuncia */}
               <CardHeader className="flex justify-end w-full space-y-0 pb-2"></CardHeader>
               <CardContent className="space-y-6">
                 <div>
@@ -215,10 +218,15 @@ export default function AlertDetailPage({
                       {alert.responsable.nombre?.trim() || "No disponible"}
                     </span>
                   </div>
-                  {!alert.anonimo && (
+                  {!alert.anonimo ? (
                     <div className="flex items-center mt-2 text-gray-600">
                       <Lock className="h-4 w-4 mr-1" />
                       <span className="text-sm">No es anónimo</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center mt-2 text-gray-600">
+                      <Lock className="h-4 w-4 mr-1" />
+                      <span className="text-sm">Es anónimo</span>
                     </div>
                   )}
                 </div>
@@ -228,37 +236,32 @@ export default function AlertDetailPage({
                     Descripción de la alerta
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div>
+                    <div className="bg-gray-50 rounded-lg border border-gray-100 py-2 pl-4">
                       <p className="text-sm text-gray-500">Origen</p>
                       <p className="text-base font-medium text-gray-800">
                         {alert.origen}
                       </p>
                     </div>
-                    <div>
-                      {/* <div className="mb-1">
-                        <span className="text-sm font-semibold text-blue-700">
-                          Estado: Pendiente
-                        </span>
-                      </div> */}
+                    <div className="bg-gray-50 rounded-lg border border-gray-100 py-2 pl-4">
                       <p className="text-sm text-gray-500">Tipo</p>
                       <p className="text-base font-medium text-gray-800">
                         {alert.tipo}
                       </p>
                     </div>
-                    <div>
+                    <div className="bg-gray-50 rounded-lg border border-gray-100 py-2 pl-4">
                       <p className="text-sm text-gray-500">Prioridad</p>
                       <p className="text-base font-medium ">
                         {alert.prioridad}
                       </p>
                     </div>
-                    <div>
+                    <div className="bg-gray-50 rounded-lg border border-gray-100 py-2 pl-4">
                       <p className="text-sm text-gray-500">Severidad</p>
                       <p className="text-base font-medium ">
                         {alert.severidad}
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-500">Mensaje</p>
+                  <p className="text-sm text-gray- mt-4">Mensaje</p>
 
                   <p className="text-gray-700 bg-gray-50 p-3 rounded-md">
                     {alert.descripcion}
@@ -277,26 +280,17 @@ export default function AlertDetailPage({
               </CardHeader>
               <CardContent>
                 <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
-                  <table className="w-full min-w-[640px]">
+                  <table className="w-full min-w-[520px]">
                     <thead>
                       <tr className="bg-blue-300">
                         <th className="px-4 py-3 text-left font-medium text-white">
                           Fecha Realización
                         </th>
                         <th className="px-4 py-3 text-left font-medium text-white">
-                          Hora
-                        </th>
-                        <th className="px-4 py-3 text-left font-medium text-white">
-                          Usuario Responsable
-                        </th>
-                        <th className="px-4 py-3 text-left font-medium text-white">
                           Acción Realizada
                         </th>
                         <th className="px-4 py-3 text-left font-medium text-white">
                           Fecha de Compromiso
-                        </th>
-                        <th className="px-4 py-3 text-left font-medium text-white">
-                          Estado Seguimiento
                         </th>
                         <th className="px-4 py-3 text-left font-medium text-white">
                           Archivo
@@ -308,27 +302,21 @@ export default function AlertDetailPage({
                         bitacoras.map((bitacora) => (
                           <tr
                             key={bitacora.alumno_alerta_bitacora_id}
-                            className="border-b border-gray-100 hover:bg-gray-50"
+                            className="border-b border-gray-100 py-2 pl-4 hover:bg-gray-50"
                           >
                             <td className="px-4 py-3 text-sm">
                               {formatDate(bitacora.fecha_realizacion) !== "-"
                                 ? formatDate(bitacora.fecha_realizacion)
                                 : formatDate(bitacora.fecha_compromiso)}
                             </td>
-                            <td className="px-4 py-3 text-sm">
-                              {formatTime(bitacora.fecha_realizacion)}
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              {bitacora.observaciones || "-"}
-                            </td>
-                            <td className="px-4 py-3 text-sm">
+                            <td
+                              className="px-4 py-3 text-sm truncate max-w-[12ch]"
+                              title={bitacora.plan_accion}
+                            >
                               {bitacora.plan_accion}
                             </td>
                             <td className="px-4 py-3 text-sm">
                               {formatDate(bitacora.fecha_compromiso)}
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              {bitacora.estado_seguimiento}
                             </td>
                             <td className="px-4 py-3 text-sm">
                               {bitacora.url_archivo ? (
@@ -349,7 +337,7 @@ export default function AlertDetailPage({
                       ) : (
                         <tr>
                           <td
-                            colSpan={7}
+                            colSpan={4}
                             className="px-4 py-6 text-center text-gray-500"
                           >
                             No hay acciones registradas para esta alerta
