@@ -1,8 +1,6 @@
 "use client";
 
 import { useRef, useEffect, useMemo, useState } from "react";
-import { AddActionModal } from "@/components/alerts/add-action-modal";
-import { AlertDetailSkeleton } from "@/components/alerts/alert-detail-skeleton";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
 import { BarChartComparisonCategory } from "@/components/bar-chart-comparison-category";
@@ -12,7 +10,6 @@ import { FilterDropdownObject } from "@/components/filter-dropdown-object";
 import { LineChartComparison } from "@/components/line-chart-comparison";
 import { LineChartHistory } from "@/components/line-chart-history";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { colors } from "@/lib/colors";
 import { fetchGrade, Grade } from "@/services/grade-service";
 import { Download } from "lucide-react";
 

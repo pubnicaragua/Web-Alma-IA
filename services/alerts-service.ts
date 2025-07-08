@@ -749,9 +749,16 @@ export async function deleteAlertBitacora(bitacoraId: number): Promise<void> {
 export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
   try {
     // Realizar la solicitud GET a la API
-    const response = await fetchWithAuth("/alertas/alertas_severidades", {
-      method: "GET",
-    });
+    const response = await fetch(
+      "http://localhost:3000/api/proxy/alertas/alertas_severidades",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+      }
+    );
     // Si la respuesta no es exitosa, lanzar un error
     if (!response.ok) {
       // Intentar leer el mensaje de error
@@ -774,9 +781,16 @@ export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
 export async function fetchPrority(): Promise<ApiAlertPriority[]> {
   try {
     // Realizar la solicitud GET a la API
-    const response = await fetchWithAuth("/alertas/alertas_prioridades", {
-      method: "GET",
-    });
+    const response = await fetch(
+      "http://localhost:3000/api/proxy/alertas/alertas_prioridades",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+        },
+      }
+    );
     // Si la respuesta no es exitosa, lanzar un error
     if (!response.ok) {
       // Intentar leer el mensaje de error

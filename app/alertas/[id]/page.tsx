@@ -235,14 +235,11 @@ export default function AlertDetailPage({
                       </p>
                     </div>
                     <div>
-                      {/* Estado de la alerta encima del tipo de denuncia */}
-                      <div className="mb-1">
+                      {/* <div className="mb-1">
                         <span className="text-sm font-semibold text-blue-700">
-                          {/* Variable para estado de alerta - reemplazar con dato real */}
-                          {/* Ejemplo: alert.estado */}
                           Estado: Pendiente
                         </span>
-                      </div>
+                      </div> */}
                       <p className="text-sm text-gray-500">Tipo</p>
                       <p className="text-base font-medium text-gray-800">
                         {alert.tipo}

@@ -62,7 +62,8 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
   const [planAccion, setPlanAccion] = useState("");
   const [fechaCompromiso, setFechaCompromiso] = useState("");
   const [fechaRealizacion, setFechaRealizacion] = useState("");
-  const [urlArchivo, setUrlArchivo] = useState("");
+  // Cambiado: guardamos el archivo seleccionado
+  const [archivo, setArchivo] = useState<File | null>(null);
   const [responsableName, setResponsableName] = useState("");
   const [prioridad, setPrioridad] = useState(alertData.prioridad_id);
   const [severidad, setSeveridad] = useState(alertData.severidad_id);
@@ -130,12 +131,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
     fetchData();
   }, []);
 
-  const isValidUrl = (url: string) => {
-    const urlRegex =
-      /^(https?:\/\/|ftp:\/\/|localhost)([\w\-]+(\.[\w\-]+)+)(:\d+)?(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i;
-    return urlRegex.test(url);
-  };
-
+  // Validación para archivo: opcional, pero si hay archivo, debe ser < 5MB
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
@@ -163,14 +159,24 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
       newErrors.fechaRealizacion = "El año debe tener 4 dígitos (ej: 0001)";
     }
 
-    if (urlArchivo.trim()) {
-      if (!isValidUrl(urlArchivo.trim())) {
-        newErrors.urlArchivo = "Debe ingresar una URL válida";
+    // Validar archivo si se seleccionó
+    if (archivo) {
+      const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+      if (archivo.size > maxSizeInBytes) {
+        newErrors.archivo = "El archivo debe ser menor a 5MB";
       }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setArchivo(e.target.files[0]);
+    } else {
+      setArchivo(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -187,7 +193,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
         plan_accion: planAccion,
         fecha_compromiso: fechaCompromiso,
         fecha_realizacion: fechaRealizacion || undefined,
-        url_archivo: urlArchivo || undefined,
+        archivo: archivo || undefined, // Enviar archivo o undefined si no hay
       };
 
       const alertUpdateData = {
@@ -479,19 +485,21 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                   </div>
 
                   <div>
-                    <Label className="text-sm text-gray-500">URL archivo</Label>
+                    <Label className="text-sm text-gray-500">
+                      Subir archivo (opcional)
+                    </Label>
                     <Input
-                      type="text"
-                      value={urlArchivo}
-                      onChange={(e) => setUrlArchivo(e.target.value)}
-                      placeholder="URL del archivo"
+                      type="file"
+                      accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      onChange={handleFileChange}
                     />
                     <p className="text-xs text-gray-400 mt-1">
-                      Cargar archivo no más allá de 2MB
+                      El archivo debe ser menor a 5MB. Puede ser imagen o
+                      documento.
                     </p>
-                    {errors.urlArchivo && (
+                    {errors.archivo && (
                       <p className="text-red-500 text-xs mt-1">
-                        {errors.urlArchivo}
+                        {errors.archivo}
                       </p>
                     )}
                   </div>
