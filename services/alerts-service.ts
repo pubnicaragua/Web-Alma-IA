@@ -750,7 +750,7 @@ export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
   try {
     // Realizar la solicitud GET a la API
     const response = await fetch(
-      "http://localhost:3000/api/proxy/alertas/alertas_severidades",
+      "https://api-almaia.onrender.com/api/v1/alertas/alertas_severidades",
       {
         method: "GET",
         headers: {
@@ -782,7 +782,7 @@ export async function fetchPrority(): Promise<ApiAlertPriority[]> {
   try {
     // Realizar la solicitud GET a la API
     const response = await fetch(
-      "http://localhost:3000/api/proxy/alertas/alertas_prioridades",
+      "https://api-almaia.onrender.com/api/v1/alertas/alertas_prioridades",
       {
         method: "GET",
         headers: {
