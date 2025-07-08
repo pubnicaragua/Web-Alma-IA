@@ -878,7 +878,7 @@ export interface UpdateBitacoraParams {
 export async function updateAlert(alertData: AlertPage): Promise<ApiAlert> {
   try {
     const response = await fetchApi(
-      "api/v1/alumnos/alertas/" + alertData.alumno_alerta_id,
+      "alumnos/alertas/" + alertData.alumno_alerta_id,
       {
         method: "PUT",
         headers: {
