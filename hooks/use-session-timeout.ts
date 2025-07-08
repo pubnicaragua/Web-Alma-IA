@@ -35,7 +35,7 @@ export function useSessionTimeout() {
         toast({
           title: "Sesión por expirar",
           description:
-            "Tu sesión expirará en 20 segundos. Realiza alguna acción para continuar.",
+            "Tu sesión expirará en 30 segundos. Realiza alguna acción para continuar.",
           variant: "destructive",
         });
 
