@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { removeAuthToken } from "@/lib/api-config";
 
-const WARNING_AFTER = 1 * 60 * 1000 + 300000; // 20 minutos (1200000 ms)
-const LOGOUT_AFTER_WARNING = 20 * 1000; // 20 segundos (20000 ms)
+const WARNING_AFTER = 2 * 60 * 1000; // 2 minutos en milisegundos
+const LOGOUT_AFTER_WARNING = 20 * 1000; // 20 segundos en milisegundos
 
 export function useSessionTimeout() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export function useSessionTimeout() {
       clearTimeout(warningTimeoutRef.current);
       clearTimeout(logoutTimeoutRef.current);
 
-      // Configurar advertencia a los 20 minutos
+      // Configurar advertencia a los 2 minutos
       warningTimeoutRef.current = setTimeout(() => {
         toast({
           title: "Sesión por expirar",

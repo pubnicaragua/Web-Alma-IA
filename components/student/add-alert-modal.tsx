@@ -83,30 +83,46 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
   const [alertStates, setAlertStates] = useState<AlertState[]>([]);
   const [severitys, setSeveritys] = useState<ApiAlertSeverity[]>([]);
 
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   useEffect(() => {
+    let isMounted = true;
     const fetchData = async () => {
+      setLoading(true);
+      setFetchError(null);
       try {
-        const [prioridadesData, severidadesData, severidadData] =
+        const [prioridadesData, alertStatesData, severidadData] =
           await Promise.all([fetchPrority(), fetchStates(), fetchSeverity()]);
 
-        setPrioridades(prioridadesData);
-        setAlertStates(severidadesData);
-        setSeveritys(severidadData);
+        if (!isMounted) return;
 
-        if (severidadesData.length > 0 && !tipo) {
-          setTipo(severidadesData[0].nombre_alerta_estado);
+        setPrioridades(Array.isArray(prioridadesData) ? prioridadesData : []);
+        setAlertStates(Array.isArray(alertStatesData) ? alertStatesData : []);
+        setSeveritys(Array.isArray(severidadData) ? severidadData : []);
+
+        // Valores por defecto solo si no hay uno seleccionado
+        if (alertStatesData && alertStatesData.length > 0 && !tipo) {
+          setTipo(alertStatesData[0].nombre_alerta_estado || "");
         }
-        if (prioridadesData.length > 0 && !prioridad) {
-          setPrioridad(prioridadesData[0].nombre);
+        if (prioridadesData && prioridadesData.length > 0 && !prioridad) {
+          setPrioridad(prioridadesData[0].nombre || "");
         }
-        if (severidadData.length > 0 && !severidad) {
-          setSeveridad(severidadData[0].nombre);
+        if (severidadData && severidadData.length > 0 && !severidad) {
+          setSeveridad(severidadData[0].nombre || "");
         }
       } catch (error) {
+        setFetchError("Error cargando datos para selects.");
         console.error("Error cargando datos para selects:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -119,7 +135,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
       !hora.trim() ||
       !prioridad.trim() ||
       !severidad.trim() ||
-      !userData?.persona.nombres?.trim()
+      !userData?.persona?.nombres?.trim()
     ) {
       alert("Por favor, complete todos los campos requeridos.");
       return;
@@ -143,13 +159,13 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
     }
 
     const data: CreateAlertParams = {
-      alumno_id: params.id,
+      alumno_id: params?.id,
       mensaje: descripcion,
       fecha_generada: fechaGenerada,
       alerta_origen_id: 1,
       prioridad_id: prioridadSeleccionada.alerta_prioridad_id,
       severidad_id: severidadSeleccionada.alerta_severidad_id,
-      responsable_actual_id: userData.persona.persona_id,
+      responsable_actual_id: userData?.persona?.persona_id,
       leida: false,
       estado: tipo,
       alertas_tipo_alerta_tipo_id: 1,
@@ -169,12 +185,22 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
     }
   };
 
+  // Si hay error de fetch, mostrarlo y no renderizar el formulario
+  if (fetchError) {
+    return (
+      <div className="p-4 text-red-600 bg-red-50 rounded border border-red-200">
+        {fetchError}
+      </div>
+    );
+  }
+
   return (
     <>
       <Button
         className="bg-blue-500 hover:bg-blue-600"
         onClick={onOpen}
         aria-label="Agregar alerta manual"
+        disabled={loading || userLoading}
       >
         <Plus className={isMobile ? "" : "mr-2"} size={16} />
         {!isMobile && <span>Agregar alerta manual</span>}
@@ -191,156 +217,184 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
               <span className="sr-only">Cerrar</span>
             </DialogClose>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="tipo" className="flex items-center">
-                <AlertTriangle className="h-4 w-4 mr-2 text-blue-500" />
-                Estado de alerta
-              </Label>
-              <Select value={tipo} onValueChange={setTipo} required>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Seleccione el estado de alerta" />
-                </SelectTrigger>
-                <SelectContent>
-                  {alertStates.length > 0 ? (
-                    alertStates
-                      .filter(
-                        (sev) =>
-                          sev.nombre_alerta_estado &&
-                          sev.nombre_alerta_estado.trim() !== ""
-                      )
-                      .map((sev) => (
-                        <SelectItem
-                          key={sev.nombre_alerta_estado}
-                          value={sev.nombre_alerta_estado}
-                        >
-                          {sev.nombre_alerta_estado}
-                        </SelectItem>
-                      ))
-                  ) : (
-                    <SelectItem value="" disabled>
-                      No hay tipos disponibles
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+          {loading ? (
+            <div className="py-8 text-center text-gray-500">
+              Cargando datos...
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="prioridad" className="flex items-center">
-                <Clock className="h-4 w-4 mr-2 text-blue-500" />
-                Nivel de prioridad
-              </Label>
-              <Select value={prioridad} onValueChange={setPrioridad} required>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Seleccione el nivel de prioridad" />
-                </SelectTrigger>
-                <SelectContent>
-                  {prioridades.length > 0 ? (
-                    prioridades
-                      .filter(
-                        (prio) => prio.nombre && prio.nombre.trim() !== ""
-                      )
-                      .map((prio) => (
-                        <SelectItem
-                          key={prio.alerta_prioridad_id}
-                          value={prio.nombre}
-                        >
-                          {prio.nombre}
-                        </SelectItem>
-                      ))
-                  ) : (
-                    <SelectItem value="" disabled>
-                      No hay prioridades disponibles
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="severidad" className="flex items-center">
-                <AlertTriangle className="h-4 w-4 mr-2 text-blue-500" />
-                Severidad
-              </Label>
-              <Select value={severidad} onValueChange={setSeveridad} required>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Seleccione la severidad" />
-                </SelectTrigger>
-                <SelectContent>
-                  {severitys.length > 0 ? (
-                    severitys
-                      .filter((sev) => sev.nombre && sev.nombre.trim() !== "")
-                      .map((sev) => (
-                        <SelectItem key={sev.nombre} value={sev.nombre}>
-                          {sev.nombre}
-                        </SelectItem>
-                      ))
-                  ) : (
-                    <SelectItem value="" disabled>
-                      No hay severidades disponibles
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Responsable</Label>
-              <div className="p-2 border rounded bg-gray-100 text-gray-700 select-none">
-                {userLoading
-                  ? "Cargando..."
-                  : userData?.persona.nombres || "No disponible"}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="descripcion">Descripción</Label>
-              <Textarea
-                id="descripcion"
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-                placeholder="Describa la situación"
-                required
-                className="min-h-[100px]"
-              />
-              <p className="text-xs text-gray-500">
-                * Si son más de un involucrado en la alerta, mencionar el RUT de
-                cada involucrado.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="fecha">Fecha del suceso</Label>
-                <Input
-                  id="fecha"
-                  type="date"
-                  value={fecha}
-                  onChange={(e) => setFecha(e.target.value)}
+                <Label htmlFor="tipo" className="flex items-center">
+                  <AlertTriangle className="h-4 w-4 mr-2 text-blue-500" />
+                  Estado de alerta
+                </Label>
+                <Select
+                  value={tipo}
+                  onValueChange={setTipo}
                   required
-                />
+                  disabled={alertStates.length === 0}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleccione el estado de alerta" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {alertStates.length > 0 ? (
+                      alertStates
+                        .filter(
+                          (sev) =>
+                            sev.nombre_alerta_estado &&
+                            sev.nombre_alerta_estado.trim() !== ""
+                        )
+                        .map((sev) => (
+                          <SelectItem
+                            key={sev.nombre_alerta_estado}
+                            value={sev.nombre_alerta_estado}
+                          >
+                            {sev.nombre_alerta_estado}
+                          </SelectItem>
+                        ))
+                    ) : (
+                      <SelectItem value="" disabled>
+                        No hay tipos disponibles
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="hora">Hora del suceso</Label>
-                <Input
-                  id="hora"
-                  type="time"
-                  value={hora}
-                  onChange={(e) => setHora(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-blue-500 hover:bg-blue-600"
-              disabled={userLoading || !userData?.persona.nombres}
-            >
-              Agregar alerta manual
-            </Button>
-          </form>
+              <div className="space-y-2">
+                <Label htmlFor="prioridad" className="flex items-center">
+                  <Clock className="h-4 w-4 mr-2 text-blue-500" />
+                  Nivel de prioridad
+                </Label>
+                <Select
+                  value={prioridad}
+                  onValueChange={setPrioridad}
+                  required
+                  disabled={prioridades.length === 0}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleccione el nivel de prioridad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {prioridades.length > 0 ? (
+                      prioridades
+                        .filter(
+                          (prio) => prio.nombre && prio.nombre.trim() !== ""
+                        )
+                        .map((prio) => (
+                          <SelectItem
+                            key={prio.alerta_prioridad_id}
+                            value={prio.nombre}
+                          >
+                            {prio.nombre}
+                          </SelectItem>
+                        ))
+                    ) : (
+                      <SelectItem value="" disabled>
+                        No hay prioridades disponibles
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="severidad" className="flex items-center">
+                  <AlertTriangle className="h-4 w-4 mr-2 text-blue-500" />
+                  Severidad
+                </Label>
+                <Select
+                  value={severidad}
+                  onValueChange={setSeveridad}
+                  required
+                  disabled={severitys.length === 0}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleccione la severidad" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {severitys.length > 0 ? (
+                      severitys
+                        .filter((sev) => sev.nombre && sev.nombre.trim() !== "")
+                        .map((sev) => (
+                          <SelectItem key={sev.nombre} value={sev.nombre}>
+                            {sev.nombre}
+                          </SelectItem>
+                        ))
+                    ) : (
+                      <SelectItem value="" disabled>
+                        No hay severidades disponibles
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Responsable</Label>
+                <div className="p-2 border rounded bg-gray-100 text-gray-700 select-none">
+                  {userLoading
+                    ? "Cargando..."
+                    : userData?.persona?.nombres || "No disponible"}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="descripcion">Descripción</Label>
+                <Textarea
+                  id="descripcion"
+                  value={descripcion}
+                  onChange={(e) => setDescripcion(e.target.value)}
+                  placeholder="Describa la situación"
+                  required
+                  className="min-h-[100px]"
+                />
+                <p className="text-xs text-gray-500">
+                  * Si son más de un involucrado en la alerta, mencionar el RUT
+                  de cada involucrado.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fecha">Fecha del suceso</Label>
+                  <Input
+                    id="fecha"
+                    type="date"
+                    value={fecha}
+                    onChange={(e) => setFecha(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="hora">Hora del suceso</Label>
+                  <Input
+                    id="hora"
+                    type="time"
+                    value={hora}
+                    onChange={(e) => setHora(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-blue-500 hover:bg-blue-600"
+                disabled={
+                  userLoading ||
+                  !userData?.persona?.nombres ||
+                  loading ||
+                  alertStates.length === 0 ||
+                  prioridades.length === 0 ||
+                  severitys.length === 0
+                }
+              >
+                Agregar alerta manual
+              </Button>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </>
