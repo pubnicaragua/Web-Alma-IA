@@ -776,7 +776,7 @@ export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
 export async function fetchPrority(): Promise<ApiAlertPriority[]> {
   try {
     // Realizar la solicitud GET a la API
-    const response = await fetchApi("alertas/alertas_prioridades", {
+    const response = await fetchWithAuth("alertas/alertas_prioridades", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -804,7 +804,7 @@ export async function fetchPrority(): Promise<ApiAlertPriority[]> {
 }
 export async function fetchStates(): Promise<AlertState[]> {
   try {
-    const response = await fetchApi("/alertas/alertas_estado", {
+    const response = await fetchWithAuth("/alertas/alertas_estado", {
       method: "GET",
     });
     // Si la respuesta no es exitosa, lanzar un error
@@ -877,7 +877,7 @@ export interface UpdateBitacoraParams {
 
 export async function updateAlert(alertData: AlertPage): Promise<ApiAlert> {
   try {
-    const response = await fetchApi(
+    const response = await fetchWithAuth(
       "alumnos/alertas/" + alertData.alumno_alerta_id,
       {
         method: "PUT",
@@ -948,7 +948,7 @@ export async function updateBitacora(
   bitacoraData: UpdateBitacoraParams
 ): Promise<any> {
   try {
-    const response = await fetchApi(
+    const response = await fetchWithAuth(
       `/alumnos/alertas_bitacoras/${bitacoraData.alumno_alerta_id}`,
       {
         method: "PUT",
@@ -986,6 +986,67 @@ export async function updateAlertAndBitacora(
     return [alertResponse, bitacoraResponse];
   } catch (error) {
     console.error("Error en updateAlertAndBitacora:", error);
+    throw error;
+  }
+}
+
+export interface CreateAlertParams {
+  alumno_id: number;
+  mensaje: string;
+  fecha_generada: string;
+  alerta_origen_id: number;
+  prioridad_id: number;
+  severidad_id: number;
+  leida: boolean;
+  estado: string;
+  alertas_tipo_alerta_tipo_id: number;
+}
+
+export async function createAlert(data: CreateAlertParams): Promise<void> {
+  const generarFechaLocal = () => {
+    const now = new Date();
+
+    // Opción simple: usar toLocaleString con formato ISO
+    return (
+      now
+        .toLocaleString("sv-SE", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        })
+        .replace(" ", "T") + "Z"
+    ); // Agregar 'T' y 'Z' si necesitas formato ISO
+  };
+  try {
+    const response = await fetchApi("/alumnos/alertas", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+      },
+      body: JSON.stringify({
+        alumno_id: data.alumno_id,
+        mensaje: data.mensaje,
+        fecha_generada: generarFechaLocal(), // ejemplo de fecha actual
+        alerta_origen_id: 1, // reemplaza con valor real
+        prioridad_id: data.prioridad_id, // reemplaza con valor real
+        severidad_id: data.severidad_id,
+        leida: false,
+        estado: data.estado,
+        alertas_tipo_alerta_tipo_id: data.alertas_tipo_alerta_tipo_id, // reemplaza con valor real
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Error al crear la alerta");
+    }
+  } catch (error) {
+    console.error("Error en createAlert:", error);
     throw error;
   }
 }

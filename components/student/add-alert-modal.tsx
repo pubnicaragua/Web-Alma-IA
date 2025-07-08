@@ -1,86 +1,173 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { X, Plus, AlertTriangle, Clock } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useModal } from "@/lib/modal-utils"
-import { useIsMobile } from "@/hooks/use-mobile"
+import React, { useState, useEffect, FormEvent } from "react";
+import { X, Plus, AlertTriangle, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useParams } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useModal } from "@/lib/modal-utils";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  fetchStates,
+  fetchPrority,
+  createAlert,
+} from "@/services/alerts-service";
+import type {
+  ApiAlertPriority,
+  CreateAlertParams,
+} from "@/services/alerts-service";
+import { useUser } from "@/lib/user-context";
+
+interface AlertState {
+  alerta_estado_id: number;
+  nombre_alerta_estado: string;
+  creado_por: number;
+  fecha_creacion: string;
+  actualizado_por: number;
+  fecha_actualizacion: string;
+  activo: boolean;
+}
 
 interface AddAlertModalProps {
   onAddAlert: (alert: {
-    alumno_alerta_id: number
-    tipo: string
-    descripcion: string
-    fecha: string
-    hora: string
-    prioridad: string
-    responsable: string
-  }) => void
-  currentUser?: string
+    alumno_alerta_id?: number;
+    tipo: string;
+    descripcion: string;
+    fecha: string;
+    hora: string;
+    prioridad: string;
+    responsable: string;
+  }) => void;
 }
 
-export function AddAlertModal({ onAddAlert, currentUser = "Usuario actual" }: AddAlertModalProps) {
-  const { isOpen, onOpen, onClose } = useModal(false)
-  const [tipo, setTipo] = useState("")
-  const [descripcion, setDescripcion] = useState("")
-  const [fecha, setFecha] = useState("")
-  const [hora, setHora] = useState("")
-  const [prioridad, setPrioridad] = useState("Media")
-  const [responsable, setResponsable] = useState(currentUser)
-  const isMobile = useIsMobile()
+export function AddAlertModal({ onAddAlert }: AddAlertModalProps) {
+  const { isOpen, onOpen, onClose } = useModal(false);
+  const { userData, isLoading: userLoading } = useUser();
+  const isMobile = useIsMobile();
+  const params = useParams();
+  const [tipo, setTipo] = useState<string>("");
+  const [descripcion, setDescripcion] = useState<string>("");
+  const [fecha, setFecha] = useState<string>("");
+  const [hora, setHora] = useState<string>("");
+  const [prioridad, setPrioridad] = useState<string>("");
+  const [prioridades, setPrioridades] = useState<ApiAlertPriority[]>([]);
+  const [alertStates, setAlertStates] = useState<AlertState[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [prioridadesData, severidadesData] = await Promise.all([
+          fetchPrority(),
+          fetchStates(),
+        ]);
 
-    // Validación básica
-    if (!tipo || !descripcion || !fecha || !hora || !prioridad || !responsable) {
-      return
+        setPrioridades(prioridadesData);
+        setAlertStates(severidadesData);
+
+        if (severidadesData.length > 0 && !tipo) {
+          setTipo(severidadesData[0].nombre_alerta_estado);
+        }
+        if (prioridadesData.length > 0 && !prioridad) {
+          setPrioridad(prioridadesData[0].nombre);
+        }
+      } catch (error) {
+        console.error("Error cargando datos para selects:", error);
+      }
+    };
+    fetchData();
+  }, [tipo, prioridad]);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (
+      !tipo.trim() ||
+      !descripcion.trim() ||
+      !fecha.trim() ||
+      !hora.trim() ||
+      !prioridad.trim() ||
+      !userData?.persona.nombres?.trim()
+    ) {
+      alert("Por favor, complete todos los campos requeridos.");
+      return;
     }
 
-    // Enviar datos
-    onAddAlert({
-      tipo,
-      descripcion,
-      fecha,
-      hora,
-      prioridad,
-      responsable,
-    })
+    // Obtener los IDs reales para prioridad y severidad según el nombre seleccionado
+    const prioridadSeleccionada = prioridades.find(
+      (p) => p.nombre === prioridad
+    );
+    const severidadSeleccionada = alertStates.find(
+      (s) => s.nombre_alerta_estado === tipo
+    );
 
-    // Limpiar formulario y cerrar modal
-    setTipo("")
-    setDescripcion("")
-    setFecha("")
-    setHora("")
-    setPrioridad("Media")
-    setResponsable(currentUser)
-    onClose()
-  }
+    if (!prioridadSeleccionada || !severidadSeleccionada) {
+      alert("Prioridad o tipo de alerta inválidos.");
+      return;
+    }
 
-  // Opciones para los selectores
-  const tiposAlerta = [
-    { value: "SOS Alma", color: "bg-red-100 text-red-800" },
-    { value: "Alerta Amarilla", color: "bg-yellow-100 text-yellow-800" },
-    { value: "Alerta Naranja", color: "bg-orange-100 text-orange-800" },
-    { value: "Alerta Roja", color: "bg-red-100 text-red-800" },
-    { value: "Denuncia", color: "bg-purple-100 text-purple-800" },
-  ]
+    const data: CreateAlertParams = {
+      alumno_id: params.id,
+      mensaje: descripcion,
+      fecha_generada: new Date(`${fecha}T${hora}`).toISOString(),
+      alerta_origen_id: 1,
+      prioridad_id: prioridadSeleccionada.alerta_prioridad_id,
+      severidad_id: severidadSeleccionada.alerta_estado_id,
+      leida: false,
+      estado: "pendiente",
+      alertas_tipo_alerta_tipo_id: 1,
+    };
 
-  const prioridadesAlerta = [
-    { value: "Baja", color: "bg-green-100 text-green-800" },
-    { value: "Media", color: "bg-blue-100 text-blue-800" },
-    { value: "Alta", color: "bg-red-100 text-red-800" },
-  ]
+    try {
+      await createAlert(data);
+      alert("Alerta creada correctamente");
+      onClose();
+      // Limpiar formulario
+      setTipo("");
+      setDescripcion("");
+      setFecha("");
+      setHora("");
+      setPrioridad("");
+      if (onAddAlert) {
+        onAddAlert({
+          tipo,
+          descripcion,
+          fecha,
+          hora,
+          prioridad,
+          responsable: userData?.persona.nombres || "",
+        });
+      }
+    } catch (error) {
+      alert(
+        "Error al crear la alerta: " +
+          (error instanceof Error ? error.message : "")
+      );
+    }
+  };
 
   return (
     <>
-      <Button className="bg-blue-500 hover:bg-blue-600" onClick={onOpen}>
+      <Button
+        className="bg-blue-500 hover:bg-blue-600"
+        onClick={onOpen}
+        aria-label="Agregar alerta manual"
+      >
         <Plus className={isMobile ? "" : "mr-2"} size={16} />
         {!isMobile && <span>Agregar alerta manual</span>}
       </Button>
@@ -88,7 +175,9 @@ export function AddAlertModal({ onAddAlert, currentUser = "Usuario actual" }: Ad
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader className="sticky top-0 bg-white z-10 pb-2">
-            <DialogTitle className="text-xl font-semibold">Agregar alerta manual</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">
+              Agregar alerta manual
+            </DialogTitle>
             <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground flex items-center justify-center">
               <X className="h-4 w-4" />
               <span className="sr-only">Cerrar</span>
@@ -98,22 +187,33 @@ export function AddAlertModal({ onAddAlert, currentUser = "Usuario actual" }: Ad
             <div className="space-y-2">
               <Label htmlFor="tipo" className="flex items-center">
                 <AlertTriangle className="h-4 w-4 mr-2 text-blue-500" />
-                Tipo de alerta
+                Estado de alerta
               </Label>
               <Select value={tipo} onValueChange={setTipo} required>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Seleccione el tipo de alerta" />
+                  <SelectValue placeholder="Seleccione el estado de alerta" />
                 </SelectTrigger>
                 <SelectContent>
-                  {tiposAlerta.map((tipoAlerta) => (
-                    <SelectItem key={tipoAlerta.value} value={tipoAlerta.value}>
-                      <div className="flex items-center">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${tipoAlerta.color} mr-2`}>
-                          {tipoAlerta.value}
-                        </span>
-                      </div>
+                  {alertStates.length > 0 ? (
+                    alertStates
+                      .filter(
+                        (sev) =>
+                          sev.nombre_alerta_estado &&
+                          sev.nombre_alerta_estado.trim() !== ""
+                      )
+                      .map((sev) => (
+                        <SelectItem
+                          key={sev.nombre_alerta_estado}
+                          value={sev.nombre_alerta_estado}
+                        >
+                          {sev.nombre_alerta_estado}
+                        </SelectItem>
+                      ))
+                  ) : (
+                    <SelectItem value="" disabled>
+                      No hay tipos disponibles
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -128,29 +228,35 @@ export function AddAlertModal({ onAddAlert, currentUser = "Usuario actual" }: Ad
                   <SelectValue placeholder="Seleccione el nivel de prioridad" />
                 </SelectTrigger>
                 <SelectContent>
-                  {prioridadesAlerta.map((prioridadAlerta) => (
-                    <SelectItem key={prioridadAlerta.value} value={prioridadAlerta.value}>
-                      <div className="flex items-center">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${prioridadAlerta.color} mr-2`}>
-                          {prioridadAlerta.value}
-                        </span>
-                      </div>
+                  {prioridades.length > 0 ? (
+                    prioridades
+                      .filter(
+                        (prio) => prio.nombre && prio.nombre.trim() !== ""
+                      )
+                      .map((prio) => (
+                        <SelectItem
+                          key={prio.alerta_prioridad_id}
+                          value={prio.nombre}
+                        >
+                          {prio.nombre}
+                        </SelectItem>
+                      ))
+                  ) : (
+                    <SelectItem value="" disabled>
+                      No hay prioridades disponibles
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="responsable">Responsable</Label>
-              <Input
-                id="responsable"
-                value={responsable}
-                onChange={(e) => setResponsable(e.target.value)}
-                placeholder="Nombre del responsable"
-                required
-              />
-              <p className="text-xs text-gray-500">* Por defecto, se asigna al usuario actual como responsable.</p>
+              <Label>Responsable</Label>
+              <div className="p-2 border rounded bg-gray-100 text-gray-700 select-none">
+                {userLoading
+                  ? "Cargando..."
+                  : userData?.persona.nombres || "No disponible"}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -164,27 +270,44 @@ export function AddAlertModal({ onAddAlert, currentUser = "Usuario actual" }: Ad
                 className="min-h-[100px]"
               />
               <p className="text-xs text-gray-500">
-                * Si son más de un involucrado en la alerta, mencionar el RUT de cada involucrado.
+                * Si son más de un involucrado en la alerta, mencionar el RUT de
+                cada involucrado.
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="fecha">Fecha del suceso</Label>
-                <Input id="fecha" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
+                <Input
+                  id="fecha"
+                  type="date"
+                  value={fecha}
+                  onChange={(e) => setFecha(e.target.value)}
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="hora">Hora del suceso</Label>
-                <Input id="hora" type="time" value={hora} onChange={(e) => setHora(e.target.value)} required />
+                <Input
+                  id="hora"
+                  type="time"
+                  value={hora}
+                  onChange={(e) => setHora(e.target.value)}
+                  required
+                />
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600">
+            <Button
+              type="submit"
+              className="w-full bg-blue-500 hover:bg-blue-600"
+              disabled={userLoading || !userData?.persona.nombres}
+            >
               Agregar alerta manual
             </Button>
           </form>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
