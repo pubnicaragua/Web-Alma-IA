@@ -26,10 +26,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import {
   fetchStates,
   fetchPrority,
+  fetchSeverity,
   createAlert,
 } from "@/services/alerts-service";
 import type {
   ApiAlertPriority,
+  ApiAlertSeverity,
   CreateAlertParams,
 } from "@/services/alerts-service";
 import { useUser } from "@/lib/user-context";
@@ -45,6 +47,7 @@ interface AlertState {
 }
 
 interface AddAlertModalProps {
+  onRefresh: () => void;
   onAddAlert: (alert: {
     alumno_alerta_id?: number;
     tipo: string;
@@ -52,33 +55,43 @@ interface AddAlertModalProps {
     fecha: string;
     hora: string;
     prioridad: string;
+    severidad: string;
     responsable: string;
   }) => void;
 }
 
-export function AddAlertModal({ onAddAlert }: AddAlertModalProps) {
+const generarFechaISOUsuario = (fecha: string, hora: string) => {
+  if (!fecha || !hora) return "";
+  const horaCompleta = hora.length === 5 ? `${hora}:00` : hora;
+  return `${fecha}T${horaCompleta}`;
+};
+
+export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false);
   const { userData, isLoading: userLoading } = useUser();
   const isMobile = useIsMobile();
   const params = useParams();
+
   const [tipo, setTipo] = useState<string>("");
   const [descripcion, setDescripcion] = useState<string>("");
   const [fecha, setFecha] = useState<string>("");
   const [hora, setHora] = useState<string>("");
   const [prioridad, setPrioridad] = useState<string>("");
+  const [severidad, setSeveridad] = useState<string>("");
+
   const [prioridades, setPrioridades] = useState<ApiAlertPriority[]>([]);
   const [alertStates, setAlertStates] = useState<AlertState[]>([]);
+  const [severitys, setSeveritys] = useState<ApiAlertSeverity[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [prioridadesData, severidadesData] = await Promise.all([
-          fetchPrority(),
-          fetchStates(),
-        ]);
+        const [prioridadesData, severidadesData, severidadData] =
+          await Promise.all([fetchPrority(), fetchStates(), fetchSeverity()]);
 
         setPrioridades(prioridadesData);
         setAlertStates(severidadesData);
+        setSeveritys(severidadData);
 
         if (severidadesData.length > 0 && !tipo) {
           setTipo(severidadesData[0].nombre_alerta_estado);
@@ -86,12 +99,15 @@ export function AddAlertModal({ onAddAlert }: AddAlertModalProps) {
         if (prioridadesData.length > 0 && !prioridad) {
           setPrioridad(prioridadesData[0].nombre);
         }
+        if (severidadData.length > 0 && !severidad) {
+          setSeveridad(severidadData[0].nombre);
+        }
       } catch (error) {
         console.error("Error cargando datos para selects:", error);
       }
     };
     fetchData();
-  }, [tipo, prioridad]);
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -102,34 +118,40 @@ export function AddAlertModal({ onAddAlert }: AddAlertModalProps) {
       !fecha.trim() ||
       !hora.trim() ||
       !prioridad.trim() ||
+      !severidad.trim() ||
       !userData?.persona.nombres?.trim()
     ) {
       alert("Por favor, complete todos los campos requeridos.");
       return;
     }
 
-    // Obtener los IDs reales para prioridad y severidad según el nombre seleccionado
     const prioridadSeleccionada = prioridades.find(
       (p) => p.nombre === prioridad
     );
-    const severidadSeleccionada = alertStates.find(
-      (s) => s.nombre_alerta_estado === tipo
-    );
+    const severidadSeleccionada = severitys.find((s) => s.nombre === severidad);
 
     if (!prioridadSeleccionada || !severidadSeleccionada) {
-      alert("Prioridad o tipo de alerta inválidos.");
+      alert("Prioridad o severidad inválidos.");
+      return;
+    }
+
+    const fechaGenerada = generarFechaISOUsuario(fecha, hora);
+
+    if (!fechaGenerada) {
+      alert("Fecha y hora inválidas.");
       return;
     }
 
     const data: CreateAlertParams = {
       alumno_id: params.id,
       mensaje: descripcion,
-      fecha_generada: new Date(`${fecha}T${hora}`).toISOString(),
+      fecha_generada: fechaGenerada,
       alerta_origen_id: 1,
       prioridad_id: prioridadSeleccionada.alerta_prioridad_id,
-      severidad_id: severidadSeleccionada.alerta_estado_id,
+      severidad_id: severidadSeleccionada.alerta_severidad_id,
+      responsable_actual_id: userData.persona.persona_id,
       leida: false,
-      estado: "pendiente",
+      estado: tipo,
       alertas_tipo_alerta_tipo_id: 1,
     };
 
@@ -137,22 +159,8 @@ export function AddAlertModal({ onAddAlert }: AddAlertModalProps) {
       await createAlert(data);
       alert("Alerta creada correctamente");
       onClose();
-      // Limpiar formulario
-      setTipo("");
-      setDescripcion("");
-      setFecha("");
-      setHora("");
-      setPrioridad("");
-      if (onAddAlert) {
-        onAddAlert({
-          tipo,
-          descripcion,
-          fecha,
-          hora,
-          prioridad,
-          responsable: userData?.persona.nombres || "",
-        });
-      }
+      // onRefresh();
+      window.location.reload();
     } catch (error) {
       alert(
         "Error al crear la alerta: " +
@@ -244,6 +252,33 @@ export function AddAlertModal({ onAddAlert }: AddAlertModalProps) {
                   ) : (
                     <SelectItem value="" disabled>
                       No hay prioridades disponibles
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="severidad" className="flex items-center">
+                <AlertTriangle className="h-4 w-4 mr-2 text-blue-500" />
+                Severidad
+              </Label>
+              <Select value={severidad} onValueChange={setSeveridad} required>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccione la severidad" />
+                </SelectTrigger>
+                <SelectContent>
+                  {severitys.length > 0 ? (
+                    severitys
+                      .filter((sev) => sev.nombre && sev.nombre.trim() !== "")
+                      .map((sev) => (
+                        <SelectItem key={sev.nombre} value={sev.nombre}>
+                          {sev.nombre}
+                        </SelectItem>
+                      ))
+                  ) : (
+                    <SelectItem value="" disabled>
+                      No hay severidades disponibles
                     </SelectItem>
                   )}
                 </SelectContent>

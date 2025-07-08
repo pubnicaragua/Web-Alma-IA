@@ -14,6 +14,7 @@ interface Alert {
   estado: string;
   prioridad: string;
   responsable: string | null;
+  severidad_name: string;
 }
 
 interface Priority {
@@ -34,6 +35,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
   const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
   const [priorities, setPriorities] = useState<Priority[]>([]);
   const [states, setStates] = useState<State[]>([]);
+  const [refresh, setRefresh] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
       }
     }
     loadData();
-  }, []);
+  }, [refresh]);
 
   const handleAddAlert = (newAlert: {
     alumno_alerta_id: number;
@@ -143,7 +145,10 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
         <h3 className="text-xl font-semibold text-gray-800">
           Alertas del alumno
         </h3>
-        <AddAlertModal onAddAlert={handleAddAlert} />
+        <AddAlertModal
+          onAddAlert={handleAddAlert}
+          onRefresh={() => setRefresh(!refresh)}
+        />
       </div>
 
       <div className="bg-white rounded-lg shadow-sm overflow-x-auto border border-gray-100">
@@ -165,8 +170,11 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
               <th className="px-4 py-3 text-center font-medium text-white">
                 Nivel de prioridad
               </th>
-              <th className="px-4 py-3 text-center font-medium text-white">
-                Responsable actual
+              <th
+                className="px-4 py-3 text-center font-medium text-white"
+                onClick={() => console.log(alerts)}
+              >
+                Severidad
               </th>
             </tr>
           </thead>
@@ -201,7 +209,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
                   </Badge>
                 </td>
                 <td className="px-4 py-3 text-sm text-center">
-                  {alert.responsable ?? "Sin responsable"}
+                  {alert.severidad_name}
                 </td>
               </tr>
             ))}

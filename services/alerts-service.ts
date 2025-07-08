@@ -1000,6 +1000,7 @@ export interface CreateAlertParams {
   leida: boolean;
   estado: string;
   alertas_tipo_alerta_tipo_id: number;
+  responsable_actual_id: number;
 }
 
 export async function createAlert(data: CreateAlertParams): Promise<void> {
@@ -1031,7 +1032,7 @@ export async function createAlert(data: CreateAlertParams): Promise<void> {
       body: JSON.stringify({
         alumno_id: data.alumno_id,
         mensaje: data.mensaje,
-        fecha_generada: generarFechaLocal(), // ejemplo de fecha actual
+        fecha_generada: data.fecha_generada || generarFechaLocal(),
         alerta_origen_id: 1, // reemplaza con valor real
         prioridad_id: data.prioridad_id, // reemplaza con valor real
         severidad_id: data.severidad_id,

@@ -145,6 +145,7 @@ export default function StudentDetailPage() {
       alerta?.persona_responsable_actual?.nombres +
       " " +
       alerta?.persona_responsable_actual?.apellidos,
+    severidad_name: alerta.alertas_severidades.nombre,
   }));
 
   const reportsData = informes.map((informe) => ({
@@ -466,10 +467,9 @@ export default function StudentDetailPage() {
 
               <TabsContent value="alertas">
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
-                  {alertsData.length ? (
-                    <StudentAlerts alerts={alertsData} />
-                  ) : (
-                    <div className="bg-blue-500 rounded-md p-2">
+                  <StudentAlerts alerts={alertsData} />
+                  {alertsData.length === 0 && (
+                    <div className="bg-blue-500 rounded-md p-2 mt-4">
                       <h1 className="font-medium text-white">
                         Alertas no disponibles
                       </h1>
@@ -577,6 +577,7 @@ function getPrioridad(prioridadId: number): string {
     1: "Baja",
     2: "Media",
     3: "Alta",
+    4: "Critica",
   };
-  return prioridades[prioridadId] || `Prioridad ${prioridadId}`;
+  return prioridades[prioridadId];
 }
