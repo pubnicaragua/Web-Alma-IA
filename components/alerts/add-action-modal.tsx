@@ -62,7 +62,6 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
   const [planAccion, setPlanAccion] = useState("");
   const [fechaCompromiso, setFechaCompromiso] = useState("");
   const [fechaRealizacion, setFechaRealizacion] = useState("");
-  // Cambiado: guardamos el archivo seleccionado
   const [archivo, setArchivo] = useState<File | null>(null);
   const [responsableName, setResponsableName] = useState("");
   const [prioridad, setPrioridad] = useState(alertData.prioridad_id);
@@ -76,18 +75,16 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
   const [selectedEstado, setSelectedEstado] = useState<string>("");
   const { toast } = useToast();
 
-  // Función para formatear el año a 4 dígitos
+  // Formatea el año a 4 dígitos
   const formatYearTo4Digits = (dateString: string): string => {
     if (!dateString) return dateString;
-
     const parts = dateString.split("-");
     if (parts.length !== 3) return dateString;
-
     parts[0] = parts[0].padStart(4, "0");
     return parts.join("-");
   };
 
-  // Función para validar que el año tenga 4 dígitos
+  // Valida que el año tenga 4 dígitos
   const validateYear = (dateString: string): boolean => {
     if (!dateString) return true;
     const year = dateString.split("-")[0];
@@ -111,23 +108,18 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
           const parsedPowerUsers: PowerUser[] = JSON.parse(storedPowerUsers);
           setPowerUsers(parsedPowerUsers);
         }
-
         const [prioridadesData, severidadesData] = await Promise.all([
           fetchPrority(),
           fetchSeverity(),
         ]);
-
         setPrioridades(prioridadesData);
         setSeveridades(severidadesData);
-
         const loadstates: AlertState[] = await fetchStates();
-
         setAlertStates(loadstates);
       } catch (error) {
         console.error("Error al cargar datos:", error);
       }
     };
-
     fetchData();
   }, []);
 
@@ -151,15 +143,18 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
       newErrors.estado = "El estado es obligatorio";
     }
 
-    // Validar formato de año para fechas
-    if (fechaCompromiso && !validateYear(fechaCompromiso)) {
+    // Ahora las fechas son obligatorias
+    if (!fechaCompromiso) {
+      newErrors.fechaCompromiso = "La fecha de compromiso es obligatoria";
+    } else if (!validateYear(fechaCompromiso)) {
       newErrors.fechaCompromiso = "El año debe tener 4 dígitos (ej: 0001)";
     }
-    if (fechaRealizacion && !validateYear(fechaRealizacion)) {
+    if (!fechaRealizacion) {
+      newErrors.fechaRealizacion = "La fecha de realización es obligatoria";
+    } else if (!validateYear(fechaRealizacion)) {
       newErrors.fechaRealizacion = "El año debe tener 4 dígitos (ej: 0001)";
     }
 
-    // Validar archivo si se seleccionó
     if (archivo) {
       const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
       if (archivo.size > maxSizeInBytes) {
@@ -181,7 +176,6 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) {
       return;
     }
@@ -192,10 +186,9 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
         alumno_id: alertData.alumno.alumno_id,
         plan_accion: planAccion,
         fecha_compromiso: fechaCompromiso,
-        fecha_realizacion: fechaRealizacion || undefined,
-        archivo: archivo || undefined, // Enviar archivo o undefined si no hay
+        fecha_realizacion: fechaRealizacion,
+        archivo: archivo || undefined,
       };
-
       const alertUpdateData = {
         ...alertData,
         alumno_alerta_id: alertData.alumno_alerta_id,
@@ -205,9 +198,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
         estado_id: selectedEstado,
         estado: selectedEstado,
       };
-
       await updateAlertAndBitacora(alertUpdateData, bitacoraData);
-
       toast({
         title: "Éxito",
         description: "Acción agregada a la bitácora correctamente",
@@ -263,7 +254,6 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
           <div className="px-6 py-4 space-y-4">
             <div className="border-b pb-4">
               <h3 className="font-medium">Alerta</h3>
-
               <div className="grid grid-cols-3 gap-4 mt-2">
                 <div>
                   <Label className="text-sm text-gray-500">Responsable</Label>
@@ -291,7 +281,6 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                     </p>
                   )}
                 </div>
-
                 <div>
                   <Label className="text-sm text-gray-500">Estado</Label>
                   <Select
@@ -312,13 +301,11 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                       ))}
                     </SelectContent>
                   </Select>
-
                   {errors.estado && (
                     <p className="text-red-500 text-xs mt-1">{errors.estado}</p>
                   )}
                 </div>
               </div>
-
               <div className="grid grid-cols-4 gap-4 mt-4">
                 <div>
                   <Label className="text-sm text-gray-500">Origen</Label>
@@ -400,7 +387,6 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <h3 className="font-medium">Bitácora</h3>
-
                 <div className="mt-2 space-y-4">
                   <div>
                     <Label className="text-sm text-gray-500">
@@ -418,7 +404,6 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                       </p>
                     )}
                   </div>
-
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-sm text-gray-500">
@@ -431,7 +416,13 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                           handleDateChange(e.target.value, setFechaCompromiso)
                         }
                         onBlur={(e) => {
-                          if (e.target.value && !validateYear(e.target.value)) {
+                          if (!e.target.value) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              fechaCompromiso:
+                                "La fecha de compromiso es obligatoria",
+                            }));
+                          } else if (!validateYear(e.target.value)) {
                             setErrors((prev) => ({
                               ...prev,
                               fechaCompromiso:
@@ -462,7 +453,13 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                           handleDateChange(e.target.value, setFechaRealizacion)
                         }
                         onBlur={(e) => {
-                          if (e.target.value && !validateYear(e.target.value)) {
+                          if (!e.target.value) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              fechaRealizacion:
+                                "La fecha de realización es obligatoria",
+                            }));
+                          } else if (!validateYear(e.target.value)) {
                             setErrors((prev) => ({
                               ...prev,
                               fechaRealizacion:
@@ -483,7 +480,6 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                       )}
                     </div>
                   </div>
-
                   <div>
                     <Label className="text-sm text-gray-500">
                       Subir archivo (opcional)
@@ -505,7 +501,6 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                   </div>
                 </div>
               </div>
-
               <Button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md"

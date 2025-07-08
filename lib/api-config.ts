@@ -164,6 +164,8 @@ export const fetchWithAuth = async (
 
   const headers = {
     "Content-Type": "application/json",
+    "Date-Zone": JSON.stringify(Intl.DateTimeFormat().resolvedOptions()),
+
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };
@@ -251,6 +253,7 @@ export const fetchApi = async (
 
   const headers = {
     "Content-Type": "application/json",
+    "Date-Zone": JSON.stringify(Intl.DateTimeFormat().resolvedOptions()),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   };

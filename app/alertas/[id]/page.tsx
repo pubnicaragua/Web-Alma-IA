@@ -192,16 +192,13 @@ export default function AlertDetailPage({
               <CardHeader className="flex justify-end w-full space-y-0 pb-2"></CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <h3
-                    className="text-lg font-semibold text-gray-800 mb-3 flex items-center justify-between"
-                    onClick={() => console.log(alert)}
-                  >
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center justify-between">
                     Responsable Actual:
                     <span className="ml-4 px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
                       Estado: {alert.estado || "PDN"}
                     </span>
                   </h3>
-                  <div className="flex items-center">
+                  <div className="flex items-center bg-gray-50 rounded-lg border border-gray-100 py-2 pl-4 w-1/2">
                     <div className="relative w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0">
                       <Image
                         src={alert.responsable.imagen?.trim()}

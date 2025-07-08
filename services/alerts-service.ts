@@ -504,8 +504,8 @@ export const createAccionAlert = async (data: CreateAccionAlertParams) => {
         plan_accion: data.plan_accion,
         fecha_compromiso: data.fecha_compromiso,
         fecha_realizacion: data.fecha_realizacion,
-        // url_archivo: data.url_archivo || "https://meet.google.com/kba-fmwp-xpn",
-        url_archivo: "https://meet.google.com/kba-fmwp-xpn",
+        url_archivo: data.url_archivo,
+        // url_archivo: "https://meet.google.com/kba-fmwp-xpn",
       }),
     });
 
