@@ -492,24 +492,21 @@ export interface CreateAccionAlertParams {
  */
 export const createAccionAlert = async (data: CreateAccionAlertParams) => {
   try {
-    const response = await fetch(
-      "https://api-almaia.onrender.com/api/v1/alumnos/alertas_bitacoras",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-        },
-        body: JSON.stringify({
-          alumno_alerta_id: data.alumno_alerta_id,
-          alumno_id: data.alumno_id,
-          plan_accion: data.plan_accion,
-          fecha_compromiso: data.fecha_compromiso,
-          fecha_realizacion: data.fecha_realizacion,
-          url_archivo: data.url_archivo || "",
-        }),
-      }
-    );
+    const response = await fetchApi("/alumnos/alertas_bitacoras", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+      },
+      body: JSON.stringify({
+        alumno_alerta_id: data.alumno_alerta_id,
+        alumno_id: data.alumno_id,
+        plan_accion: data.plan_accion,
+        fecha_compromiso: data.fecha_compromiso,
+        fecha_realizacion: data.fecha_realizacion,
+        url_archivo: data.url_archivo || "",
+      }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -749,16 +746,13 @@ export async function deleteAlertBitacora(bitacoraId: number): Promise<void> {
 export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
   try {
     // Realizar la solicitud GET a la API
-    const response = await fetch(
-      "https://api-almaia.onrender.com/api/v1/alertas/alertas_severidades",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-        },
-      }
-    );
+    const response = await fetchApi("/alertas/alertas_severidades", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+      },
+    });
     // Si la respuesta no es exitosa, lanzar un error
     if (!response.ok) {
       // Intentar leer el mensaje de error
@@ -781,16 +775,13 @@ export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
 export async function fetchPrority(): Promise<ApiAlertPriority[]> {
   try {
     // Realizar la solicitud GET a la API
-    const response = await fetch(
-      "https://api-almaia.onrender.com/api/v1/alertas/alertas_prioridades",
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-        },
-      }
-    );
+    const response = await fetchApi("alertas/alertas_prioridades", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+      },
+    });
     // Si la respuesta no es exitosa, lanzar un error
     if (!response.ok) {
       // Intentar leer el mensaje de error
@@ -885,9 +876,8 @@ export interface UpdateBitacoraParams {
 
 export async function updateAlert(alertData: AlertPage): Promise<ApiAlert> {
   try {
-    const response = await fetch(
-      "https://api-almaia.onrender.com/api/v1/alumnos/alertas/" +
-        alertData.alumno_alerta_id,
+    const response = await fetchApi(
+      "api/v1/alumnos/alertas/" + alertData.alumno_alerta_id,
       {
         method: "PUT",
         headers: {
