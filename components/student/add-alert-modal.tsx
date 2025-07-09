@@ -48,7 +48,7 @@ interface AlertState {
 }
 
 interface PowerUser {
-  usuario_id: number;
+  persona_id: number;
   nombre_social: string;
   personas?: {
     nombres: string;
@@ -142,7 +142,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
         const parsedUsers: PowerUser[] = JSON.parse(storedUsers);
         setPowerUsers(parsedUsers);
         if (parsedUsers.length > 0) {
-          setSelectedUserId(parsedUsers[0].usuario_id);
+          setSelectedUserId(parsedUsers[0].persona_id);
         }
       }
     } catch (e) {
@@ -190,7 +190,6 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
     }
 
     const fechaGenerada = generarFechaISOUsuario(fecha, hora);
-
     if (!fechaGenerada) {
       toast({
         title: "Error",
@@ -212,6 +211,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
       estado: tipo,
       alertas_tipo_alerta_tipo_id: 1,
     };
+
     onClose();
     try {
       await createAlert(data);
@@ -409,8 +409,8 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                           : user.nombre_social;
                         return (
                           <SelectItem
-                            key={user.usuario_id}
-                            value={user.usuario_id.toString()}
+                            key={user.persona_id}
+                            value={user.persona_id.toString()}
                           >
                             {nombreCompleto}
                           </SelectItem>

@@ -106,17 +106,12 @@ export default function AlertsPage({
     }
   };
 
-  // Devuelve los tipos desde la BD si están cargados, si no, los obtiene del listado de alertas
   const getTypeOptions = () => {
     return ["Todos", ...alertTypes.map((t) => t.nombre)];
   };
 
-  // Devuelve las prioridades desde la BD si están cargadas, si no, las obtiene del listado de alertas
   const getPriorityOptions = () => {
-    // Si tienes las prioridades desde la API, usa esto:
     return ["Todos", ...alertPriorities.map((p) => p.nombre)];
-    // Si no, usa los valores únicos de las alertas:
-    return getUniqueValues("priority");
   };
 
   const getUniqueValues = (key: keyof Alert): string[] => {

@@ -1076,7 +1076,7 @@ export async function createAlert(data: CreateAlertParams): Promise<void> {
         leida: false,
         estado: data.estado,
         alertas_tipo_alerta_tipo_id: data.alertas_tipo_alerta_tipo_id,
-        // responsable_actual_id: data.responsable_actual_id,
+        responsable_actual_id: data.responsable_actual_id,
       }),
     });
 

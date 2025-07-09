@@ -12,9 +12,10 @@ import { useSessionTimeout } from "@/hooks/use-session-timeout";
 
 interface AppLayoutProps {
   children: React.ReactNode;
+  isOpen?: boolean;
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children, isOpen = false }: AppLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -22,6 +23,10 @@ export function AppLayout({ children }: AppLayoutProps) {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
   useSessionTimeout();
+
+  if (isOpen) {
+    return <main className="flex-1 overflow-y-auto">{children}</main>;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-white">

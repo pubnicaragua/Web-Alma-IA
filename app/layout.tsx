@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeColorsProvider } from "@/lib/theme-colors";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/auth-provider";
-// import { SessionTimeout } from "@/components/session-timeout";
 import { UserProvider } from "@/lib/user-context";
 import ClientWrapper from "@/components/ClientWrapper";
 
@@ -36,7 +35,6 @@ export default function RootLayout({
                 {/* ClientWrapper manejará el splash screen */}
                 <ClientWrapper>{children}</ClientWrapper>
                 <Toaster />
-                {/* <SessionTimeout /> */}
               </UserProvider>
             </AuthProvider>
           </ThemeColorsProvider>
