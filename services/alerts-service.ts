@@ -482,7 +482,7 @@ export interface CreateAccionAlertParams {
   plan_accion: string;
   fecha_compromiso: string;
   fecha_realizacion: string;
-  url_archivo?: string;
+  archivo?: string;
 }
 
 /**
@@ -491,6 +491,7 @@ export interface CreateAccionAlertParams {
  * @returns La acción creada
  */
 export const createAccionAlert = async (data: CreateAccionAlertParams) => {
+  console.log(data);
   try {
     const response = await fetchApi("/alumnos/alertas_bitacoras", {
       method: "POST",
@@ -504,7 +505,7 @@ export const createAccionAlert = async (data: CreateAccionAlertParams) => {
         plan_accion: data.plan_accion,
         fecha_compromiso: data.fecha_compromiso,
         fecha_realizacion: data.fecha_realizacion,
-        url_archivo: data.url_archivo,
+        url_archivo: data.archivo || null, // Si no hay archivo, se envía null
         // url_archivo: "https://meet.google.com/kba-fmwp-xpn",
       }),
     });
@@ -1070,12 +1071,13 @@ export async function createAlert(data: CreateAlertParams): Promise<void> {
         alumno_id: data.alumno_id,
         mensaje: data.mensaje,
         fecha_generada: data.fecha_generada || generarFechaLocal(),
-        alerta_origen_id: 4, // reemplaza con valor real
-        prioridad_id: data.prioridad_id, // reemplaza con valor real
+        alerta_origen_id: 4,
+        prioridad_id: data.prioridad_id,
         severidad_id: data.severidad_id,
         leida: false,
         estado: data.estado,
-        alertas_tipo_alerta_tipo_id: data.alertas_tipo_alerta_tipo_id, // reemplaza con valor real
+        alertas_tipo_alerta_tipo_id: data.alertas_tipo_alerta_tipo_id,
+        // responsable_actual_id: data.responsable_actual_id,
       }),
     });
 

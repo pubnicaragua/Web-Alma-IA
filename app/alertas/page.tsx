@@ -59,10 +59,6 @@ export default function AlertsPage({
         // Cargar alertas
         let data = await fetchAlerts();
 
-        // Cargar power users
-        let powerUsers = await getPowerUsers();
-        localStorage.setItem("powerUsers", JSON.stringify(powerUsers));
-
         // Cargar estados desde la base de datos
         const statesData = await fetchStates();
         setAlertStates(statesData);

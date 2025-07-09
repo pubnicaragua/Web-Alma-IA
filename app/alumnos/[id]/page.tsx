@@ -470,7 +470,7 @@ export default function StudentDetailPage() {
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
                   <StudentAlerts
                     alerts={alertsData}
-                    setrefresh={() => setRefresh(!refresh)}
+                    setRefresh={() => setRefresh(!refresh)}
                   />
                 </div>
               </TabsContent>

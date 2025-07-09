@@ -47,6 +47,17 @@ interface AlertState {
   activo: boolean;
 }
 
+interface PowerUser {
+  usuario_id: number;
+  nombre_social: string;
+  personas?: {
+    nombres: string;
+    apellidos: string;
+    persona_id: number;
+  };
+  // Otros campos que puedas necesitar...
+}
+
 interface AddAlertModalProps {
   onRefresh: () => void;
   onAddAlert: (alert: {
@@ -85,6 +96,9 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
   const [alertStates, setAlertStates] = useState<AlertState[]>([]);
   const [severitys, setSeveritys] = useState<ApiAlertSeverity[]>([]);
 
+  const [powerUsers, setPowerUsers] = useState<PowerUser[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -120,7 +134,24 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
         setLoading(false);
       }
     };
+
     fetchData();
+
+    // Leer usuarios desde localStorage
+    try {
+      const storedUsers = localStorage.getItem("powerUsers");
+      if (storedUsers) {
+        const parsedUsers: PowerUser[] = JSON.parse(storedUsers);
+        setPowerUsers(parsedUsers);
+        // Seleccionar el primer usuario por defecto si existe
+        if (parsedUsers.length > 0) {
+          setSelectedUserId(parsedUsers[0].usuario_id);
+        }
+      }
+    } catch (e) {
+      console.error("Error leyendo usuarios de localStorage:", e);
+    }
+
     return () => {
       isMounted = false;
     };
@@ -137,7 +168,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
       !hora.trim() ||
       !prioridad.trim() ||
       !severidad.trim() ||
-      !userData?.persona?.nombres?.trim()
+      selectedUserId === null
     ) {
       alert("Por favor, complete todos los campos requeridos.");
       return;
@@ -167,12 +198,12 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
       alerta_origen_id: 1,
       prioridad_id: prioridadSeleccionada.alerta_prioridad_id,
       severidad_id: severidadSeleccionada.alerta_severidad_id,
-      responsable_actual_id: userData?.persona?.persona_id,
+      responsable_actual_id: selectedUserId,
       leida: false,
       estado: tipo,
       alertas_tipo_alerta_tipo_id: 1,
     };
-
+    onClose();
     try {
       await createAlert(data);
       toast({
@@ -180,24 +211,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
         description: "Alerta agregada correctamente",
         variant: "default",
       });
-      onClose();
       onRefresh();
-      // setTipo("");
-      // setDescripcion("");
-      // setFecha("");
-      // setHora("");
-      // setPrioridad("");
-      // if (onAddAlert) {
-      //   onAddAlert({
-      //     tipo,
-      //     descripcion,
-      //     fecha,
-      //     hora,
-      //     prioridad,
-      //     severidad,
-      //     responsable: userData?.persona?.nombres || "",
-      //   });
-      // }
     } catch (error) {
       toast({
         title: "Error",
@@ -207,7 +221,6 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
     }
   };
 
-  // Si hay error de fetch, mostrarlo y no renderizar el formulario
   if (fetchError) {
     return (
       <div className="p-4 text-red-600 bg-red-50 rounded border border-red-200">
@@ -354,12 +367,40 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
               </div>
 
               <div className="space-y-2">
-                <Label>Responsable</Label>
-                <div className="p-2 border rounded bg-gray-100 text-gray-700 select-none">
-                  {userLoading
-                    ? "Cargando..."
-                    : userData?.persona?.nombres || "No disponible"}
-                </div>
+                <Label htmlFor="responsable" className="flex items-center">
+                  Responsable
+                </Label>
+                <Select
+                  value={selectedUserId !== null ? String(selectedUserId) : ""}
+                  onValueChange={(val) => setSelectedUserId(Number(val))}
+                  required
+                  disabled={powerUsers.length === 0}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleccione un responsable" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {powerUsers.length > 0 ? (
+                      powerUsers.map((user) => {
+                        const nombreCompleto = user.personas
+                          ? `${user.personas.nombres} ${user.personas.apellidos}`
+                          : user.nombre_social;
+                        return (
+                          <SelectItem
+                            key={user.usuario_id}
+                            value={user.persona_id.toString()}
+                          >
+                            {nombreCompleto}
+                          </SelectItem>
+                        );
+                      })
+                    ) : (
+                      <SelectItem value="" disabled>
+                        No hay usuarios disponibles
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -406,11 +447,11 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                 className="w-full bg-blue-500 hover:bg-blue-600"
                 disabled={
                   userLoading ||
-                  !userData?.persona?.nombres ||
                   loading ||
                   alertStates.length === 0 ||
                   prioridades.length === 0 ||
-                  severitys.length === 0
+                  severitys.length === 0 ||
+                  selectedUserId === null
                 }
               >
                 Agregar alerta manual

@@ -4,12 +4,11 @@ import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { AddAlertModal } from "@/components/student/add-alert-modal";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 
 interface Alert {
   alumno_alerta_id: number;
-  fecha: string;
-  hora: string;
+  fecha: string; // formato "DD/MM/YYYY"
+  hora: string; // formato "HH:mm"
   tipo: string;
   estado: string;
   prioridad: string;
@@ -29,13 +28,16 @@ interface State {
 
 interface StudentAlertsProps {
   alerts: Alert[];
+  setRefresh: () => void;
 }
 
-export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
+export function StudentAlerts({
+  alerts: initialAlerts,
+  setRefresh,
+}: StudentAlertsProps) {
   const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
   const [priorities, setPriorities] = useState<Priority[]>([]);
   const [states, setStates] = useState<State[]>([]);
-  const [refresh, setRefresh] = useState(false);
   const router = useRouter();
 
   // Paginación
@@ -67,7 +69,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
       }
     }
     loadData();
-  }, [refresh]);
+  }, []);
 
   const handleAddAlert = (newAlert: {
     alumno_alerta_id: number;
@@ -82,7 +84,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
       .padStart(2, "0")}:${currentDate
       .getMinutes()
       .toString()
-      .padStart(2, "0")} ${currentDate.getHours() >= 12 ? "PM" : "AM"}`;
+      .padStart(2, "0")}`;
 
     const alert: Alert = {
       alumno_alerta_id: newAlert.alumno_alerta_id,
@@ -92,10 +94,10 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
       estado: "Pendiente",
       prioridad: "Alta",
       responsable: "Enc. Convivencia",
-      severidad_name: "", // Si no tienes este dato, déjalo vacío o ajusta según necesidad
+      severidad_name: "",
     };
     setAlerts((prev) => [alert, ...prev]);
-    setCurrentPage(1); // Volver a la primera página al agregar alerta
+    setCurrentPage(1);
   };
 
   const handleAlertClick = (alertId: number) => {
@@ -111,6 +113,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
       case "baja":
         return "border-green-500 text-green-500";
       case "crítica":
+      case "critica": // para evitar problemas con mayúsculas/minúsculas
         return "border-pink-600 text-pink-600";
       default:
         return "";
@@ -136,13 +139,28 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
     }
   };
 
+  // Función para convertir fecha y hora a Date
+  const parseDateTime = (fecha: string, hora: string): Date => {
+    // fecha: "DD/MM/YYYY"
+    // hora: "HH:mm"
+    const [day, month, year] = fecha.split("/").map(Number);
+    const [hours, minutes] = hora.split(":").map(Number);
+    return new Date(year, month - 1, day, hours, minutes);
+  };
+
+  // Ordenar alertas por fecha y hora descendente (más reciente primero)
+  const sortedAlerts = [...alerts].sort((a, b) => {
+    const dateA = parseDateTime(a.fecha, a.hora);
+    const dateB = parseDateTime(b.fecha, b.hora);
+    return dateB.getTime() - dateA.getTime();
+  });
+
   // Calcular índices para paginación
-  const totalPages = Math.ceil(alerts.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedAlerts.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentAlerts = alerts.slice(indexOfFirstItem, indexOfLastItem);
+  const currentAlerts = sortedAlerts.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Funciones para cambiar página
   const goToPage = (page: number) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
@@ -154,10 +172,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
         <h3 className="text-xl font-semibold text-gray-800">
           Alertas del alumno
         </h3>
-        <AddAlertModal
-          onAddAlert={handleAddAlert}
-          onRefresh={() => setRefresh(!refresh)}
-        />
+        <AddAlertModal onAddAlert={handleAddAlert} onRefresh={setRefresh} />
       </div>
 
       <div className="bg-white rounded-lg shadow-sm overflow-x-auto border border-gray-100">
@@ -240,7 +255,6 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
           Anterior
         </button>
 
-        {/* Mostrar botones de página (máximo 5 botones para no saturar) */}
         {Array.from({ length: totalPages }, (_, i) => i + 1)
           .slice(
             Math.max(0, currentPage - 3),

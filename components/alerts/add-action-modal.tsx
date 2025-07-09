@@ -63,6 +63,8 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
   const [fechaCompromiso, setFechaCompromiso] = useState("");
   const [fechaRealizacion, setFechaRealizacion] = useState("");
   const [archivo, setArchivo] = useState<File | null>(null);
+  const [archivoBase64, setArchivoBase64] = useState<string | null>(null);
+  const [archivoLoading, setArchivoLoading] = useState(false);
   const [responsableName, setResponsableName] = useState("");
   const [prioridad, setPrioridad] = useState(alertData.prioridad_id);
   const [severidad, setSeveridad] = useState(alertData.severidad_id);
@@ -107,6 +109,9 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
         if (storedPowerUsers) {
           const parsedPowerUsers: PowerUser[] = JSON.parse(storedPowerUsers);
           setPowerUsers(parsedPowerUsers);
+          if (parsedPowerUsers.length > 0) {
+            setResponsableName(parsedPowerUsers[0].persona_id.toString());
+          }
         }
         const [prioridadesData, severidadesData] = await Promise.all([
           fetchPrority(),
@@ -143,7 +148,6 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
       newErrors.estado = "El estado es obligatorio";
     }
 
-    // Ahora las fechas son obligatorias
     if (!fechaCompromiso) {
       newErrors.fechaCompromiso = "La fecha de compromiso es obligatoria";
     } else if (!validateYear(fechaCompromiso)) {
@@ -166,11 +170,42 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Convierte archivo a base64 con prefijo MIME
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject("Error leyendo archivo");
+      reader.onload = () => {
+        // reader.result es un string base64 puro (sin prefijo)
+        const base64 = (reader.result as string).split(",")[1];
+        // Usa el tipo MIME del archivo
+        const prefix = `data:${file.type};base64,`;
+        resolve(prefix + base64);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setArchivo(e.target.files[0]);
+      const file = e.target.files[0];
+      setArchivo(file);
+      setArchivoLoading(true);
+      setErrors((prev) => ({ ...prev, archivo: "" }));
+      try {
+        const base64 = await fileToBase64(file);
+        setArchivoBase64(base64);
+      } catch (err) {
+        setArchivoBase64(null);
+        setErrors((prev) => ({
+          ...prev,
+          archivo: "No se pudo procesar el archivo.",
+        }));
+      }
+      setArchivoLoading(false);
     } else {
       setArchivo(null);
+      setArchivoBase64(null);
     }
   };
 
@@ -187,7 +222,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
         plan_accion: planAccion,
         fecha_compromiso: fechaCompromiso,
         fecha_realizacion: fechaRealizacion,
-        archivo: archivo || undefined,
+        archivo: archivoBase64 || undefined,
       };
       const alertUpdateData = {
         ...alertData,
@@ -486,13 +521,18 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                     </Label>
                     <Input
                       type="file"
-                      accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      accept="*/*"
                       onChange={handleFileChange}
                     />
                     <p className="text-xs text-gray-400 mt-1">
-                      El archivo debe ser menor a 5MB. Puede ser imagen o
-                      documento.
+                      El archivo debe ser menor a 5MB. Puede ser imagen, PDF,
+                      Word, etc.
                     </p>
+                    {archivoLoading && (
+                      <p className="text-blue-500 text-xs mt-1">
+                        Procesando archivo...
+                      </p>
+                    )}
                     {errors.archivo && (
                       <p className="text-red-500 text-xs mt-1">
                         {errors.archivo}
@@ -504,7 +544,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
               <Button
                 type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md"
-                disabled={isLoading}
+                disabled={isLoading || archivoLoading}
               >
                 {isLoading ? "Guardando..." : "Guardar"}
               </Button>

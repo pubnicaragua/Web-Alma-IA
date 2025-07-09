@@ -28,3 +28,34 @@ Continue building your app on:
 2. Deploy your chats from the v0 interface
 3. Changes are automatically pushed to this repository
 4. Vercel deploys the latest version from this repository
+
+
+
+alertas_tipo_alerta_tipo_id	1
+alumno_id	"147"
+estado	"Pendiente"
+fecha_generada	"2025-07-02T12:12:00"
+mensaje	"qwe"
+
+
+
+
+
+alertas_tipo_alerta_tipo_id	1
+alumno_id	"147"
+estado	"Pendiente"
+fecha_generada	"2025-08-15T12:12:00"
+mensaje	"qwe"
+
+
+
+
+alerta_regla_id	1
+alertas_prioridades	{…}
+alerta_prioridad_id	1
+alertas_severidades	{…}
+alerta_severidad_id	1
+alumno_id	147
+estado	"Pendiente"
+leida	true
+
