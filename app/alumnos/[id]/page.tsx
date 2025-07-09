@@ -34,6 +34,7 @@ export default function StudentDetailPage() {
   const [activeTab, setActiveTab] = useState("ficha");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refresh, setRefresh] = useState(false);
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([
     "Tristeza",
     "Felicidad",
@@ -63,7 +64,7 @@ export default function StudentDetailPage() {
     };
 
     loadStudentDetails();
-  }, [id]);
+  }, [id, refresh]);
 
   const handleToggleEmotion = (emotion: string) => {
     if (selectedEmotions.includes(emotion)) {
@@ -467,14 +468,10 @@ export default function StudentDetailPage() {
 
               <TabsContent value="alertas">
                 <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
-                  <StudentAlerts alerts={alertsData} />
-                  {alertsData.length === 0 && (
-                    <div className="bg-blue-500 rounded-md p-2 mt-4">
-                      <h1 className="font-medium text-white">
-                        Alertas no disponibles
-                      </h1>
-                    </div>
-                  )}
+                  <StudentAlerts
+                    alerts={alertsData}
+                    setrefresh={() => setRefresh(!refresh)}
+                  />
                 </div>
               </TabsContent>
 

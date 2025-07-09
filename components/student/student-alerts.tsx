@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { AddAlertModal } from "@/components/student/add-alert-modal";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Alert {
   alumno_alerta_id: number;
-  fecha: string; // formato: "YYYY-MM-DD"
-  hora: string; // formato: "HH:mm" o "HH:mm AM/PM"
+  fecha: string;
+  hora: string;
   tipo: string;
   estado: string;
   prioridad: string;
@@ -30,50 +31,18 @@ interface StudentAlertsProps {
   alerts: Alert[];
 }
 
-const PAGE_SIZE = 15;
-
-function parseDateTime(fecha: string, hora: string): Date {
-  // Intenta parsear la fecha y hora para ordenarlas correctamente
-  // Soporta formatos "HH:mm" y "HH:mm AM/PM"
-  let time = hora;
-  let isPM = false;
-  if (hora.includes("AM") || hora.includes("PM")) {
-    isPM = hora.includes("PM");
-    time = hora.replace(/(AM|PM)/, "").trim();
-  }
-  const [hourStr, minStr] = time.split(":");
-  let hour = parseInt(hourStr, 10);
-  const min = parseInt(minStr, 10) || 0;
-  if (isPM && hour < 12) hour += 12;
-  if (!isPM && hour === 12) hour = 0;
-  return new Date(
-    `${fecha}T${hour.toString().padStart(2, "0")}:${min
-      .toString()
-      .padStart(2, "0")}:00`
-  );
-}
-
 export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
   const [priorities, setPriorities] = useState<Priority[]>([]);
   const [states, setStates] = useState<State[]>([]);
   const [refresh, setRefresh] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
-  // Ordenar alertas por fecha y hora (más reciente primero)
-  useEffect(() => {
-    const sortedAlerts = [...initialAlerts].sort((a, b) => {
-      const dateA = parseDateTime(a.fecha, a.hora);
-      const dateB = parseDateTime(b.fecha, b.hora);
-      return dateB.getTime() - dateA.getTime();
-    });
-    setAlerts(sortedAlerts);
-    setCurrentPage(1); // Resetear a la primera página cuando cambian las alertas
-  }, [initialAlerts, refresh]);
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
-    // Simula fetch de prioridades y estados
     async function loadData() {
       try {
         const fetchedPriorities: Priority[] = [
@@ -90,6 +59,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
           { alerta_estado_id: 5, nombre_alerta_estado: "Cerrada" },
           { alerta_estado_id: 6, nombre_alerta_estado: "Anulada" },
         ];
+
         setPriorities(fetchedPriorities);
         setStates(fetchedStates);
       } catch (error) {
@@ -98,14 +68,6 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
     }
     loadData();
   }, [refresh]);
-
-  // Paginación
-  const totalPages = Math.ceil(alerts.length / PAGE_SIZE);
-
-  const paginatedAlerts = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return alerts.slice(start, start + PAGE_SIZE);
-  }, [alerts, currentPage]);
 
   const handleAddAlert = (newAlert: {
     alumno_alerta_id: number;
@@ -130,17 +92,16 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
       estado: "Pendiente",
       prioridad: "Alta",
       responsable: "Enc. Convivencia",
-      severidad_name: "N/A",
+      severidad_name: "", // Si no tienes este dato, déjalo vacío o ajusta según necesidad
     };
     setAlerts((prev) => [alert, ...prev]);
-    setCurrentPage(1);
+    setCurrentPage(1); // Volver a la primera página al agregar alerta
   };
 
   const handleAlertClick = (alertId: number) => {
     router.push(`/alertas/${alertId}`);
   };
 
-  // Badge de prioridad
   const getPriorityClass = (priorityName: string) => {
     switch (priorityName.toLowerCase()) {
       case "alta":
@@ -156,7 +117,6 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
     }
   };
 
-  // Badge de estado
   const getStateClass = (stateName: string) => {
     switch (stateName.toLowerCase()) {
       case "pendiente":
@@ -176,38 +136,17 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
     }
   };
 
-  // Renderiza la paginación
-  const Pagination = () => (
-    <div className="flex justify-center items-center gap-2 py-4">
-      <button
-        className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
-        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-        disabled={currentPage === 1}
-      >
-        {"<"}
-      </button>
-      {Array.from({ length: totalPages }, (_, i) => (
-        <button
-          key={i + 1}
-          className={`px-3 py-1 rounded ${
-            currentPage === i + 1
-              ? "bg-blue-500 text-white"
-              : "bg-gray-100 hover:bg-gray-200"
-          }`}
-          onClick={() => setCurrentPage(i + 1)}
-        >
-          {i + 1}
-        </button>
-      ))}
-      <button
-        className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
-        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-        disabled={currentPage === totalPages}
-      >
-        {">"}
-      </button>
-    </div>
-  );
+  // Calcular índices para paginación
+  const totalPages = Math.ceil(alerts.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentAlerts = alerts.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Funciones para cambiar página
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
 
   return (
     <div>
@@ -217,7 +156,7 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
         </h3>
         <AddAlertModal
           onAddAlert={handleAddAlert}
-          onRefresh={() => setRefresh((v) => !v)}
+          onRefresh={() => setRefresh(!refresh)}
         />
       </div>
 
@@ -240,64 +179,99 @@ export function StudentAlerts({ alerts: initialAlerts }: StudentAlertsProps) {
               <th className="px-4 py-3 text-center font-medium text-white">
                 Nivel de prioridad
               </th>
-              <th className="px-4 py-3 text-center font-medium text-white">
+              <th
+                className="px-4 py-3 text-center font-medium text-white"
+                onClick={() => console.log(alerts)}
+              >
                 Severidad
               </th>
             </tr>
           </thead>
           <tbody>
-            {paginatedAlerts.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
-                  No hay alertas para mostrar.
+            {currentAlerts.map((alert) => (
+              <tr
+                key={alert.alumno_alerta_id}
+                className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                onClick={() => handleAlertClick(alert.alumno_alerta_id)}
+              >
+                <td className="px-4 py-3 text-sm text-center">{alert.fecha}</td>
+                <td className="px-4 py-3 text-sm text-center">{alert.hora}</td>
+                <td className="px-4 py-3 text-sm text-center">
+                  <div className="flex justify-center">
+                    <Badge>{alert.tipo}</Badge>
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-sm text-center">
+                  <Badge
+                    variant="outline"
+                    className={getStateClass(alert.estado)}
+                  >
+                    {alert.estado}
+                  </Badge>
+                </td>
+                <td className="px-4 py-3 text-sm text-center">
+                  <Badge
+                    variant="outline"
+                    className={getPriorityClass(alert.prioridad)}
+                  >
+                    {alert.prioridad}
+                  </Badge>
+                </td>
+                <td className="px-4 py-3 text-sm text-center">
+                  {alert.severidad_name}
                 </td>
               </tr>
-            ) : (
-              paginatedAlerts.map((alert) => (
-                <tr
-                  key={alert.alumno_alerta_id}
-                  className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-                  onClick={() => handleAlertClick(alert.alumno_alerta_id)}
-                >
-                  <td className="px-4 py-3 text-sm text-center">
-                    {alert.fecha}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    {alert.hora}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    <div className="flex justify-center">
-                      <Badge>{alert.tipo}</Badge>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    <Badge
-                      variant="outline"
-                      className={getStateClass(alert.estado)}
-                    >
-                      {alert.estado}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    <Badge
-                      variant="outline"
-                      className={getPriorityClass(alert.prioridad)}
-                    >
-                      {alert.prioridad}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    {alert.severidad_name}
-                  </td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
 
-      {/* Paginación sólo si hay más de una página */}
-      {totalPages > 1 && <Pagination />}
+      {/* Controles de paginación */}
+      <div className="flex justify-center items-center space-x-2 mt-4">
+        <button
+          onClick={() => goToPage(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`px-3 py-1 rounded border ${
+            currentPage === 1
+              ? "cursor-not-allowed border-gray-300 text-gray-300"
+              : "border-blue-500 text-blue-500 hover:bg-blue-100"
+          }`}
+        >
+          Anterior
+        </button>
+
+        {/* Mostrar botones de página (máximo 5 botones para no saturar) */}
+        {Array.from({ length: totalPages }, (_, i) => i + 1)
+          .slice(
+            Math.max(0, currentPage - 3),
+            Math.min(totalPages, currentPage + 2)
+          )
+          .map((page) => (
+            <button
+              key={page}
+              onClick={() => goToPage(page)}
+              className={`px-3 py-1 rounded border ${
+                page === currentPage
+                  ? "bg-blue-500 text-white border-blue-500"
+                  : "border-blue-500 text-blue-500 hover:bg-blue-100"
+              }`}
+            >
+              {page}
+            </button>
+          ))}
+
+        <button
+          onClick={() => goToPage(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`px-3 py-1 rounded border ${
+            currentPage === totalPages || totalPages === 0
+              ? "cursor-not-allowed border-gray-300 text-gray-300"
+              : "border-blue-500 text-blue-500 hover:bg-blue-100"
+          }`}
+        >
+          Siguiente
+        </button>
+      </div>
     </div>
   );
 }

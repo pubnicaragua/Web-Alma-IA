@@ -1070,7 +1070,7 @@ export async function createAlert(data: CreateAlertParams): Promise<void> {
         alumno_id: data.alumno_id,
         mensaje: data.mensaje,
         fecha_generada: data.fecha_generada || generarFechaLocal(),
-        alerta_origen_id: 1, // reemplaza con valor real
+        alerta_origen_id: 4, // reemplaza con valor real
         prioridad_id: data.prioridad_id, // reemplaza con valor real
         severidad_id: data.severidad_id,
         leida: false,

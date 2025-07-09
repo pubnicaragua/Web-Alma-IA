@@ -35,6 +35,7 @@ import type {
   CreateAlertParams,
 } from "@/services/alerts-service";
 import { useUser } from "@/lib/user-context";
+import { useToast } from "@/hooks/use-toast";
 
 interface AlertState {
   alerta_estado_id: number;
@@ -71,6 +72,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
   const { userData, isLoading: userLoading } = useUser();
   const isMobile = useIsMobile();
   const params = useParams();
+  const { toast } = useToast();
 
   const [tipo, setTipo] = useState<string>("");
   const [descripcion, setDescripcion] = useState<string>("");
@@ -173,15 +175,35 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
 
     try {
       await createAlert(data);
-      alert("Alerta creada correctamente");
+      toast({
+        title: "Éxito",
+        description: "Alerta agregada correctamente",
+        variant: "default",
+      });
       onClose();
-      // onRefresh();
-      window.location.reload();
+      onRefresh();
+      // setTipo("");
+      // setDescripcion("");
+      // setFecha("");
+      // setHora("");
+      // setPrioridad("");
+      // if (onAddAlert) {
+      //   onAddAlert({
+      //     tipo,
+      //     descripcion,
+      //     fecha,
+      //     hora,
+      //     prioridad,
+      //     severidad,
+      //     responsable: userData?.persona?.nombres || "",
+      //   });
+      // }
     } catch (error) {
-      alert(
-        "Error al crear la alerta: " +
-          (error instanceof Error ? error.message : "")
-      );
+      toast({
+        title: "Error",
+        description: "Error al agregar a la alerta.",
+        variant: "destructive",
+      });
     }
   };
 
