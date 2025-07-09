@@ -138,7 +138,15 @@ export default function AlertsPage({
   const parseAlertDate = (dateString: string): Date | null => {
     if (!dateString) return null;
     const [day, month, year] = dateString.split("/");
-    return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+
+    // Validar año razonable
+    const yearNum = Number(year);
+    if (yearNum < 1900 || yearNum > 2100) {
+      console.warn(`Fecha con año inválido ignorada: ${dateString}`);
+      return null;
+    }
+
+    return new Date(Date.UTC(yearNum, Number(month) - 1, Number(day)));
   };
 
   const filteredAlerts = useMemo(() => {
@@ -187,12 +195,30 @@ export default function AlertsPage({
     });
 
     return filtered.sort((a, b) => {
-      const dateTimeA = new Date(
-        `${a.date?.split("/").reverse().join("-")}T${a.time || "00:00"}`
-      );
-      const dateTimeB = new Date(
-        `${b.date?.split("/").reverse().join("-")}T${b.time || "00:00"}`
-      );
+      const parseDateTime = (dateStr: string, timeStr: string) => {
+        if (!dateStr) return new Date(0);
+
+        const [day, month, year] = dateStr.split("/");
+        const time = timeStr || "00:00";
+
+        // Validar que el año sea numérico y razonable
+        const yearNum = parseInt(year, 10);
+        if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
+          console.warn(`Año inválido detectado: ${year} en fecha ${dateStr}`);
+          return new Date(0); // Fecha muy antigua para que aparezca al final
+        }
+
+        // Crear fecha de manera más explícita
+        const monthNum = parseInt(month, 10) - 1; // Mes base 0
+        const dayNum = parseInt(day, 10);
+        const [hours, minutes] = time.split(":").map((t) => parseInt(t, 10));
+
+        return new Date(yearNum, monthNum, dayNum, hours || 0, minutes || 0);
+      };
+
+      const dateTimeA = parseDateTime(a.date || "", a.time || "");
+      const dateTimeB = parseDateTime(b.date || "", b.time || "");
+
       return dateTimeB.getTime() - dateTimeA.getTime();
     });
   }, [
