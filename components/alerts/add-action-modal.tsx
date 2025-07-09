@@ -1,3 +1,5 @@
+"use client";
+
 import type React from "react";
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
@@ -130,7 +132,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
     fetchData();
   }, []);
 
-  // Validación para archivo: opcional, pero si hay archivo, debe ser < 5MB
+  // Validación para archivo: solo imágenes y PDFs, menor a 5MB
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
@@ -163,7 +165,16 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
 
     if (archivo) {
       const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
-      if (archivo.size > maxSizeInBytes) {
+      const validTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "application/pdf",
+      ];
+      if (!validTypes.includes(archivo.type)) {
+        newErrors.archivo =
+          "Solo se permiten imágenes JPG, PNG, GIF y archivos PDF.";
+      } else if (archivo.size > maxSizeInBytes) {
         newErrors.archivo = "El archivo debe ser menor a 5MB";
       }
     }
@@ -178,9 +189,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
       const reader = new FileReader();
       reader.onerror = () => reject("Error leyendo archivo");
       reader.onload = () => {
-        // reader.result es un string base64 puro (sin prefijo)
         const base64 = (reader.result as string).split(",")[1];
-        // Usa el tipo MIME del archivo
         const prefix = `data:${file.type};base64,`;
         resolve(prefix + base64);
       };
@@ -194,6 +203,24 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
       setArchivo(file);
       setArchivoLoading(true);
       setErrors((prev) => ({ ...prev, archivo: "" }));
+
+      // Validar tipo aquí también para evitar procesar archivos inválidos
+      const validTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "application/pdf",
+      ];
+      if (!validTypes.includes(file.type)) {
+        setArchivoBase64(null);
+        setErrors((prev) => ({
+          ...prev,
+          archivo: "Solo se permiten imágenes JPG, PNG, GIF y archivos PDF.",
+        }));
+        setArchivoLoading(false);
+        return;
+      }
+
       try {
         const base64 = await fileToBase64(file);
         setArchivoBase64(base64);
@@ -523,12 +550,12 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                     </Label>
                     <Input
                       type="file"
-                      accept="*/*"
+                      accept="image/jpeg,image/png,image/gif,application/pdf"
                       onChange={handleFileChange}
                     />
                     <p className="text-xs text-gray-400 mt-1">
-                      El archivo debe ser menor a 5MB. Puede ser imagen, PDF,
-                      Word, etc.
+                      Solo se permiten imágenes JPG, PNG, GIF y archivos PDF. El
+                      archivo debe ser menor a 5MB.
                     </p>
                     {archivoLoading && (
                       <p className="text-blue-500 text-xs mt-1">
