@@ -8,7 +8,9 @@ import {
   type Alert,
   fetchAlerts,
   getPowerUsers,
-  fetchStates, // <-- Importar la función para obtener estados
+  fetchStates,
+  fetchTypes,
+  fetchPrority,
 } from "@/services/alerts-service";
 import { getSearchParam } from "@/lib/search-params";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -35,15 +37,21 @@ export default function AlertsPage({
   const [horaFilter, setHoraFilter] = useState<string>();
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Nuevo estado para almacenar los estados de alerta desde la BD
+  // Estados para almacenar los datos desde la BD
   const [alertStates, setAlertStates] = useState<
     { alerta_estado_id: number; nombre_alerta_estado: string }[]
   >([]);
+  const [alertTypes, setAlertTypes] = useState<
+    { alerta_tipo_id: number; nombre: string }[]
+  >([]); // <-- Añade este estado para los tipos
+  const [alertPriorities, setAlertPriorities] = useState<
+    { alerta_prioridad_id: number; nombre: string }[]
+  >([]); // <-- Añade este estado para las prioridades
 
   useEffect(() => {
     selectByDefaul();
 
-    const loadAlertsAndStates = async () => {
+    const loadAlertsAndFilters = async () => {
       try {
         setIsLoading(true);
         setError(null);
@@ -58,6 +66,14 @@ export default function AlertsPage({
         // Cargar estados desde la base de datos
         const statesData = await fetchStates();
         setAlertStates(statesData);
+
+        // Cargar tipos desde la base de datos
+        const typesData = await fetchTypes(); // <-- Descomenta cuando implementes fetchTypes
+        setAlertTypes(typesData);
+
+        // Cargar prioridades desde la base de datos
+        const prioritiesData = await fetchPrority(); // <-- Descomenta cuando implementes fetchPriorities
+        setAlertPriorities(prioritiesData);
 
         // Filtrar por notificaciones si aplica
         const params = getSearchParam(searchParams, "notifications");
@@ -74,7 +90,7 @@ export default function AlertsPage({
       }
     };
 
-    loadAlertsAndStates();
+    loadAlertsAndFilters();
   }, []);
 
   const selectByDefaul = () => {
@@ -94,6 +110,19 @@ export default function AlertsPage({
     }
   };
 
+  // Devuelve los tipos desde la BD si están cargados, si no, los obtiene del listado de alertas
+  const getTypeOptions = () => {
+    return ["Todos", ...alertTypes.map((t) => t.nombre)];
+  };
+
+  // Devuelve las prioridades desde la BD si están cargadas, si no, las obtiene del listado de alertas
+  const getPriorityOptions = () => {
+    // Si tienes las prioridades desde la API, usa esto:
+    return ["Todos", ...alertPriorities.map((p) => p.nombre)];
+    // Si no, usa los valores únicos de las alertas:
+    return getUniqueValues("priority");
+  };
+
   const getUniqueValues = (key: keyof Alert): string[] => {
     const values = alerts
       .map((alert) => {
@@ -107,9 +136,8 @@ export default function AlertsPage({
     return ["Todos", ...uniqueValues];
   };
 
-  const typeOptions = getUniqueValues("type");
-  const priorityOptions = getUniqueValues("priority");
-  // Cambiamos statusOptions para que venga de alertStates con el nombre de estado
+  const typeOptions = getTypeOptions();
+  const priorityOptions = getPriorityOptions();
   const statusOptions = [
     "Todos",
     ...alertStates.map((s) => s.nombre_alerta_estado),
@@ -119,7 +147,6 @@ export default function AlertsPage({
   const parseAlertDate = (dateString: string): Date | null => {
     if (!dateString) return null;
     const [day, month, year] = dateString.split("/");
-    // Crear fecha en UTC para evitar problemas de zona horaria
     return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
   };
 
@@ -143,18 +170,15 @@ export default function AlertsPage({
 
           switch (dateFilter) {
             case "Hoy":
-              // Corrección para el filtro "Hoy"
               const todayStart = new Date();
               todayStart.setUTCHours(0, 0, 0, 0);
               const todayEnd = new Date();
               todayEnd.setUTCHours(23, 59, 59, 999);
               return alertDate >= todayStart && alertDate <= todayEnd;
-
             case "Hasta...":
               if (!selectedDate) return false;
               const untilDate = new Date(selectedDate);
               untilDate.setUTCHours(23, 59, 59, 999);
-              // Comparación segura en UTC
               return alertDate.getTime() <= untilDate.getTime();
           }
         } catch (error) {

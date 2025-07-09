@@ -827,6 +827,43 @@ export async function fetchStates(): Promise<AlertState[]> {
   }
 }
 
+export interface AlertaTipo {
+  alerta_tipo_id: number;
+  nombre: string;
+  creado_por: number;
+  actualizado_por: number;
+  fecha_creacion: string; // ISO date string
+  fecha_actualizacion: string; // ISO date string
+  activo: boolean;
+  tiempo_resolucion: number;
+  tiempo_atencion: number;
+}
+
+export async function fetchTypes(): Promise<AlertaTipo[]> {
+  try {
+    const response = await fetchWithAuth("/alertas/alertas_tipos", {
+      method: "GET",
+    });
+    // Si la respuesta no es exitosa, lanzar un error
+    if (!response.ok) {
+      // Intentar leer el mensaje de error
+      const errorText = await response.text();
+      throw new Error(
+        `Error al obtener alumnos: ${response.status} - ${errorText}`
+      );
+    }
+
+    // Intentar parsear la respuesta como JSON
+    const apiStudents = await response.json();
+
+    // Transformar los datos de la API a nuestro modelo de Student
+    return apiStudents;
+  } catch (error) {
+    console.error("Error al obtener estudiantes:", error);
+    throw error; // Propagar el error para que se maneje en el componente
+  }
+}
+
 export async function fetchEquipoAlma(): Promise<Persona[]> {
   try {
     // Realizar la solicitud GET a la API
