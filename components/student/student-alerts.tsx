@@ -120,6 +120,22 @@ export function StudentAlerts({
     }
   };
 
+  const getPrioritySeverity = (priorityName: string) => {
+    switch (priorityName.toLowerCase()) {
+      case "alta":
+        return "border-red-500 text-red-500";
+      case "media":
+        return "border-yellow-500 text-yellow-500";
+      case "baja":
+        return "border-green-500 text-green-500";
+      case "crítica":
+      case "critica": // para evitar problemas con mayúsculas/minúsculas
+        return "border-pink-600 text-pink-600";
+      default:
+        return "";
+    }
+  };
+
   const getStateClass = (stateName: string) => {
     switch (stateName.toLowerCase()) {
       case "pendiente":
@@ -233,7 +249,12 @@ export function StudentAlerts({
                   </Badge>
                 </td>
                 <td className="px-4 py-3 text-sm text-center">
-                  {alert.severidad_name}
+                  <Badge
+                    variant="outline"
+                    className={getPrioritySeverity(alert.severidad_name)}
+                  >
+                    {alert.severidad_name}
+                  </Badge>
                 </td>
               </tr>
             ))}
