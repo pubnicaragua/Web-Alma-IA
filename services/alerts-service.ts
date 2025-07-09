@@ -505,8 +505,7 @@ export const createAccionAlert = async (data: CreateAccionAlertParams) => {
         plan_accion: data.plan_accion,
         fecha_compromiso: data.fecha_compromiso,
         fecha_realizacion: data.fecha_realizacion,
-        url_archivo: data.archivo || null, // Si no hay archivo, se envía null
-        // url_archivo: "https://meet.google.com/kba-fmwp-xpn",
+        ...(data.archivo ? { url_archivo: data.archivo } : {}),
       }),
     });
 

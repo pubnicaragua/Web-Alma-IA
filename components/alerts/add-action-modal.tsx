@@ -74,7 +74,9 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [powerUsers, setPowerUsers] = useState<PowerUser[]>([]);
   const [alertStates, setAlertStates] = useState<AlertState[]>([]);
-  const [selectedEstado, setSelectedEstado] = useState<string>("");
+  const [selectedEstado, setSelectedEstado] = useState<string>(
+    alertData.estado
+  );
   const { toast } = useToast();
 
   // Formatea el año a 4 dígitos

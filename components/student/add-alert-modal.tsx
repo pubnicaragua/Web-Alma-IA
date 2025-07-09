@@ -55,7 +55,6 @@ interface PowerUser {
     apellidos: string;
     persona_id: number;
   };
-  // Otros campos que puedas necesitar...
 }
 
 interface AddAlertModalProps {
@@ -101,6 +100,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
 
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     let isMounted = true;
@@ -117,7 +117,6 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
         setAlertStates(Array.isArray(alertStatesData) ? alertStatesData : []);
         setSeveritys(Array.isArray(severidadData) ? severidadData : []);
 
-        // Valores por defecto solo si no hay uno seleccionado
         if (alertStatesData && alertStatesData.length > 0 && !tipo) {
           setTipo(alertStatesData[0].nombre_alerta_estado || "");
         }
@@ -137,13 +136,11 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
 
     fetchData();
 
-    // Leer usuarios desde localStorage
     try {
       const storedUsers = localStorage.getItem("powerUsers");
       if (storedUsers) {
         const parsedUsers: PowerUser[] = JSON.parse(storedUsers);
         setPowerUsers(parsedUsers);
-        // Seleccionar el primer usuario por defecto si existe
         if (parsedUsers.length > 0) {
           setSelectedUserId(parsedUsers[0].usuario_id);
         }
@@ -155,22 +152,26 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
     return () => {
       isMounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!tipo.trim()) newErrors.tipo = "El estado de alerta es obligatorio";
+    if (!prioridad.trim()) newErrors.prioridad = "La prioridad es obligatoria";
+    if (!severidad.trim()) newErrors.severidad = "La severidad es obligatoria";
+    if (!selectedUserId)
+      newErrors.responsable = "El responsable es obligatorio";
+    if (!descripcion.trim())
+      newErrors.descripcion = "La descripción es obligatoria";
+    if (!fecha.trim()) newErrors.fecha = "La fecha es obligatoria";
+    if (!hora.trim()) newErrors.hora = "La hora es obligatoria";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (
-      !tipo.trim() ||
-      !descripcion.trim() ||
-      !fecha.trim() ||
-      !hora.trim() ||
-      !prioridad.trim() ||
-      !severidad.trim() ||
-      selectedUserId === null
-    ) {
-      alert("Por favor, complete todos los campos requeridos.");
+    if (!validateForm()) {
       return;
     }
 
@@ -180,14 +181,22 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
     const severidadSeleccionada = severitys.find((s) => s.nombre === severidad);
 
     if (!prioridadSeleccionada || !severidadSeleccionada) {
-      alert("Prioridad o severidad inválidos.");
+      toast({
+        title: "Error",
+        description: "Prioridad o severidad inválidos.",
+        variant: "destructive",
+      });
       return;
     }
 
     const fechaGenerada = generarFechaISOUsuario(fecha, hora);
 
     if (!fechaGenerada) {
-      alert("Fecha y hora inválidas.");
+      toast({
+        title: "Error",
+        description: "Fecha y hora inválidas.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -295,6 +304,9 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                     )}
                   </SelectContent>
                 </Select>
+                {errors.tipo && (
+                  <p className="text-red-500 text-xs mt-1">{errors.tipo}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -332,6 +344,11 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                     )}
                   </SelectContent>
                 </Select>
+                {errors.prioridad && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.prioridad}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -364,6 +381,11 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                     )}
                   </SelectContent>
                 </Select>
+                {errors.severidad && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.severidad}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -388,7 +410,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                         return (
                           <SelectItem
                             key={user.usuario_id}
-                            value={user.persona_id.toString()}
+                            value={user.usuario_id.toString()}
                           >
                             {nombreCompleto}
                           </SelectItem>
@@ -401,6 +423,11 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                     )}
                   </SelectContent>
                 </Select>
+                {errors.responsable && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.responsable}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -413,6 +440,11 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                   required
                   className="min-h-[100px]"
                 />
+                {errors.descripcion && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.descripcion}
+                  </p>
+                )}
                 <p className="text-xs text-gray-500">
                   * Si son más de un involucrado en la alerta, mencionar el RUT
                   de cada involucrado.
@@ -429,6 +461,9 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                     onChange={(e) => setFecha(e.target.value)}
                     required
                   />
+                  {errors.fecha && (
+                    <p className="text-red-500 text-xs mt-1">{errors.fecha}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="hora">Hora del suceso</Label>
@@ -439,6 +474,9 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                     onChange={(e) => setHora(e.target.value)}
                     required
                   />
+                  {errors.hora && (
+                    <p className="text-red-500 text-xs mt-1">{errors.hora}</p>
+                  )}
                 </div>
               </div>
 
