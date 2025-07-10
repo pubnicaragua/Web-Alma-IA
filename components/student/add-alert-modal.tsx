@@ -77,6 +77,16 @@ const generarFechaISOUsuario = (fecha: string, hora: string) => {
   return `${fecha}T${horaCompleta}`;
 };
 
+// Función para obtener fecha y hora actual en formato adecuado
+function getHoyFechaHora() {
+  const now = new Date();
+  // yyyy-mm-dd
+  const fecha = now.toISOString().slice(0, 10);
+  // hh:mm (sin segundos)
+  const hora = now.toTimeString().slice(0, 5);
+  return { fecha, hora };
+}
+
 export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
   const { isOpen, onOpen, onClose } = useModal(false);
   const { userData, isLoading: userLoading } = useUser();
@@ -84,10 +94,13 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
   const params = useParams();
   const { toast } = useToast();
 
+  // Inicializar fecha y hora con los valores actuales
+  const { fecha: hoyFecha, hora: hoyHora } = getHoyFechaHora();
+
   const [tipo, setTipo] = useState<string>("");
   const [descripcion, setDescripcion] = useState<string>("");
-  const [fecha, setFecha] = useState<string>("");
-  const [hora, setHora] = useState<string>("");
+  const [fecha, setFecha] = useState<string>(hoyFecha);
+  const [hora, setHora] = useState<string>(hoyHora);
   const [prioridad, setPrioridad] = useState<string>("");
   const [severidad, setSeveridad] = useState<string>("");
 

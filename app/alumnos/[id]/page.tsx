@@ -265,7 +265,11 @@ export default function StudentDetailPage() {
                           Fecha de nacimiento:
                         </span>
                         <span className="text-gray-800 font-medium">
-                          {alumno.personas.fecha_nacimiento.toString()}
+                          {alumno.personas.fecha_nacimiento
+                            .toString()
+                            .split("-")
+                            .reverse()
+                            .join("/")}
                         </span>
                       </div>
                       <div className="flex flex-col">
