@@ -165,6 +165,7 @@ export const fetchWithAuth = async (
   const headers = {
     "Content-Type": "application/json",
     "Date-Zone": JSON.stringify(Intl.DateTimeFormat().resolvedOptions()),
+    "Access-Control-Request-Headers": "date-zone",
 
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
