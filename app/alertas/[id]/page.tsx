@@ -96,32 +96,29 @@ export default function AlertDetailPage({
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
-
-    let date: Date;
-
+    // Si la fecha contiene "T", se asume formato ISO
+    if (dateString.includes("T")) {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "-";
+      const day = date.getDate().toString().padStart(2, "0");
+      const month = (date.getMonth() + 1).toString().padStart(2, "0");
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+    // Si es formato dd-MM-yyyy
     const parts = dateString.split("-");
     if (parts.length === 3) {
       const day = parseInt(parts[0], 10);
       const month = parseInt(parts[1], 10) - 1;
       const year = parseInt(parts[2], 10);
-
-      if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-        date = new Date(year, month, day);
-      } else {
-        date = new Date(dateString);
-      }
-    } else {
-      date = new Date(dateString);
+      const date = new Date(year, month, day);
+      if (isNaN(date.getTime())) return "-";
+      const d = date.getDate().toString().padStart(2, "0");
+      const m = (date.getMonth() + 1).toString().padStart(2, "0");
+      const y = date.getFullYear();
+      return `${d}/${m}/${y}`;
     }
-
-    if (isNaN(date.getTime())) {
-      return "-";
-    }
-
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return "-";
   };
 
   const formatTime = (dateString: string | null | undefined) => {
