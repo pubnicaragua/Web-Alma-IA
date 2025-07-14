@@ -1,24 +1,33 @@
-"use client"
+"use client";
 
-import { useState, useEffect, Dispatch, SetStateAction } from "react"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
-import { Smile, RefreshCw, AlertCircle } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { fetchEmotions, type Emotion } from "@/services/home-service"
-import { useToast } from "@/hooks/use-toast"
-import { themeColors } from "@/lib/theme-colors"
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+import { Smile, RefreshCw, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { fetchEmotions, type Emotion } from "@/services/home-service";
+import { useToast } from "@/hooks/use-toast";
+import { themeColors } from "@/lib/theme-colors";
 
 interface BarChartComparisonAlumnoProps {
-  title: string
-  selectedEmotions: string[]
-  onToggleEmotion: (emotion: string) => void
-  setSelectedEmotions: Dispatch<SetStateAction<string[]>>
-  initialData?: Emotion[]
+  title: string;
+  selectedEmotions: string[];
+  onToggleEmotion: (emotion: string) => void;
+  setSelectedEmotions: Dispatch<SetStateAction<string[]>>;
+  initialData?: Emotion[];
   apiEmotions?: Array<{
-    name: any
-    value: number
-    color: string
-  }>
+    name: any;
+    value: number;
+    color: string;
+  }>;
 }
 
 export function BarChartComparisonAlumno({
@@ -29,49 +38,54 @@ export function BarChartComparisonAlumno({
   initialData,
   apiEmotions,
 }: BarChartComparisonAlumnoProps) {
-  const [data, setData] = useState<Emotion[]>(initialData || [])
-  const [isLoading, setIsLoading] = useState(!initialData && !apiEmotions)
-  const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
+  const [data, setData] = useState<Emotion[]>(initialData || []);
+  const [isLoading, setIsLoading] = useState(!initialData && !apiEmotions);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-useEffect(() => {
-  console.log(apiEmotions)
-  const transformedData = apiEmotions?.map((emotion) => ({
-    name: emotion.name,
-    value: emotion.value ,
-    color: emotion.color,
-  }))
-  setData(transformedData || [])
+  useEffect(() => {
+    const transformedData = apiEmotions?.map((emotion) => ({
+      name: emotion.name,
+      value: emotion.value,
+      color: emotion.color,
+    }));
+    setData(transformedData || []);
 
-  // ✅ Selecciona todas las emociones por defecto
-  if (transformedData) {
-    setSelectedEmotions(transformedData.map((e) => e.name))
-  }
-}, [apiEmotions])
+    // ✅ Selecciona todas las emociones por defecto
+    if (transformedData) {
+      setSelectedEmotions(transformedData.map((e) => e.name));
+    }
+  }, [apiEmotions]);
 
   const loadData = async () => {
     try {
-      setIsLoading(true)
-      setError(null)
-      const emotionsData = await fetchEmotions()
-      setSelectedEmotions(emotionsData.map((emotion) => emotion.name))
-      setData(emotionsData)
+      setIsLoading(true);
+      setError(null);
+      const emotionsData = await fetchEmotions();
+      setSelectedEmotions(emotionsData.map((emotion) => emotion.name));
+      setData(emotionsData);
     } catch (err) {
-      setError("No se pudieron cargar los datos de emociones. Intente nuevamente.")
+      setError(
+        "No se pudieron cargar los datos de emociones. Intente nuevamente."
+      );
 
       // Mostrar notificación de error
       toast({
         title: "Error al cargar datos",
-        description: "No se pudieron cargar los datos de emociones. Intente nuevamente.",
+        description:
+          "No se pudieron cargar los datos de emociones. Intente nuevamente.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Filtrar los datos solo si hay datos disponibles
-  const filteredData = data && data.length > 0 ? data.filter((emotion) => selectedEmotions.includes(emotion.name)) : []
+  const filteredData =
+    data && data.length > 0
+      ? data.filter((emotion) => selectedEmotions.includes(emotion.name))
+      : [];
 
   // Renderizar esqueleto durante la carga
   if (isLoading) {
@@ -88,7 +102,7 @@ useEffect(() => {
         </div>
         <div className="h-64 w-full bg-gray-100 rounded"></div>
       </div>
-    )
+    );
   }
 
   // Renderizar mensaje de error
@@ -107,7 +121,7 @@ useEffect(() => {
           <RefreshCw className="w-4 h-4 mr-2" /> Reintentar
         </button>
       </div>
-    )
+    );
   }
 
   // Renderizar mensaje si no hay datos
@@ -118,9 +132,11 @@ useEffect(() => {
           <Smile className="mr-2 text-gray-700" />
           <h3 className="font-medium text-gray-800">{title}</h3>
         </div>
-        <div className="text-gray-500 text-center py-10">No hay datos de emociones disponibles.</div>
+        <div className="text-gray-500 text-center py-10">
+          No hay datos de emociones disponibles.
+        </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -134,14 +150,18 @@ useEffect(() => {
         {data.map((emotion) => (
           <Badge
             key={emotion.name}
-            variant={selectedEmotions.includes(emotion.name) ? "default" : "outline"}
+            variant={
+              selectedEmotions.includes(emotion.name) ? "default" : "outline"
+            }
             className={`cursor-pointer ${
               selectedEmotions.includes(emotion.name)
                 ? ""
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700"
             }`}
             style={{
-              backgroundColor: selectedEmotions.includes(emotion.name) ? emotion.color : "",
+              backgroundColor: selectedEmotions.includes(emotion.name)
+                ? emotion.color
+                : "",
               borderColor: emotion.color,
               color: selectedEmotions.includes(emotion.name) ? "white" : "",
             }}
@@ -154,18 +174,28 @@ useEffect(() => {
 
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={filteredData} margin={{ top: 5, right: 5, left: 0, bottom: 20 }} maxBarSize={50}>
+          <BarChart
+            data={filteredData}
+            margin={{ top: 5, right: 5, left: 0, bottom: 20 }}
+            maxBarSize={50}
+          >
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="name"
               tick={{ fontSize: 12 }}
-              tickFormatter={(value) => (value.length > 6 ? `${value.substring(0, 6)}...` : value)}
+              tickFormatter={(value) =>
+                value.length > 6 ? `${value.substring(0, 6)}...` : value
+              }
             />
             <YAxis />
             <Tooltip
               formatter={(value) => [`${value}`, "Cantidad"]}
               labelFormatter={(name) => `${name}`}
-              contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
+              contentStyle={{
+                borderRadius: "8px",
+                border: "none",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              }}
             />
             <Bar dataKey="value" radius={[4, 4, 0, 0]}>
               {filteredData.map((entry) => (
@@ -176,7 +206,7 @@ useEffect(() => {
         </ResponsiveContainer>
       </div>
     </div>
-  )
+  );
 }
 
 // Función auxiliar para asignar colores a las emociones
@@ -188,6 +218,6 @@ function getEmotionColor(emotion: string): string {
     Ansiedad: themeColors.chart.orange,
     Enojo: themeColors.chart.red,
     Otros: themeColors.chart.purple,
-  }
-  return colors[emotion] || themeColors.chart.gray
+  };
+  return colors[emotion] || themeColors.chart.gray;
 }

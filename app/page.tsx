@@ -94,11 +94,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    console.log("Home: Inicializando página principal");
-
     // Verificar autenticación
     if (!isAuthenticated()) {
-      console.log("Home: Usuario no autenticado, redirigiendo a /login");
       router.push("/login");
       return;
     }
@@ -106,11 +103,7 @@ export default function Home() {
     // Verificar si hay un colegio seleccionado
     const loadSchool = async () => {
       const selectedSchool = localStorage.getItem("selectedSchool");
-      console.log("Home: Colegio seleccionado:", selectedSchool);
       if (!selectedSchool) {
-        console.log(
-          "Home: No hay colegio seleccionado, redirigiendo a /select-school"
-        );
         router.push("/select-school");
         return;
       }
@@ -121,7 +114,6 @@ export default function Home() {
         setSchoolName(school.name);
         localStorage.setItem("schoolData", JSON.stringify(school));
       } else {
-        console.log("Home: No se encontró el colegio seleccionado");
         router.push("/select-school");
         return;
       }
@@ -159,7 +151,6 @@ export default function Home() {
 
     loadSchool();
     loadCardData();
-    console.log("Home: Página principal inicializada correctamente");
   }, [router, toast]); // Dependencias: router y toast
 
   // Datos para las tarjetas de estadísticas

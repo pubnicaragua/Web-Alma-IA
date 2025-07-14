@@ -96,7 +96,6 @@ export default function LoginPage() {
         // Guardar el token usando la función centralizada
         setAuthToken(data.token);
         localStorage.setItem("isAuthenticated", "true");
-        console.log("Login exitoso, token guardado");
 
         try {
           const profile = await fetchProfileData();

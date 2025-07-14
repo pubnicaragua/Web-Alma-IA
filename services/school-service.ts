@@ -88,7 +88,6 @@ export async function loadSchools(): Promise<School[]> {
     }
 
     const apiSchools = (await response.json()) as ApiSchool[];
-    console.log("Colegios obtenidos correctamente:", apiSchools);
 
     // Verificación para asegurar que siempre haya datos
     if (!apiSchools || apiSchools.length === 0) {
@@ -147,10 +146,8 @@ export async function loadSchoolsByUsuario_id(
     }
 
     const apiSchools = (await response.json()) as ApiSchool[];
-    console.log("Colegios del usuario obtenidos correctamente:", apiSchools);
 
     if (!apiSchools || apiSchools.length === 0) {
-      console.log("No se encontraron colegios para el usuario.");
       return [];
     }
 

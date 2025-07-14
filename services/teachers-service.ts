@@ -108,7 +108,6 @@ export interface Teacher {
 
 // Función para mapear los datos de la API al formato que espera la UI
 const mapApiDataToTeachers = (apiData: TeacherApiResponse[]): Teacher[] => {
-  console.log("Datos de docentes recibidos:", apiData);
   if (!Array.isArray(apiData) || apiData.length === 0) {
     console.warn(
       "No se recibieron datos de docentes de la API o el formato es incorrecto"
@@ -133,7 +132,6 @@ const mapApiDataToTeachers = (apiData: TeacherApiResponse[]): Teacher[] => {
 // Función para obtener todos los docentes
 export const getAllTeachers = async (): Promise<Teacher[]> => {
   try {
-    // console.log("Obteniendo lista de docentes...")
     const response = await fetchWithAuth("/docentes", {
       method: "GET",
     });
@@ -162,7 +160,6 @@ export async function getTeacherById(
       throw new Error("Error al obtener los datos del docente");
     }
     const data = (await response.json()) as TeacherApiResponse;
-    console.log("Datos del docente:", data);
 
     return data;
   } catch (error) {

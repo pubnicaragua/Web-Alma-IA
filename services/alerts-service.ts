@@ -491,13 +491,11 @@ export interface CreateAccionAlertParams {
  * @returns La acción creada
  */
 export const createAccionAlert = async (data: CreateAccionAlertParams) => {
-  console.log(data);
   try {
-    const response = await fetchApi("/alumnos/alertas_bitacoras", {
+    const response = await fetchWithAuth("/alumnos/alertas_bitacoras", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
       },
       body: JSON.stringify({
         alumno_alerta_id: data.alumno_alerta_id,
@@ -747,11 +745,10 @@ export async function deleteAlertBitacora(bitacoraId: number): Promise<void> {
 export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
   try {
     // Realizar la solicitud GET a la API
-    const response = await fetchApi("/alertas/alertas_severidades", {
+    const response = await fetchWithAuth("/alertas/alertas_severidades", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
       },
     });
     // Si la respuesta no es exitosa, lanzar un error
@@ -780,7 +777,6 @@ export async function fetchPrority(): Promise<ApiAlertPriority[]> {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
       },
     });
     // Si la respuesta no es exitosa, lanzar un error
@@ -920,7 +916,6 @@ export async function updateAlert(alertData: AlertPage): Promise<ApiAlert> {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
         body: JSON.stringify({
           leida: true,
@@ -991,7 +986,6 @@ export async function updateBitacora(
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
         },
         body: JSON.stringify(bitacoraData),
       }
@@ -1064,7 +1058,6 @@ export async function createAlert(data: CreateAlertParams): Promise<void> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
       },
       body: JSON.stringify({
         alumno_id: data.alumno_id,

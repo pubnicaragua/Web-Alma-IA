@@ -21,10 +21,6 @@ export const getAuthTokenFromCookie = (): string | null => {
     );
     if (authCookie) {
       const token = authCookie.split("=")[1];
-      console.log(
-        "Token encontrado en cookie:",
-        token.substring(0, 10) + "..."
-      );
       return token;
     }
     return null;
@@ -56,26 +52,6 @@ export const setAuthToken = (
       }
       document.cookie = cookieString;
 
-      console.log("Token guardado correctamente:");
-      console.log("- En localStorage:", token.substring(0, 10) + "...");
-      console.log(
-        "- En cookie:",
-        rememberMe
-          ? `con expiración: ${expirationDate.toUTCString()}`
-          : "de sesión"
-      );
-      // Verificar que se haya guardado correctamente
-      const storedToken = localStorage.getItem("auth_token");
-      const cookieToken = getAuthTokenFromCookie();
-      console.log("Verificación después de guardar:");
-      console.log(
-        "- Token en localStorage:",
-        storedToken ? "Presente" : "No presente"
-      );
-      console.log(
-        "- Token en cookie:",
-        cookieToken ? "Presente" : "No presente"
-      );
       dispatchAuthChangeEvent(true);
     } catch (error) {
       console.error("Error al guardar el token:", error);
@@ -91,24 +67,6 @@ export const removeAuthToken = (): void => {
       document.cookie =
         "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax";
 
-      console.log("Token eliminado correctamente");
-
-      const storedToken = localStorage.getItem("auth_token");
-
-      const cookieToken = getAuthTokenFromCookie();
-
-      console.log("Verificación después de eliminar:");
-
-      console.log(
-        "- Token en localStorage:",
-        storedToken ? "Presente" : "No presente"
-      );
-
-      console.log(
-        "- Token en cookie:",
-        cookieToken ? "Presente" : "No presente"
-      );
-
       dispatchAuthChangeEvent(false);
     } catch (error) {
       console.error("Error al eliminar el token:", error);
@@ -121,11 +79,7 @@ export const isAuthenticated = (): boolean => {
   const token = getAuthToken();
   const cookieToken = getAuthTokenFromCookie();
   const isAuth = !!token || !!cookieToken;
-  console.log(
-    `isAuthenticated check: ${isAuth ? "Autenticado" : "No autenticado"}`
-  );
-  console.log(`- localStorage token: ${token ? "Presente" : "No presente"}`);
-  console.log(`- cookie token: ${cookieToken ? "Presente" : "No presente"}`);
+
   return isAuth;
 };
 
@@ -190,10 +144,6 @@ export const fetchWithAuth = async (
   const normalizedEndpoint = processedEndpoint.startsWith("/")
     ? processedEndpoint
     : `/${processedEndpoint}`;
-
-  console.log(
-    `api-config:Enviando solicitud ${method} a ${API_BASE_URL}${normalizedEndpoint}`
-  );
 
   try {
     const response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {
@@ -263,10 +213,6 @@ export const fetchApi = async (
   const normalizedEndpoint = endpoint.startsWith("/")
     ? endpoint
     : `/${endpoint}`;
-
-  console.log(
-    `api-config:Enviando solicitud sin auth ${method} a ${API_BASE_URL}${normalizedEndpoint}`
-  );
 
   try {
     const response = await fetch(`${API_BASE_URL}${normalizedEndpoint}`, {

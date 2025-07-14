@@ -50,21 +50,12 @@ export default function ComparativePage() {
       const grados = await fetchGrade();
       setLevelOptions(grados);
     } catch (err) {
-      console.log(err);
     }
   };
 
   useEffect(() => {
     loadData();
   }, []);
-
-  // Estados para las emociones seleccionadas
-  const [selectedEmotionsCourseA, setSelectedEmotionsCourseA] = useState<
-    string[]
-  >(["Tristeza", "Felicidad", "Estrés", "Ansiedad", "Enojo", "Otros"]);
-  const [selectedEmotionsCourseB, setSelectedEmotionsCourseB] = useState<
-    string[]
-  >(["Tristeza", "Felicidad", "Estrés", "Ansiedad", "Enojo", "Otros"]);
 
   // ESTADOS INDEPENDIENTES para los cursos seleccionados en cada gráfico de líneas
   const [selectedCoursesComparison, setSelectedCoursesComparison] = useState<
@@ -73,26 +64,6 @@ export default function ComparativePage() {
   const [selectedCoursesHistory, setSelectedCoursesHistory] = useState<
     string[]
   >(["vencidas", "atendidas"]);
-
-  const handleToggleEmotionCourseA = (emotion: string) => {
-    if (selectedEmotionsCourseA.includes(emotion)) {
-      setSelectedEmotionsCourseA(
-        selectedEmotionsCourseA.filter((e) => e !== emotion)
-      );
-    } else {
-      setSelectedEmotionsCourseA([...selectedEmotionsCourseA, emotion]);
-    }
-  };
-
-  const handleToggleEmotionCourseB = (emotion: string) => {
-    if (selectedEmotionsCourseB.includes(emotion)) {
-      setSelectedEmotionsCourseB(
-        selectedEmotionsCourseB.filter((e) => e !== emotion)
-      );
-    } else {
-      setSelectedEmotionsCourseB([...selectedEmotionsCourseB, emotion]);
-    }
-  };
 
   const handleToggleCourseComparison = (course: string) => {
     if (selectedCoursesComparison.includes(course)) {

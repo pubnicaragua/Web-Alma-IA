@@ -10,16 +10,10 @@ export function middleware(request: NextRequest) {
 
   const isAuthenticated = !!token;
 
-  console.log(
-    `Middleware: Acceso a ruta ${path}, isAuthenticated=${isAuthenticated}`
-  );
   if (path === "/" && !isAuthenticated) {
-    console.log("Middleware: Redirigiendo de / a /login porque no hay token");
     return NextResponse.redirect(new URL("/login", request.url));
   }
   if (path === "/login" && isAuthenticated) {
-    console.log("Middleware: Redirigiendo de /login a / porque hay token");
-
     return NextResponse.redirect(new URL("/", request.url));
   }
   return NextResponse.next();

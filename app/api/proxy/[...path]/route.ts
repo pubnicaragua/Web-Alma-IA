@@ -63,8 +63,6 @@ export async function GET(
       finalApiUrl += `?${queryString}`;
     }
 
-    console.log(`Proxy GET request to: ${finalApiUrl}`);
-
     // Obtener el token de autorización de la solicitud
     const authHeader = request.headers.get("authorization");
 
@@ -76,9 +74,6 @@ export async function GET(
     // Añadir el header de autorización si existe
     if (authHeader) {
       headers["Authorization"] = authHeader;
-      console.log(
-        `Usando token de autorización: ${authHeader.substring(0, 15)}...`
-      );
     } else {
       console.warn(
         "No se proporcionó token de autorización para la solicitud GET a:",
@@ -93,7 +88,6 @@ export async function GET(
     }
 
     // Hacer la solicitud a la API real
-    console.log(`Realizando solicitud a: ${finalApiUrl}`);
     const response = await fetch(finalApiUrl, {
       method: "GET",
       headers,
@@ -121,12 +115,10 @@ export async function GET(
     // Intentar parsear la respuesta como JSON
     try {
       const data = await response.json();
-      console.log(`Proxy GET response from ${finalApiUrl}:`, data);
       return NextResponse.json(data, { status: response.status });
     } catch (error) {
       // Si no es JSON, devolver el texto
       const textData = await response.text();
-      console.log(`Proxy GET response from ${finalApiUrl} (text):`, textData);
       return new NextResponse(textData, {
         status: response.status,
         headers: { "Content-Type": "text/plain" },
@@ -156,7 +148,6 @@ export async function POST(
     });
 
     const apiUrl = getApiUrl(resolvedParams.path);
-    console.log(`Proxy POST request to: ${apiUrl}`, body);
 
     // Obtener el token de autorización de la solicitud (excepto para login)
     const headers: HeadersInit = {
@@ -167,9 +158,6 @@ export async function POST(
       const authHeader = request.headers.get("authorization");
       if (authHeader) {
         headers["Authorization"] = authHeader;
-        console.log(
-          `Usando token de autorización: ${authHeader.substring(0, 15)}...`
-        );
       } else {
         console.warn(
           "No se proporcionó token de autorización para la solicitud POST a:",
@@ -185,7 +173,6 @@ export async function POST(
     }
 
     // Hacer la solicitud a la API real
-    console.log(`Realizando solicitud a: ${apiUrl}`);
     const response = await fetch(apiUrl, {
       method: "POST",
       headers,
@@ -214,12 +201,10 @@ export async function POST(
     // Intentar parsear la respuesta como JSON
     try {
       const data = await response.json();
-      console.log(`Proxy POST response from ${apiUrl}:`, data);
       return NextResponse.json(data, { status: response.status });
     } catch (error) {
       // Si no es JSON, devolver el texto
       const textData = await response.text();
-      console.log(`Proxy POST response from ${apiUrl} (text):`, textData);
       return new NextResponse(textData, {
         status: response.status,
         headers: { "Content-Type": "text/plain" },
@@ -242,8 +227,6 @@ export async function PUT(
     const body = await request.json().catch(() => ({}));
     const apiUrl = getApiUrl(resolvedParams.path);
 
-    console.log(`Proxy PUT request to: ${apiUrl}`, body);
-
     // Obtener el token de autorización de la solicitud
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -252,9 +235,6 @@ export async function PUT(
     const authHeader = request.headers.get("authorization");
     if (authHeader) {
       headers["Authorization"] = authHeader;
-      console.log(
-        `Usando token de autorización: ${authHeader.substring(0, 15)}...`
-      );
     } else {
       console.warn(
         "No se proporcionó token de autorización para la solicitud PUT a:",
@@ -269,7 +249,6 @@ export async function PUT(
     }
 
     // Hacer la solicitud a la API real
-    console.log(`Realizando solicitud a: ${apiUrl}`);
     const response = await fetch(apiUrl, {
       method: "PUT",
       headers,
@@ -297,12 +276,10 @@ export async function PUT(
     // Intentar parsear la respuesta como JSON
     try {
       const data = await response.json();
-      console.log(`Proxy PUT response from ${apiUrl}:`, data);
       return NextResponse.json(data, { status: response.status });
     } catch (error) {
       // Si no es JSON, devolver el texto
       const textData = await response.text();
-      console.log(`Proxy PUT response from ${apiUrl} (text):`, textData);
       return new NextResponse(textData, {
         status: response.status,
         headers: { "Content-Type": "text/plain" },
@@ -322,7 +299,6 @@ export async function DELETE(
     const resolvedParams = await params;
     const path = resolvedParams.path.join("/");
     const apiUrl = getApiUrl(resolvedParams.path);
-    console.log(`Proxy DELETE request to: ${apiUrl}`);
 
     // Obtener el token de autorización de la solicitud
     const headers: HeadersInit = {
@@ -332,9 +308,6 @@ export async function DELETE(
     const authHeader = request.headers.get("authorization");
     if (authHeader) {
       headers["Authorization"] = authHeader;
-      console.log(
-        `Usando token de autorización: ${authHeader.substring(0, 15)}...`
-      );
     } else {
       console.warn(
         "No se proporcionó token de autorización para la solicitud DELETE a:",
@@ -349,7 +322,6 @@ export async function DELETE(
     }
 
     // Hacer la solicitud a la API real
-    console.log(`Realizando solicitud a: ${apiUrl}`);
     const response = await fetch(apiUrl, {
       method: "DELETE",
       headers,
@@ -376,12 +348,10 @@ export async function DELETE(
     // Intentar parsear la respuesta como JSON
     try {
       const data = await response.json();
-      console.log(`Proxy DELETE response from ${apiUrl}:`, data);
       return NextResponse.json(data, { status: response.status });
     } catch (error) {
       // Si no es JSON, devolver el texto
       const textData = await response.text();
-      console.log(`Proxy DELETE response from ${apiUrl} (text):`, textData);
       return new NextResponse(textData, {
         status: response.status,
         headers: { "Content-Type": "text/plain" },

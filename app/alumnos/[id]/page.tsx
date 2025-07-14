@@ -550,18 +550,6 @@ function formatTime(dateString: string): string {
   });
 }
 
-function getEmotionColor(emotion: string): string {
-  const colors: Record<string, string> = {
-    Felicidad: "#ffd166",
-    Tristeza: "#78b6ff",
-    Estrés: "#6c757d",
-    Ansiedad: "#f4a261",
-    Enojo: "#e63946",
-    Otros: "#6c757d",
-  };
-  return colors[emotion] || "#6c757d";
-}
-
 function getTipoAlerta(tipoId: number): string {
   const tipos: Record<number, string> = {
     1: "SOS Alma",

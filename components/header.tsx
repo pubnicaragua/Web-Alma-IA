@@ -58,9 +58,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
     try {
       setIsLoading(true);
       const data = await fetchProfileData();
-      console.log(data);
       setProfileData(data);
-      console.log("Perfil de usuario cargado:", data);
     } catch (error) {
       console.error("Error al cargar el perfil del usuario:", error);
       setProfileData(null);
@@ -94,7 +92,6 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const loadNotifications = async () => {
     try {
       const count = await getNotificationCount();
-      console.log("Conteo de notificaciones cargado:", count);
       setNotificationCount(count);
     } catch (error) {
       console.error("Failed to load notifications:", error);

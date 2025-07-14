@@ -6,6 +6,7 @@ import { ThemeColorsProvider } from "@/lib/theme-colors";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/auth-provider";
 import { UserProvider } from "@/lib/user-context";
+import { ProtectedRoute } from "@/middleware/isLogin";
 import ClientWrapper from "@/components/ClientWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -31,11 +32,12 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light">
           <ThemeColorsProvider>
             <AuthProvider>
-              <UserProvider>
-                {/* ClientWrapper manejará el splash screen */}
-                <ClientWrapper>{children}</ClientWrapper>
-                <Toaster />
-              </UserProvider>
+              <ProtectedRoute>
+                <UserProvider>
+                  <ClientWrapper>{children}</ClientWrapper>
+                  <Toaster />
+                </UserProvider>
+              </ProtectedRoute>
             </AuthProvider>
           </ThemeColorsProvider>
         </ThemeProvider>

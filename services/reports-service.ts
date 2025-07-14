@@ -1,43 +1,43 @@
-import { fetchWithAuth } from "@/lib/api-config"
+import { fetchWithAuth } from "@/lib/api-config";
 
 // Interfaces para la API
 export interface CreateReportData {
-  fecha: string
-  url_reporte: string
-  tipo: string
-  periodo_evaluado: string
-  url_anexos: string[]
-  observaciones: string
-  estado: string
-  creado_por: string
+  fecha: string;
+  url_reporte: string;
+  tipo: string;
+  periodo_evaluado: string;
+  url_anexos: string[];
+  observaciones: string;
+  estado: string;
+  creado_por: string;
 }
 
 export interface ApiReport {
-  alumno_informe_id: number
-  alumno_id: number
-  fecha: string
-  url_reporte: string
-  tipo: string
-  periodo_evaluado: string
-  url_anexos: string[]
-  observaciones: string
-  creado_por: string
-  estado: string
+  alumno_informe_id: number;
+  alumno_id: number;
+  fecha: string;
+  url_reporte: string;
+  tipo: string;
+  periodo_evaluado: string;
+  url_anexos: string[];
+  observaciones: string;
+  creado_por: string;
+  estado: string;
 }
 
 // Interfaces para la UI
 export interface Report {
-  id: string
-  studentId: string
-  date: string
-  reportUrl: string
-  type: string
-  evaluationPeriod: string
-  attachments: string[]
-  observations: string
-  createdBy: string
-  status: string
-  statusColor: string
+  id: string;
+  studentId: string;
+  date: string;
+  reportUrl: string;
+  type: string;
+  evaluationPeriod: string;
+  attachments: string[];
+  observations: string;
+  createdBy: string;
+  status: string;
+  statusColor: string;
 }
 
 export interface APIReportGeneral {
@@ -54,27 +54,26 @@ export interface APIReportGeneral {
   colegio_id: number;
 }
 
-
 // Función para convertir el formato de la API al formato de la UI
 function mapApiReportsToReports(apiReports: ApiReport[]): Report[] {
   return apiReports.map((apiReport) => {
     // Determinar el color del estado
-    let statusColor = "#4CAF50" // Verde por defecto para "Activo"
+    let statusColor = "#4CAF50"; // Verde por defecto para "Activo"
     if (apiReport.estado === "Inactivo") {
-      statusColor = "#F44336" // Rojo para "Inactivo"
+      statusColor = "#F44336"; // Rojo para "Inactivo"
     } else if (apiReport.estado === "Pendiente") {
-      statusColor = "#FFC107" // Amarillo para "Pendiente"
+      statusColor = "#FFC107"; // Amarillo para "Pendiente"
     } else if (apiReport.estado === "Archivado") {
-      statusColor = "#9E9E9E" // Gris para "Archivado"
+      statusColor = "#9E9E9E"; // Gris para "Archivado"
     }
 
     // Formatear la fecha
-    const date = new Date(apiReport.fecha)
+    const date = new Date(apiReport.fecha);
     const formattedDate = date.toLocaleDateString("es-ES", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    })
+    });
 
     return {
       id: apiReport.alumno_informe_id.toString(),
@@ -88,8 +87,8 @@ function mapApiReportsToReports(apiReports: ApiReport[]): Report[] {
       createdBy: apiReport.creado_por,
       status: apiReport.estado,
       statusColor,
-    }
-  })
+    };
+  });
 }
 
 // Datos de ejemplo para cuando la API no está disponible
@@ -114,7 +113,10 @@ const sampleReports: Report[] = [
     reportUrl: "https://storage.colegio.com/informes/802.pdf",
     type: "Conductual",
     evaluationPeriod: "Primer Semestre 2023",
-    attachments: ["https://storage.colegio.com/anexos/802-1.pdf", "https://storage.colegio.com/anexos/802-2.pdf"],
+    attachments: [
+      "https://storage.colegio.com/anexos/802-1.pdf",
+      "https://storage.colegio.com/anexos/802-2.pdf",
+    ],
     observations: "El alumno ha mejorado su comportamiento en clase",
     createdBy: "orientador.perez@colegio.com",
     status: "Activo",
@@ -128,7 +130,8 @@ const sampleReports: Report[] = [
     type: "Psicológico",
     evaluationPeriod: "Primer Semestre 2023",
     attachments: [],
-    observations: "Se recomienda seguimiento por parte del departamento de orientación",
+    observations:
+      "Se recomienda seguimiento por parte del departamento de orientación",
     createdBy: "psicologo.martinez@colegio.com",
     status: "Pendiente",
     statusColor: "#FFC107",
@@ -154,12 +157,13 @@ const sampleReports: Report[] = [
     type: "Conductual",
     evaluationPeriod: "Primer Semestre 2023",
     attachments: [],
-    observations: "Se ha observado una mejora significativa en su comportamiento",
+    observations:
+      "Se ha observado una mejora significativa en su comportamiento",
     createdBy: "orientador.gomez@colegio.com",
     status: "Archivado",
     statusColor: "#9E9E9E",
   },
-]
+];
 
 // Función para obtener los informes
 export async function fetchReports(): Promise<APIReportGeneral[]> {
@@ -167,66 +171,70 @@ export async function fetchReports(): Promise<APIReportGeneral[]> {
     // Usar el proxy local en lugar de la URL directa
     const response = await fetchWithAuth("/informes/generales", {
       method: "GET",
-    })
+    });
 
     if (!response.ok) {
       // Si la respuesta no es exitosa, lanzar un error
-      const errorText = await response.text()
+      const errorText = await response.text();
       console.error("Error en respuesta API (informes):", {
         status: response.status,
         statusText: response.statusText,
         body: errorText,
-      })
-      throw new Error(`Error al obtener informes: ${response.status} ${response.statusText}`)
+      });
+      throw new Error(
+        `Error al obtener informes: ${response.status} ${response.statusText}`
+      );
     }
 
-    const data = await response.json()
-    console.log('REPORTES......',data)
+    const data = await response.json();
     // Verificar que data sea un array antes de mapearlo
     if (!Array.isArray(data)) {
-      console.error("La respuesta de la API no es un array:", data)
-      throw new Error('Error al obtener informes, intente más tarde')
+      console.error("La respuesta de la API no es un array:", data);
+      throw new Error("Error al obtener informes, intente más tarde");
     }
-    return data
+    return data;
   } catch (error) {
-    console.error("Error al obtener informes:", error)
+    console.error("Error al obtener informes:", error);
     // En caso de error, devolver datos de ejemplo
-    console.log("Usando datos de ejemplo para informes")
-   throw error
+    throw error;
   }
 }
 
 // Función para obtener un informe específico por ID
-export async function fetchReportById(id: string): Promise<APIReportGeneral | null> {
+export async function fetchReportById(
+  id: string
+): Promise<APIReportGeneral | null> {
   try {
-    const response = await fetchWithAuth(`/alumnos/informes/${id}`)
-    const data = await response.json()
-    return data.data || null
+    const response = await fetchWithAuth(`/alumnos/informes/${id}`);
+    const data = await response.json();
+    return data.data || null;
   } catch (error) {
-    console.error('Error fetching report by ID:', error)
-    return null
+    console.error("Error fetching report by ID:", error);
+    return null;
   }
 }
 
-export async function createReport(reportData: CreateReportData): Promise<ApiReport> {
+export async function createReport(
+  reportData: CreateReportData
+): Promise<ApiReport> {
   try {
-    const response = await fetchWithAuth('/alumnos/informes', {
-      method: 'POST',
+    const response = await fetchWithAuth("/alumnos/informes", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(reportData),
-    })
+    });
 
     if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || 'Error al crear el informe')
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Error al crear el informe");
     }
 
-    const data = await response.json()
-    return data.data
+    const data = await response.json();
+    return data.data;
   } catch (error) {
-    console.error('Error creating report:', error)
-    throw error
+    console.error("Error creating report:", error);
+    throw error;
   }
 }

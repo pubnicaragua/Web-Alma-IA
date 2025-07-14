@@ -324,8 +324,6 @@ export const getStudentReports = async (
 // Función para obtener la lista de estudiantes
 export async function fetchStudents(): Promise<Student[]> {
   try {
-    console.log("Obteniendo lista de estudiantes desde la API...");
-
     // Realizar la solicitud GET a la API
     const response = await fetchWithAuth("/alumnos", {
       method: "GET",
@@ -342,12 +340,9 @@ export async function fetchStudents(): Promise<Student[]> {
 
     // Intentar parsear la respuesta como JSON
     const apiStudents = (await response.json()) as ApiStudent[];
-    console.log(`Recibidos ${apiStudents.length} estudiantes de la API`);
-    console.log("apiStudents", apiStudents);
 
     // Transformar los datos de la API a nuestro modelo de Student
     const students = mapApiStudentsToStudents(apiStudents);
-    console.log("Estudiantes transformados:", students);
     return students;
   } catch (error) {
     console.error("Error al obtener estudiantes:", error);
@@ -358,8 +353,6 @@ export async function fetchStudents(): Promise<Student[]> {
 // Función para obtener un estudiante por ID
 export async function fetchStudentById(id: string): Promise<Student | null> {
   try {
-    console.log(`Obteniendo estudiante con ID ${id} desde la API...`);
-
     // Realizar la solicitud GET a la API
     const response = await fetchWithAuth(`/alumnos/${id}`, {
       method: "GET",
@@ -391,8 +384,6 @@ export async function fetchStudentDetails(
   id: string
 ): Promise<StudentDetailResponse | null> {
   try {
-    console.log(`Obteniendo detalles del alumno con ID: ${id}`);
-
     // Realizar la solicitud GET a la API con la nueva ruta
     const response = await fetchWithAuth(`/alumnos/detalle/${id}`, {
       method: "GET",
@@ -402,9 +393,7 @@ export async function fetchStudentDetails(
     if (!response.ok) {
       // Intentar leer el mensaje de error
       const errorText = await response.text();
-      console.error(
-        `Error al obtener detalles del alumno: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener detalles del alumno: ${response.status} - ${errorText}`
       );
@@ -412,7 +401,6 @@ export async function fetchStudentDetails(
 
     // Intentar parsear la respuesta como JSON
     const studentDetails = (await response.json()) as StudentDetailResponse;
-    console.log("Detalles del alumno obtenidos correctamente:", studentDetails);
     return studentDetails;
   } catch (error) {
     console.error(`Error en fetchStudentDetails para ID ${id}:`, error);

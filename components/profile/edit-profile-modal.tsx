@@ -1,155 +1,131 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
-import { Loader2, X } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import type { ProfileData } from "@/services/profile-service"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import type { ProfileData } from "@/services/profile-service";
+import { cn } from "@/lib/utils";
 
 interface FormErrors {
-  nombres?: string
-  apellidos?: string
-  // email?: string
-  // fecha_nacimiento?: string
-  // telefono_contacto?: string
-  // url_foto_perfil?: string
+  nombres?: string;
+  apellidos?: string;
 }
 
 interface EditProfileModalProps {
-  isOpen: boolean
-  onClose: () => void
-  profileData: ProfileData
-  onSave: (data: ProfileData) => Promise<void>
+  isOpen: boolean;
+  onClose: () => void;
+  profileData: ProfileData;
+  onSave: (
+    data: ProfileData & { foto_perfil_base64?: string | null }
+  ) => Promise<void>;
 }
 
-export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditProfileModalProps) {
-  const [formData, setFormData] = useState<ProfileData>(profileData)
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<FormErrors>({})
+export function EditProfileModal({
+  isOpen,
+  onClose,
+  profileData,
+  onSave,
+}: EditProfileModalProps) {
+  const [formData, setFormData] = useState<ProfileData>(profileData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [fotoPerfilBase64, setFotoPerfilBase64] = useState<string | null>(null);
+  const [previewImg, setPreviewImg] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setFormData(profileData)
+      setFormData(profileData);
+      setFotoPerfilBase64(null);
+      setPreviewImg(profileData.url_foto_perfil || null);
     }
-  }, [isOpen, profileData])
+  }, [isOpen, profileData]);
 
   const validateField = (name: string, value: string) => {
-    let error = ''
-
+    let error = "";
     switch (name) {
-      case 'nombres':
-      case 'apellidos':
-        if (!value.trim()) error = 'Este campo es requerido'
-        break
-      // case 'email':
-      //   if (!value) {
-      //     error = 'El correo es requerido'
-      //   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      //     error = 'Correo electrónico inválido'
-      //   }
-      //   break
-      // case 'fecha_nacimiento':
-      //   if (!value) error = 'La fecha de nacimiento es requerida'
-      //   break
-      // case 'telefono_contacto':
-      //   if (!value) {
-      //     error = 'El teléfono es requerido'
-      //   } else if (!/^[0-9+\-\s()]+$/.test(value)) {
-      //     error = 'Formato de teléfono inválido'
-      //   }
-      //   break
-      // case 'url_foto_perfil':
-      //   if (value && !/^https?:\/\//.test(value)) {
-      //     error = 'La URL debe comenzar con http:// o https://'
-      //   }
-      //   break
+      case "nombres":
+      case "apellidos":
+        if (!value.trim()) error = "Este campo es requerido";
+        break;
     }
-
-    return error
-  }
+    return error;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-
-    // Validar el campo que está cambiando
-    const error = validateField(name, value)
-
-    // Actualizar errores
-    setErrors(prev => ({
+    const { name, value } = e.target;
+    const error = validateField(name, value);
+    setErrors((prev) => ({
       ...prev,
-      [name]: error || undefined
-    }))
-
-    // Actualizar datos del formulario
-    setFormData(prev => ({
+      [name]: error || undefined,
+    }));
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
-    }))
-  }
+      [name]: value,
+    }));
+  };
+
+  // Convertir archivo a base64 y guardar en el estado
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setFotoPerfilBase64(result);
+        setPreviewImg(result);
+      };
+      reader.readAsDataURL(file); // Esto genera el string data:image/...;base64,...
+    } else {
+      setFotoPerfilBase64(null);
+      setPreviewImg(formData.url_foto_perfil || null);
+    }
+  };
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {}
-    let isValid = true
-
-    // Validar campos requeridos
+    const newErrors: FormErrors = {};
+    let isValid = true;
     if (!formData.nombres?.trim()) {
-      newErrors.nombres = 'Los nombres son requeridos'
-      isValid = false
+      newErrors.nombres = "Los nombres son requeridos";
+      isValid = false;
     }
-
     if (!formData.apellidos?.trim()) {
-      newErrors.apellidos = 'Los apellidos son requeridos'
-      isValid = false
+      newErrors.apellidos = "Los apellidos son requeridos";
+      isValid = false;
     }
-
-    // if (!formData.email) {
-    //   newErrors.email = 'El correo es requerido'
-    //   isValid = false
-    // } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-    //   newErrors.email = 'Correo electrónico inválido'
-    //   isValid = false
-    // }
-
-    // if (!formData.fecha_nacimiento) {
-    //   newErrors.fecha_nacimiento = 'La fecha de nacimiento es requerida'
-    //   isValid = false
-    // }
-
-    // if (formData.url_foto_perfil && !/^https?:\/\//.test(formData.url_foto_perfil)) {
-    //   newErrors.url_foto_perfil = 'La URL debe comenzar con http:// o https://'
-    //   isValid = false
-    // }
-
-    setErrors(newErrors)
-    return isValid
-  }
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!validateForm()) {
-      return
-    }
-
-    setIsLoading(true)
+    e.preventDefault();
+    if (!validateForm()) return;
+    setIsLoading(true);
     try {
-      await onSave(formData)
-      onClose()
+      await onSave({ ...formData, url_foto_perfil: fotoPerfilBase64 });
+      onClose();
     } catch (error) {
-      console.error("Error al actualizar el perfil:", error)
-      throw error
+      console.error("Error al actualizar el perfil:", error);
+      throw error;
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden">
+      <DialogContent
+        className="sm:max-w-[600px] p-0 overflow-hidden"
+        style={{ maxHeight: "90vh", overflowY: "auto" }}
+      >
         <div className="relative">
           <button
             onClick={onClose}
@@ -159,7 +135,9 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
             <span className="sr-only">Cerrar</span>
           </button>
           <DialogHeader className="border-b px-6 py-4">
-            <DialogTitle className="text-lg font-semibold">Editar perfil</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">
+              Editar perfil
+            </DialogTitle>
           </DialogHeader>
         </div>
         <form onSubmit={handleSubmit}>
@@ -169,7 +147,9 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                 <div className="flex justify-between items-center">
                   <Label htmlFor="nombres">Nombres</Label>
                   {errors.nombres && (
-                    <span className="text-xs text-red-500">{errors.nombres}</span>
+                    <span className="text-xs text-red-500">
+                      {errors.nombres}
+                    </span>
                   )}
                 </div>
                 <Input
@@ -178,17 +158,22 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                   value={formData.nombres}
                   onChange={handleChange}
                   onBlur={(e) => {
-                    const error = validateField(e.target.name, e.target.value)
-                    setErrors(prev => ({ ...prev, nombres: error }))
+                    const error = validateField(e.target.name, e.target.value);
+                    setErrors((prev) => ({ ...prev, nombres: error }));
                   }}
-                  className={cn(errors.nombres && 'border-red-500 focus-visible:ring-red-500')}
+                  className={cn(
+                    errors.nombres &&
+                      "border-red-500 focus-visible:ring-red-500"
+                  )}
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="apellidos">Apellidos</Label>
                   {errors.apellidos && (
-                    <span className="text-xs text-red-500">{errors.apellidos}</span>
+                    <span className="text-xs text-red-500">
+                      {errors.apellidos}
+                    </span>
                   )}
                 </div>
                 <Input
@@ -197,10 +182,13 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                   value={formData.apellidos}
                   onChange={handleChange}
                   onBlur={(e) => {
-                    const error = validateField(e.target.name, e.target.value)
-                    setErrors(prev => ({ ...prev, apellidos: error }))
+                    const error = validateField(e.target.name, e.target.value);
+                    setErrors((prev) => ({ ...prev, apellidos: error }));
                   }}
-                  className={cn(errors.apellidos && 'border-red-500 focus-visible:ring-red-500')}
+                  className={cn(
+                    errors.apellidos &&
+                      "border-red-500 focus-visible:ring-red-500"
+                  )}
                 />
               </div>
             </div>
@@ -211,16 +199,13 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                 <Input
                   id="nombre_social"
                   name="nombre_social"
-                  value={formData.nombre_social || ''}
+                  value={formData.nombre_social || ""}
                   onChange={handleChange}
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="email">Correo electrónico</Label>
-                  {/* {errors.email && (
-                    <span className="text-xs text-red-500">{errors.email}</span>
-                  )} */}
                 </div>
                 <Input
                   id="email"
@@ -228,11 +213,6 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  // onBlur={(e) => {
-                  //   const error = validateField(e.target.name, e.target.value)
-                  //   setErrors(prev => ({ ...prev, email: error }))
-                  // }}
-                  // className={cn(errors.email && 'border-red-500 focus-visible:ring-red-500')}
                 />
               </div>
             </div>
@@ -241,9 +221,6 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="fecha_nacimiento">Fecha de nacimiento</Label>
-                  {/* {errors.fecha_nacimiento && (
-                    <span className="text-xs text-red-500">{errors.fecha_nacimiento}</span>
-                  )} */}
                 </div>
                 <Input
                   id="fecha_nacimiento"
@@ -251,19 +228,13 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                   type="date"
                   value={formData.fecha_nacimiento}
                   onChange={handleChange}
-                  // onBlur={(e) => {
-                  //   const error = validateField(e.target.name, e.target.value)
-                  //   setErrors(prev => ({ ...prev, fecha_nacimiento: error }))
-                  // }}
-                  // className={cn(errors.fecha_nacimiento && 'border-red-500 focus-visible:ring-red-500')}
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="telefono_contacto">Teléfono de contacto</Label>
-                  {/* {errors.telefono_contacto && (
-                    <span className="text-xs text-red-500">{errors.telefono_contacto}</span>
-                  )} */}
+                  <Label htmlFor="telefono_contacto">
+                    Teléfono de contacto
+                  </Label>
                 </div>
                 <Input
                   id="telefono_contacto"
@@ -271,58 +242,66 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                   type="tel"
                   value={formData.telefono_contacto}
                   onChange={handleChange}
-                  // onBlur={(e) => {
-                  //   const error = validateField(e.target.name, e.target.value)
-                  //   setErrors(prev => ({ ...prev, telefono_contacto: error }))
-                  // }}
-                  // className={cn(errors.telefono_contacto && 'border-red-500 focus-visible:ring-red-500')}
                 />
               </div>
             </div>
 
+            {/* Subida de imagen en base64 */}
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="url_foto_perfil">URL de la foto de perfil (opcional)</Label>
-                {/* {errors.url_foto_perfil && (
-                  <span className="text-xs text-red-500">{errors.url_foto_perfil}</span>
-                )} */}
-              </div>
+              <Label htmlFor="foto_perfil_file">
+                Foto de perfil (puede subir una imagen)
+              </Label>
               <Input
-                id="url_foto_perfil"
-                name="url_foto_perfil"
-                type="url"
-                value={formData.url_foto_perfil || ''}
-                onChange={handleChange}
-                // onBlur={(e) => {
-                //   const error = validateField(e.target.name, e.target.value)
-                //   setErrors(prev => ({ ...prev, url_foto_perfil: error }))
-                // }}
-                // placeholder="https://ejemplo.com/foto.jpg"
-                // className={cn(errors.url_foto_perfil && 'border-red-500 focus-visible:ring-red-500')}
+                id="foto_perfil_file"
+                name="foto_perfil_file"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
               />
+              {/* Vista previa de la imagen */}
+              {previewImg && (
+                <div className="mt-2">
+                  <img
+                    src={previewImg}
+                    alt="Vista previa"
+                    className="h-24 w-24 object-cover rounded-full border"
+                  />
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Formatos permitidos: jpg, jpeg, png, webp, gif, etc.
+              </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="encripted_password">Nueva contraseña (dejar en blanco para no cambiar)</Label>
+              <Label htmlFor="encripted_password">
+                Nueva contraseña (dejar en blanco para no cambiar)
+              </Label>
               <Input
                 id="encripted_password"
                 name="encripted_password"
                 type="password"
-                value={formData.encripted_password || ''}
+                value={formData.encripted_password || ""}
                 onChange={handleChange}
                 placeholder="••••••••"
                 minLength={8}
               />
-              {formData.encripted_password && formData.encripted_password.length < 8 && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  La contraseña debe tener al menos 8 caracteres
-                </p>
-              )}
+              {formData.encripted_password &&
+                formData.encripted_password.length < 8 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    La contraseña debe tener al menos 8 caracteres
+                  </p>
+                )}
             </div>
           </div>
           <div className="border-t px-6 py-4">
             <DialogFooter className="sm:justify-end">
-              <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isLoading}
+              >
                 Cancelar
               </Button>
               <Button type="submit" disabled={isLoading}>
@@ -332,7 +311,7 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
                     Guardando...
                   </>
                 ) : (
-                  'Guardar cambios'
+                  "Guardar cambios"
                 )}
               </Button>
             </DialogFooter>
@@ -340,5 +319,5 @@ export function EditProfileModal({ isOpen, onClose, profileData, onSave }: EditP
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

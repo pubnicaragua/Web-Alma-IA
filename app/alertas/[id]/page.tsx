@@ -45,9 +45,7 @@ export default function AlertDetailPage({
         if (hasSearchParam(searchParams, "notifications")) {
           try {
             await changeLeida(id);
-          } catch (error) {
-            console.log("Error al marcar alerta como leida", error);
-          }
+          } catch (error) {}
         }
         setAlert(data);
         await loadAlertBitacoras(id);

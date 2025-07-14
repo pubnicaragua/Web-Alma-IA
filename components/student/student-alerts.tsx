@@ -210,10 +210,7 @@ export function StudentAlerts({
               <th className="px-4 py-3 text-center font-medium text-white">
                 Nivel de prioridad
               </th>
-              <th
-                className="px-4 py-3 text-center font-medium text-white"
-                onClick={() => console.log(alerts)}
-              >
+              <th className="px-4 py-3 text-center font-medium text-white">
                 Severidad
               </th>
             </tr>
