@@ -125,8 +125,6 @@ export default function Home() {
         const data = await fetchCardData();
         setCardData(data);
       } catch (error: any) {
-        console.error("Error al cargar datos de tarjetas:", error);
-        // Verificar si el error es por token expirado (401 Unauthorized)
         if (
           error.status === 401 ||
           error.message?.includes("401") ||

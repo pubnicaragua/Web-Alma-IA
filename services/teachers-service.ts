@@ -145,7 +145,6 @@ export const getAllTeachers = async (): Promise<Teacher[]> => {
     const data: TeacherApiResponse[] = await response.json();
     return mapApiDataToTeachers(data);
   } catch (error) {
-    console.error("Error al obtener docentes:", error);
     throw error;
   }
 };
@@ -163,7 +162,6 @@ export async function getTeacherById(
 
     return data;
   } catch (error) {
-    console.error("Error al obtener el docente:", error);
     // Si hay un error, devolver un docente de ejemplo
     throw error;
   }
@@ -189,7 +187,6 @@ export async function deleteTeacher(id: string): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error al eliminar el docente:", error);
     return false;
   }
 }

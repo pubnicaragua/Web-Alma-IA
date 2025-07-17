@@ -154,11 +154,7 @@ export async function fetchQuestions(): Promise<Question[]> {
     if (!response.ok) {
       // Si la respuesta no es exitosa, lanzar un error
       const errorText = await response.text();
-      console.error("Error en respuesta API (preguntas):", {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      });
+
       throw new Error(
         `Error al obtener preguntas: ${response.status} ${response.statusText}`
       );
@@ -167,8 +163,6 @@ export async function fetchQuestions(): Promise<Question[]> {
     const data = await response.json();
     return mapApiQuestionsToQuestions(data);
   } catch (error) {
-    console.error("Error al obtener preguntas:", error);
-
     throw error;
   }
 }
@@ -182,7 +176,6 @@ export async function fetchQuestionById(id: string): Promise<Question | null> {
     const question = questions.find((q) => q.id === id);
     return question || null;
   } catch (error) {
-    console.error(`Error al obtener pregunta con ID ${id}:`, error);
     // En caso de error, buscar en los datos de ejemplo
     const sampleQuestion = sampleQuestions.find((q) => q.id === id);
     return sampleQuestion || null;

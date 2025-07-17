@@ -1,63 +1,68 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { APIReportGeneral, fetchReports, createReport, type Report } from "@/services/reports-service"
-import { ReportsList } from "@/components/report/reports-list"
-import { ReportsSkeleton } from "@/components/report/reports-skeleton"
-import { Button } from "@/components/ui/button"
-import { PlusCircle, RefreshCw, AlertCircle } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { AppLayout } from "@/components/layout/app-layout"
-
+import { useState, useEffect } from "react";
+import {
+  APIReportGeneral,
+  fetchReports,
+  createReport,
+  type Report,
+} from "@/services/reports-service";
+import { ReportsList } from "@/components/report/reports-list";
+import { ReportsSkeleton } from "@/components/report/reports-skeleton";
+import { Button } from "@/components/ui/button";
+import { PlusCircle, RefreshCw, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { AppLayout } from "@/components/layout/app-layout";
 
 export default function ReportsPage() {
-  const [reports, setReports] = useState<APIReportGeneral[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
+  const [reports, setReports] = useState<APIReportGeneral[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handleCreateReport = async (reportData: any) => {
     try {
-      await createReport(reportData)
+      await createReport(reportData);
       toast({
         title: "Informe creado",
         description: "El informe se ha creado correctamente.",
-      })
-      await loadReports()
+      });
+      await loadReports();
     } catch (error) {
-      console.error('Error creating report:', error)
       toast({
         title: "Error",
         description: "No se pudo crear el informe. Intente nuevamente.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const loadReports = async () => {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
-      const data = await fetchReports()
-      setReports(data || []) // Asegurarnos de que siempre sea un array
+      const data = await fetchReports();
+      setReports(data || []); // Asegurarnos de que siempre sea un array
     } catch (err) {
-      console.error("Error al cargar informes:", err)
-      setError("No se pudieron cargar los informes. Por favor, intenta de nuevo.")
+      setError(
+        "No se pudieron cargar los informes. Por favor, intenta de nuevo."
+      );
       toast({
         title: "Error",
-        description: "No se pudieron cargar los informes. Se están mostrando datos de ejemplo.",
+        description:
+          "No se pudieron cargar los informes. Se están mostrando datos de ejemplo.",
         variant: "destructive",
-      })
+      });
       // Asegurarnos de que reports sea un array vacío en caso de error
-      setReports([])
+      setReports([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadReports()
-  }, [])
+    loadReports();
+  }, []);
 
   return (
     <AppLayout>
@@ -65,11 +70,20 @@ export default function ReportsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold">Informes</h1>
-            <p className="text-gray-500 mt-1">Gestiona y visualiza los informes generales</p>
+            <p className="text-gray-500 mt-1">
+              Gestiona y visualiza los informes generales
+            </p>
           </div>
           <div className="flex gap-2 mt-4 sm:mt-0">
-            <Button variant="outline" size="sm" onClick={loadReports} disabled={loading}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={loadReports}
+              disabled={loading}
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+              />
               Actualizar
             </Button>
           </div>
@@ -81,7 +95,11 @@ export default function ReportsPage() {
             <div>
               <p className="font-medium">Error al cargar los informes</p>
               <p className="text-sm">{error}</p>
-              <Button variant="link" className="text-red-700 p-0 h-auto text-sm mt-1" onClick={loadReports}>
+              <Button
+                variant="link"
+                className="text-red-700 p-0 h-auto text-sm mt-1"
+                onClick={loadReports}
+              >
                 Intentar de nuevo
               </Button>
             </div>
@@ -91,5 +109,5 @@ export default function ReportsPage() {
         {loading ? <ReportsSkeleton /> : <ReportsList reports={reports} />}
       </div>
     </AppLayout>
-  )
+  );
 }

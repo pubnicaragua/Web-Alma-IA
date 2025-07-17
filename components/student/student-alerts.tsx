@@ -64,9 +64,7 @@ export function StudentAlerts({
 
         setPriorities(fetchedPriorities);
         setStates(fetchedStates);
-      } catch (error) {
-        console.error("Error cargando prioridades o estados:", error);
-      }
+      } catch (error) {}
     }
     loadData();
   }, []);

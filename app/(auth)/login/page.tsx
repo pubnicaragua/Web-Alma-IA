@@ -131,8 +131,6 @@ export default function LoginPage() {
         throw new Error("No se recibió un token válido");
       }
     } catch (error) {
-      console.error("Error de login:", error);
-
       let errorMessage = "";
       try {
         // Intentar parsear el mensaje de error si es un JSON

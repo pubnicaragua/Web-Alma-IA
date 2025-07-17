@@ -41,7 +41,6 @@ export default function TeachersPage() {
         const data = await getAllTeachers();
         setTeachersData(data || []);
       } catch (err) {
-        console.error("Error al cargar docentes:", err);
         setError(
           "No se pudieron cargar los datos de docentes. Por favor, intenta de nuevo más tarde."
         );

@@ -34,7 +34,6 @@ export function DonutChart({
       const alertsData = await fetchTotalAlerts();
       setData(alertsData);
     } catch (err) {
-      console.error("Error al cargar las alertas totales:", err);
       setError(
         "No se pudieron cargar los datos de alertas. Intente nuevamente."
       );

@@ -67,9 +67,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           onChange(parsedDate);
           return;
         }
-      } catch (error) {
-        console.error("Error al parsear fecha:", error);
-      }
+      } catch (error) {}
     }
 
     if (value === "") {

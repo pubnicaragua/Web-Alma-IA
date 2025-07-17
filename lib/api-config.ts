@@ -53,9 +53,7 @@ export const setAuthToken = (
       document.cookie = cookieString;
 
       dispatchAuthChangeEvent(true);
-    } catch (error) {
-      console.error("Error al guardar el token:", error);
-    }
+    } catch (error) {}
   }
 };
 
@@ -68,9 +66,7 @@ export const removeAuthToken = (): void => {
         "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax";
 
       dispatchAuthChangeEvent(false);
-    } catch (error) {
-      console.error("Error al eliminar el token:", error);
-    }
+    } catch (error) {}
   }
 };
 
@@ -101,7 +97,6 @@ const getSelectedSchoolId = (): string | null => {
       const selectedSchool = localStorage.getItem("selectedSchool");
       return selectedSchool || null;
     } catch (error) {
-      console.error("Error al obtener selectedSchool:", error);
       return null;
     }
   }
@@ -153,7 +148,6 @@ export const fetchWithAuth = async (
     });
 
     if (response.status === 401) {
-      console.error("Error de autenticación: Token inválido o expirado");
       throw new ApiError("Token inválido o expirado", 401);
     }
 
@@ -168,13 +162,6 @@ export const fetchWithAuth = async (
         console.warn("No se pudo leer el cuerpo del error:", parseError);
       }
 
-      console.error(`Error detallado de la API:`, {
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url,
-        headers: Object.fromEntries(response.headers.entries()),
-      });
-
       throw new ApiError(
         `Error en la solicitud: ${errorDetails}`,
         response.status
@@ -183,8 +170,6 @@ export const fetchWithAuth = async (
 
     return response;
   } catch (error) {
-    console.error("API request error:", error);
-
     if (error instanceof ApiError) {
       throw error;
     }
@@ -234,13 +219,6 @@ export const fetchApi = async (
         console.warn("No se pudo leer el cuerpo del error:", parseError);
       }
 
-      console.error(`Error detallado de la API:`, {
-        status: response.status,
-        statusText: response.statusText,
-        url: response.url,
-        headers: Object.fromEntries(response.headers.entries()),
-      });
-
       throw new ApiError(
         `Error en la solicitud: ${errorDetails}`,
         response.status
@@ -249,8 +227,6 @@ export const fetchApi = async (
 
     return response;
   } catch (error) {
-    console.error("API request error:", error);
-
     // Si es un ApiError, lo propagamos
     if (error instanceof ApiError) {
       throw error;

@@ -84,7 +84,6 @@ export function EditAlertModal({
 
       onClose();
     } catch (err) {
-      console.error("Error al actualizar la alerta:", err);
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setIsSubmitting(false);

@@ -27,7 +27,6 @@ export async function fetchGrade(): Promise<Grade[]> {
     // Transformar los datos de la API a nuestro modelo de Student
     return apiStudents;
   } catch (error) {
-    console.error("Error al obtener estudiantes:", error);
     throw error; // Propagar el error para que se maneje en el componente
   }
 }

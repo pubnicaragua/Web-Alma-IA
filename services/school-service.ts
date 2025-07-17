@@ -79,9 +79,7 @@ export async function loadSchools(): Promise<School[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener colegios: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener colegios: ${response.status} - ${errorText}`
       );
@@ -91,7 +89,6 @@ export async function loadSchools(): Promise<School[]> {
 
     // Verificación para asegurar que siempre haya datos
     if (!apiSchools || apiSchools.length === 0) {
-      console.error("No se encontraron colegios.");
       return [];
     }
 
@@ -115,7 +112,6 @@ export async function loadSchools(): Promise<School[]> {
       countryId: school.pais_id,
     }));
   } catch (error) {
-    console.error("Error en loadSchools:", error);
     throw error;
   }
 }
@@ -137,9 +133,7 @@ export async function loadSchoolsByUsuario_id(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener colegios del usuario: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener colegios del usuario: ${response.status} - ${errorText}`
       );
@@ -171,7 +165,6 @@ export async function loadSchoolsByUsuario_id(
       countryId: school.pais_id,
     }));
   } catch (error) {
-    console.error("Error en loadSchoolsByUsuario_id:", error);
     throw error;
   }
 }
@@ -197,9 +190,7 @@ export async function getSchoolById(
         return null;
       }
       const errorText = await response.text();
-      console.error(
-        `Error al obtener el colegio: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener el colegio: ${response.status} - ${errorText}`
       );
@@ -230,7 +221,6 @@ export async function getSchoolById(
       countryId: apiSchool.pais_id,
     };
   } catch (error) {
-    console.error(`Error en getSchoolById (ID: ${id}):`, error);
     throw error;
   }
 }

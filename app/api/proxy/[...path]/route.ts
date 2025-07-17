@@ -1,9 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 // API base URL
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://api-almaia.onrender.com/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
 
 // Función auxiliar para normalizar la URL
 const getApiUrl = (path: string[]) => {
@@ -16,16 +14,8 @@ const getApiUrl = (path: string[]) => {
 
 // Función para manejar errores de manera consistente
 const handleApiError = (error: unknown, path: string) => {
-  console.error(`Error en proxy API (${path}):`, error);
-
   // Determinar el tipo de error para dar una respuesta más específica
   if (error instanceof TypeError && error.message.includes("fetch")) {
-    console.error("Error de conexión. Detalles:", {
-      API_BASE_URL,
-      path,
-      error: error.message,
-      stack: error.stack,
-    });
     return NextResponse.json(
       {
         error:
@@ -99,11 +89,6 @@ export async function GET(
     if (!response.ok) {
       // Intentar leer el cuerpo de la respuesta como texto
       const errorText = await response.text();
-      console.error(`Error en respuesta API (${path}):`, {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      });
 
       // Devolver el error
       return NextResponse.json(
@@ -143,7 +128,6 @@ export async function POST(
 
     // Obtener el cuerpo de la solicitud
     const body = await request.json().catch((e) => {
-      console.error("Error al parsear el cuerpo de la solicitud:", e);
       return {};
     });
 
@@ -185,11 +169,6 @@ export async function POST(
     if (!response.ok) {
       // Intentar leer el cuerpo de la respuesta como texto
       const errorText = await response.text();
-      console.error(`Error en respuesta API (${path}):`, {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      });
 
       // Devolver el error
       return NextResponse.json(
@@ -260,11 +239,6 @@ export async function PUT(
     if (!response.ok) {
       // Intentar leer el cuerpo de la respuesta como texto
       const errorText = await response.text();
-      console.error(`Error en respuesta API (${path}):`, {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      });
 
       // Devolver un error formateado
       return NextResponse.json(
@@ -332,11 +306,6 @@ export async function DELETE(
     if (!response.ok) {
       // Intentar leer el cuerpo de la respuesta como texto
       const errorText = await response.text();
-      console.error(`Error en respuesta API (${path}):`, {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      });
 
       // Devolver un error formateado
       return NextResponse.json(

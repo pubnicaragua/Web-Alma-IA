@@ -60,7 +60,6 @@ export function Header({ toggleSidebar }: HeaderProps) {
       const data = await fetchProfileData();
       setProfileData(data);
     } catch (error) {
-      console.error("Error al cargar el perfil del usuario:", error);
       setProfileData(null);
     } finally {
       setIsLoading(false);
@@ -76,7 +75,6 @@ export function Header({ toggleSidebar }: HeaderProps) {
         router.push(`/alumnos?search=${searchTerm}`);
       else setIsSearching(true);
     } catch (error) {
-      console.error("Error en la búsqueda:", error);
       toast({
         title: "Error",
         description:
@@ -94,7 +92,6 @@ export function Header({ toggleSidebar }: HeaderProps) {
       const count = await getNotificationCount();
       setNotificationCount(count);
     } catch (error) {
-      console.error("Failed to load notifications:", error);
       setNotificationCount(0);
     }
   };

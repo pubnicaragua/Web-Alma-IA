@@ -79,7 +79,6 @@ export default function AlertsPage({
 
         setAlerts(data);
       } catch (err) {
-        console.error("Error al cargar alertas:", err);
         setError("No se pudieron cargar las alertas. Intente nuevamente.");
       } finally {
         setIsLoading(false);
@@ -181,7 +180,6 @@ export default function AlertsPage({
               return alertDate.getTime() <= untilDate.getTime();
           }
         } catch (error) {
-          console.error("Error al procesar fechas:", error);
           return false;
         }
       }

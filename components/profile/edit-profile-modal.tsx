@@ -113,7 +113,6 @@ export function EditProfileModal({
       await onSave({ ...formData, url_foto_perfil: fotoPerfilBase64 });
       onClose();
     } catch (error) {
-      console.error("Error al actualizar el perfil:", error);
       throw error;
     } finally {
       setIsLoading(false);

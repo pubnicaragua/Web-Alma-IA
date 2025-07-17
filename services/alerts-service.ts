@@ -161,16 +161,11 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
     try {
       // Verificar que los objetos necesarios existan
       if (!apiAlert) {
-        console.error("Alert object is undefined");
         throw new Error("Alert object is undefined");
       }
 
       // Verificar que el objeto alumno exista
       if (!apiAlert.alumnos) {
-        console.error(
-          "Student object is undefined for alert:",
-          apiAlert.alumno_alerta_id
-        );
         throw new Error("Student object is undefined");
       }
 
@@ -206,9 +201,7 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
             minute: "2-digit",
           });
         }
-      } catch (dateError) {
-        console.error("Error parsing date:", dateError);
-      }
+      } catch (dateError) {}
 
       // Acceso seguro a propiedades con valores por defecto
       const studentName =
@@ -304,7 +297,6 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
         alertTypeId: apiAlert.alertas_tipo_alerta_tipo_id?.toString() || "0",
       };
     } catch (error) {
-      console.error("Error mapping alert:", error);
       throw error;
     }
   });
@@ -323,9 +315,6 @@ export async function fetchAlerts(): Promise<Alert[]> {
     if (!response.ok) {
       // Intentar leer el mensaje de error
       const errorText = await response.text();
-      console.error(
-        `Error en respuesta API (alumnos/alertas): ${response.status} - ${errorText}`
-      );
 
       throw new Error(
         `Error al obtener alertas: ${response.status} - ${errorText}`
@@ -339,7 +328,6 @@ export async function fetchAlerts(): Promise<Alert[]> {
     const alerts = mapApiAlertsToAlerts(apiAlerts);
     return alerts;
   } catch (error) {
-    console.error("Error al obtener alertas:", error);
     // Usar datos de ejemplo en caso de error
     throw error;
   }
@@ -360,13 +348,11 @@ export async function fetchAlertById(id: number): Promise<AlertPage | null> {
     const alert = await response.json();
 
     if (!alert) {
-      console.error(`No se encontró ninguna alerta con ID ${id}`);
       throw new Error(`No se encontró ninguna alerta con ID ${id}`);
     }
     if (Array.isArray(alert)) return alert[0];
     return alert;
   } catch (error) {
-    console.error(`Error al obtener alerta con ID ${id}:`, error);
     throw error;
   }
 }
@@ -386,7 +372,6 @@ export async function fetchRecentAlerts(): Promise<Alert[]> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error in fetchRecentAlerts:", error);
     throw error;
   }
 }
@@ -415,7 +400,6 @@ export async function changeLeida(alertId: string | number): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error en changeLeida:", error);
     throw error;
   }
 }
@@ -432,9 +416,7 @@ export async function fetchTotalAlertsChartLine(): Promise<DataPoint[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener alertas: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener alertas: ${response.status} - ${errorText}`
       );
@@ -443,7 +425,6 @@ export async function fetchTotalAlertsChartLine(): Promise<DataPoint[]> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }
@@ -460,9 +441,7 @@ export async function fetchTotalAlertsHistoricoChartLine(): Promise<
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener alertas: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener alertas: ${response.status} - ${errorText}`
       );
@@ -471,7 +450,6 @@ export async function fetchTotalAlertsHistoricoChartLine(): Promise<
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }
@@ -516,7 +494,6 @@ export const createAccionAlert = async (data: CreateAccionAlertParams) => {
 
     return await response.json();
   } catch (error) {
-    console.error("Error en createAccionAlert:", error);
     throw error;
   }
 };
@@ -766,7 +743,6 @@ export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
     // Transformar los datos de la API a nuestro modelo de Student
     return apiStudents;
   } catch (error) {
-    console.error("Error al obtener estudiantes:", error);
     throw error; // Propagar el error para que se maneje en el componente
   }
 }
@@ -794,7 +770,6 @@ export async function fetchPrority(): Promise<ApiAlertPriority[]> {
     // Transformar los datos de la API a nuestro modelo de Student
     return apiStudents;
   } catch (error) {
-    console.error("Error al obtener estudiantes:", error);
     throw error; // Propagar el error para que se maneje en el componente
   }
 }
@@ -818,7 +793,6 @@ export async function fetchStates(): Promise<AlertState[]> {
     // Transformar los datos de la API a nuestro modelo de Student
     return apiStudents;
   } catch (error) {
-    console.error("Error al obtener estudiantes:", error);
     throw error; // Propagar el error para que se maneje en el componente
   }
 }
@@ -855,7 +829,6 @@ export async function fetchTypes(): Promise<AlertaTipo[]> {
     // Transformar los datos de la API a nuestro modelo de Student
     return apiStudents;
   } catch (error) {
-    console.error("Error al obtener estudiantes:", error);
     throw error; // Propagar el error para que se maneje en el componente
   }
 }
@@ -881,7 +854,6 @@ export async function fetchEquipoAlma(): Promise<Persona[]> {
     // Transformar los datos de la API a nuestro modelo de Student
     return apiStudents;
   } catch (error) {
-    console.error("Error al obtener estudiantes:", error);
     throw error; // Propagar el error para que se maneje en el componente
   }
 }
@@ -942,7 +914,6 @@ export async function updateAlert(alertData: AlertPage): Promise<ApiAlert> {
 
     return await response.json();
   } catch (error) {
-    console.error("Error en updateAlert:", error);
     throw error;
   }
 }
@@ -971,7 +942,6 @@ export async function getPowerUsers(): Promise<PowerUser[]> {
     // Transformar los datos de la API a nuestro modelo de Student
     return filteredStudents;
   } catch (error) {
-    console.error("Error al obtener estudiantes:", error);
     throw error; // Propagar el error para que se maneje en el componente
   }
 }
@@ -998,7 +968,6 @@ export async function updateBitacora(
 
     return await response.json();
   } catch (error) {
-    console.error("Error en updateBitacora:", error);
     throw error;
   }
 }
@@ -1016,7 +985,6 @@ export async function updateAlertAndBitacora(
 
     return [alertResponse, bitacoraResponse];
   } catch (error) {
-    console.error("Error en updateAlertAndBitacora:", error);
     throw error;
   }
 }
@@ -1078,7 +1046,6 @@ export async function createAlert(data: CreateAlertParams): Promise<void> {
       throw new Error(errorData.message || "Error al crear la alerta");
     }
   } catch (error) {
-    console.error("Error en createAlert:", error);
     throw error;
   }
 }

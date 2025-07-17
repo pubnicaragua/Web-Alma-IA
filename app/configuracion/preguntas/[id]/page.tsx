@@ -1,64 +1,64 @@
-"use client"
-import { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { AppLayout } from "@/components/layout/app-layout"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Edit, Trash2, AlertCircle } from "lucide-react"
-import { fetchQuestionById, type Question } from "@/services/questions-service"
-import { useToast } from "@/hooks/use-toast"
+"use client";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { AppLayout } from "@/components/layout/app-layout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Edit, Trash2, AlertCircle } from "lucide-react";
+import { fetchQuestionById, type Question } from "@/services/questions-service";
+import { useToast } from "@/hooks/use-toast";
 
 export default function QuestionDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { toast } = useToast()
-  const [question, setQuestion] = useState<Question | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const params = useParams();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [question, setQuestion] = useState<Question | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Obtener el ID de la pregunta de los parámetros de la URL
-  const questionId = params.id as string
+  const questionId = params.id as string;
 
   // Cargar los datos de la pregunta
   useEffect(() => {
     const loadQuestion = async () => {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       try {
-        const data = await fetchQuestionById(questionId)
+        const data = await fetchQuestionById(questionId);
         if (data) {
-          setQuestion(data)
+          setQuestion(data);
         } else {
-          setError("No se encontró la pregunta solicitada.")
+          setError("No se encontró la pregunta solicitada.");
           toast({
             title: "Error",
             description: "No se encontró la pregunta solicitada.",
             variant: "destructive",
-          })
+          });
         }
       } catch (err) {
-        console.error("Error al cargar la pregunta:", err)
-        setError("No se pudo cargar la pregunta. Por favor, intenta de nuevo.")
+        setError("No se pudo cargar la pregunta. Por favor, intenta de nuevo.");
         toast({
           title: "Error",
-          description: "No se pudo cargar la pregunta. Por favor, intenta de nuevo.",
+          description:
+            "No se pudo cargar la pregunta. Por favor, intenta de nuevo.",
           variant: "destructive",
-        })
+        });
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     if (questionId) {
-      loadQuestion()
+      loadQuestion();
     }
-  }, [questionId, toast])
+  }, [questionId, toast]);
 
   // Función para volver a la lista de preguntas
   const handleBack = () => {
-    router.push("/configuracion/preguntas")
-  }
+    router.push("/configuracion/preguntas");
+  };
 
   // Función para editar la pregunta (placeholder)
   const handleEdit = () => {
@@ -66,8 +66,8 @@ export default function QuestionDetailPage() {
       title: "Editar pregunta",
       description: "Funcionalidad de edición no implementada aún.",
       variant: "default",
-    })
-  }
+    });
+  };
 
   // Función para eliminar la pregunta (placeholder)
   const handleDelete = () => {
@@ -75,8 +75,8 @@ export default function QuestionDetailPage() {
       title: "Eliminar pregunta",
       description: "Funcionalidad de eliminación no implementada aún.",
       variant: "default",
-    })
-  }
+    });
+  };
 
   return (
     <AppLayout>
@@ -92,7 +92,11 @@ export default function QuestionDetailPage() {
             <div>
               <p className="font-medium">Error</p>
               <p className="text-sm">{error}</p>
-              <Button variant="link" className="text-red-700 p-0 h-auto text-sm mt-1" onClick={handleBack}>
+              <Button
+                variant="link"
+                className="text-red-700 p-0 h-auto text-sm mt-1"
+                onClick={handleBack}
+              >
                 Volver a la lista de preguntas
               </Button>
             </div>
@@ -118,13 +122,19 @@ export default function QuestionDetailPage() {
         ) : question ? (
           <>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Detalle de la pregunta</h2>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Detalle de la pregunta
+              </h2>
               <div className="flex space-x-2">
                 <Button variant="outline" onClick={handleEdit}>
                   <Edit className="mr-2 h-4 w-4" />
                   Editar
                 </Button>
-                <Button variant="outline" className="text-red-500" onClick={handleDelete}>
+                <Button
+                  variant="outline"
+                  className="text-red-500"
+                  onClick={handleDelete}
+                >
                   <Trash2 className="mr-2 h-4 w-4" />
                   Eliminar
                 </Button>
@@ -145,19 +155,27 @@ export default function QuestionDetailPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <h3 className="text-sm font-medium text-gray-500">Tipo de pregunta</h3>
+                        <h3 className="text-sm font-medium text-gray-500">
+                          Tipo de pregunta
+                        </h3>
                         <p>{question.questionType}</p>
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-gray-500">Nivel educativo</h3>
+                        <h3 className="text-sm font-medium text-gray-500">
+                          Nivel educativo
+                        </h3>
                         <p>{question.educationLevel}</p>
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-gray-500">Grupo de preguntas</h3>
+                        <h3 className="text-sm font-medium text-gray-500">
+                          Grupo de preguntas
+                        </h3>
                         <p>{question.questionGroup}</p>
                       </div>
                       <div>
-                        <h3 className="text-sm font-medium text-gray-500">Horario</h3>
+                        <h3 className="text-sm font-medium text-gray-500">
+                          Horario
+                        </h3>
                         <p>{question.time}</p>
                       </div>
                     </div>
@@ -172,30 +190,42 @@ export default function QuestionDetailPage() {
                 <CardContent>
                   <div className="space-y-4">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">Diagnóstico</h3>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        Diagnóstico
+                      </h3>
                       <p>{question.diagnostic}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">Síntomas</h3>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        Síntomas
+                      </h3>
                       <p>{question.symptoms}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">Palabra clave</h3>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        Palabra clave
+                      </h3>
                       <p>{question.keyword}</p>
                     </div>
                     <div>
-                      <h3 className="text-sm font-medium text-gray-500">Prioridad</h3>
+                      <h3 className="text-sm font-medium text-gray-500">
+                        Prioridad
+                      </h3>
                       <Badge
                         variant="outline"
                         className={
                           question.priority === 1
                             ? "border-red-500 text-red-500"
                             : question.priority === 2
-                              ? "border-yellow-500 text-yellow-500"
-                              : "border-green-500 text-green-500"
+                            ? "border-yellow-500 text-yellow-500"
+                            : "border-green-500 text-green-500"
                         }
                       >
-                        {question.priority === 1 ? "Alta" : question.priority === 2 ? "Media" : "Baja"}
+                        {question.priority === 1
+                          ? "Alta"
+                          : question.priority === 2
+                          ? "Media"
+                          : "Baja"}
                       </Badge>
                     </div>
                   </div>
@@ -206,5 +236,5 @@ export default function QuestionDetailPage() {
         ) : null}
       </div>
     </AppLayout>
-  )
+  );
 }

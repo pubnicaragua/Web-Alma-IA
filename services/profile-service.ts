@@ -142,17 +142,12 @@ export async function fetchUserProfile(): Promise<ProfileResponse | null> {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(
-        `Error al obtener datos de perfil: ${response.status} - ${errorText}`
-      );
       return null;
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener datos de perfil:", error);
     return null;
   }
 }
@@ -168,9 +163,7 @@ export const fetchProfileData = async (): Promise<ProfileResponse> => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener datos de perfil: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener datos de perfil: ${response.status} - ${errorText}`
       );
@@ -179,7 +172,6 @@ export const fetchProfileData = async (): Promise<ProfileResponse> => {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener datos de perfil:", error);
     throw error;
   }
 };
@@ -218,7 +210,6 @@ export const updateProfile = async (
     // Devolver los datos actualizados del perfil
     return await response.json();
   } catch (error) {
-    console.error("Error al actualizar el perfil:", error);
     throw error;
   }
 };

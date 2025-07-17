@@ -125,9 +125,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
         setSeveridades(severidadesData);
         const loadstates: AlertState[] = await fetchStates();
         setAlertStates(loadstates);
-      } catch (error) {
-        console.error("Error al cargar datos:", error);
-      }
+      } catch (error) {}
     };
     fetchData();
   }, []);
@@ -270,7 +268,6 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
       });
       setRefresh();
     } catch (error) {
-      console.error(error);
       toast({
         title: "Error",
         description: "Error al agregar la bitácora",

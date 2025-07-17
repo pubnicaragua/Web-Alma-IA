@@ -141,7 +141,6 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
         }
       } catch (error) {
         setFetchError("Error cargando datos para selects.");
-        console.error("Error cargando datos para selects:", error);
       } finally {
         setLoading(false);
       }
@@ -158,9 +157,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
           setSelectedUserId(parsedUsers[0].persona_id);
         }
       }
-    } catch (e) {
-      console.error("Error leyendo usuarios de localStorage:", e);
-    }
+    } catch (e) {}
 
     return () => {
       isMounted = false;

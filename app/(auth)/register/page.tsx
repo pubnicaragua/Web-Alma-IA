@@ -122,7 +122,6 @@ export default function RegisterPage() {
         }, 1000);
       }
     } catch (err) {
-      console.error("Error de registro:", err);
       const errorMessage =
         err instanceof Error ? err.message : "Error desconocido al registrarse";
       setError(errorMessage);

@@ -52,7 +52,6 @@ export function StudentsContent() {
 
       setStudents(data);
     } catch (err) {
-      console.error("Error al cargar estudiantes:", err);
       setError("No se pudieron cargar los datos.");
       toast({
         title: "Error al cargar datos",

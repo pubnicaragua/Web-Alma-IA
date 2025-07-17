@@ -176,11 +176,6 @@ export async function fetchReports(): Promise<APIReportGeneral[]> {
     if (!response.ok) {
       // Si la respuesta no es exitosa, lanzar un error
       const errorText = await response.text();
-      console.error("Error en respuesta API (informes):", {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      });
       throw new Error(
         `Error al obtener informes: ${response.status} ${response.statusText}`
       );
@@ -189,12 +184,10 @@ export async function fetchReports(): Promise<APIReportGeneral[]> {
     const data = await response.json();
     // Verificar que data sea un array antes de mapearlo
     if (!Array.isArray(data)) {
-      console.error("La respuesta de la API no es un array:", data);
       throw new Error("Error al obtener informes, intente más tarde");
     }
     return data;
   } catch (error) {
-    console.error("Error al obtener informes:", error);
     // En caso de error, devolver datos de ejemplo
     throw error;
   }
@@ -209,7 +202,6 @@ export async function fetchReportById(
     const data = await response.json();
     return data.data || null;
   } catch (error) {
-    console.error("Error fetching report by ID:", error);
     return null;
   }
 }
@@ -234,7 +226,6 @@ export async function createReport(
     const data = await response.json();
     return data.data;
   } catch (error) {
-    console.error("Error creating report:", error);
     throw error;
   }
 }

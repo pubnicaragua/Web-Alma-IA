@@ -257,9 +257,7 @@ export async function fetchCardData(): Promise<CardData> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener datos de tarjetas: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener datos de tarjetas: ${response.status} - ${errorText}`
       );
@@ -268,7 +266,6 @@ export async function fetchCardData(): Promise<CardData> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener datos de tarjetas:", error);
     throw error;
   }
 }
@@ -293,9 +290,6 @@ export async function fetchRecentAlerts(
       });
 
       if (!response.ok) {
-        console.error(
-          `Error en respuesta API (home/alertas/recientes): ${response.status} ${response.statusText}`
-        );
         return [];
       }
 
@@ -308,11 +302,9 @@ export async function fetchRecentAlerts(
         return [];
       }
     } catch (error) {
-      console.error("Error al obtener alertas recientes:", error);
       return FALLBACK_RECENT_ALERTS;
     }
   } catch (error) {
-    console.error("Error in fetchRecentAlerts:", error);
     throw error;
   }
 }
@@ -328,9 +320,6 @@ export async function fetchImportantDates(): Promise<ImportantDate[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener fechas importantes: ${response.status} - ${errorText}`
-      );
       throw new Error(
         `Error al obtener fechas importantes: ${response.status} - ${errorText}`
       );
@@ -342,7 +331,6 @@ export async function fetchImportantDates(): Promise<ImportantDate[]> {
 
       // Verificar si los datos tienen el formato esperado
       if (!data || !Array.isArray(data)) {
-        console.error("Los datos recibidos no son un array:", data);
         throw new Error(
           "No se pudo obtener las fechas importantes, inténtelo más tarde"
         );
@@ -350,13 +338,11 @@ export async function fetchImportantDates(): Promise<ImportantDate[]> {
 
       return data;
     } catch (parseError) {
-      console.error("Error al parsear la respuesta JSON:", parseError);
       throw new Error(
         "No se pudo obtener las fechas importantes, inténtelo más tarde"
       );
     }
   } catch (error) {
-    console.error("Error al obtener fechas importantes:", error);
     throw new Error(
       "No se pudo obtener las fechas importantes, inténtelo más tarde"
     );
@@ -374,9 +360,6 @@ export async function fetchTotalAlerts(): Promise<TotalAlert[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener alertas totales: ${response.status} - ${errorText}`
-      );
       throw new Error(
         `Error al obtener alertas totales: ${response.status} - ${errorText}`
       );
@@ -385,7 +368,6 @@ export async function fetchTotalAlerts(): Promise<TotalAlert[]> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener alertas totales:", error);
     throw error;
   }
 }
@@ -401,9 +383,7 @@ export async function fetchEmotions(): Promise<Emotion[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener emociones: ${response.status} - ${errorText}`
       );
@@ -412,7 +392,6 @@ export async function fetchEmotions(): Promise<Emotion[]> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }
@@ -431,9 +410,7 @@ export async function fetchEmotionsByDate(date: string): Promise<Emotion[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener emociones: ${response.status} - ${errorText}`
       );
@@ -442,7 +419,6 @@ export async function fetchEmotionsByDate(date: string): Promise<Emotion[]> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }
@@ -463,9 +439,7 @@ export async function fetchEmotionsForGrade(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener emociones: ${response.status} - ${errorText}`
       );
@@ -474,7 +448,6 @@ export async function fetchEmotionsForGrade(
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }
@@ -494,9 +467,7 @@ export async function fetchPatologieForGrade(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener emociones: ${response.status} - ${errorText}`
       );
@@ -505,7 +476,6 @@ export async function fetchPatologieForGrade(
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }
@@ -521,9 +491,7 @@ export async function fetchPatologieGeneral(): Promise<Emotion[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener emociones: ${response.status} - ${errorText}`
       );
@@ -532,7 +500,6 @@ export async function fetchPatologieGeneral(): Promise<Emotion[]> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }
@@ -551,9 +518,7 @@ export async function fetchPatologieByDate(date: string): Promise<Emotion[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener emociones: ${response.status} - ${errorText}`
       );
@@ -562,7 +527,6 @@ export async function fetchPatologieByDate(date: string): Promise<Emotion[]> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }
@@ -578,9 +542,7 @@ export async function fetchNeurodivergences(): Promise<Emotion[]> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener emociones: ${response.status} - ${errorText}`
       );
@@ -589,7 +551,6 @@ export async function fetchNeurodivergences(): Promise<Emotion[]> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }
@@ -610,9 +571,7 @@ export async function fetchfetchNeurodivergencesByDate(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener emociones: ${response.status} - ${errorText}`
       );
@@ -621,7 +580,6 @@ export async function fetchfetchNeurodivergencesByDate(
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }

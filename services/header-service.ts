@@ -1,46 +1,44 @@
-import { fetchWithAuth } from "@/lib/api-config"
-import { ApiStudent, mapApiStudentsToStudents, Student } from "./students-service"
-
-
+import { fetchWithAuth } from "@/lib/api-config";
+import {
+  ApiStudent,
+  mapApiStudentsToStudents,
+  Student,
+} from "./students-service";
 
 export async function getNotificationCount(): Promise<number> {
   try {
-    const response = await fetchWithAuth(`/alumnos/alertas/conteo`)
-    
+    const response = await fetchWithAuth(`/alumnos/alertas/conteo`);
+
     if (!response.ok) {
-      throw new Error('Error al obtener el conteo de notificaciones')
+      throw new Error("Error al obtener el conteo de notificaciones");
     }
 
-    const data = await response.json() as {count: number}
-    return data.count || 0
+    const data = (await response.json()) as { count: number };
+    return data.count || 0;
   } catch (error) {
-    console.error('Error en getNotificationCount:', error)
     // Return a default value in case of error
-    return 0
+    return 0;
   }
 }
-
-
 
 export async function searchStudents(term: string): Promise<Student[]> {
   try {
     const response = await fetchWithAuth(`/alumnos/buscar`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ termino: term }),
-    })
-    
+    });
+
     if (!response.ok) {
-      throw new Error('Error al buscar alumnos')
+      throw new Error("Error al buscar alumnos");
     }
-    
-    const data = await response.json() as ApiStudent[]
+
+    const data = (await response.json()) as ApiStudent[];
     const students = mapApiStudentsToStudents(data);
-    return students || []
+    return students || [];
   } catch (error) {
-    console.error('Error en searchStudents:', error)
-    throw error // Re-lanzamos el error para manejarlo en el componente
+    throw error; // Re-lanzamos el error para manejarlo en el componente
   }
 }

@@ -220,7 +220,6 @@ export interface StudentDetailResponse {
 export function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
   try {
     if (!Array.isArray(apiStudents)) {
-      console.error("Error: apiStudents no es un array", apiStudents);
       return [];
     }
 
@@ -249,16 +248,10 @@ export function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
           phone: apiStudent.telefono_contacto1 || "",
         };
       } catch (error) {
-        console.error(
-          "Error al mapear estudiante individual:",
-          error,
-          apiStudent
-        );
         throw error;
       }
     });
   } catch (error) {
-    console.error("Error en mapApiStudentsToStudents:", error);
     throw error;
   }
 }
@@ -289,7 +282,6 @@ function calcularEdad(fechaNacimiento: Date | string): number {
 
     return edad;
   } catch (error) {
-    console.error("Error al calcular edad:", error, fechaNacimiento);
     return 0;
   }
 }
@@ -316,7 +308,6 @@ export const getStudentReports = async (
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener informes de estudiantes:", error);
     throw error;
   }
 };
@@ -345,7 +336,6 @@ export async function fetchStudents(): Promise<Student[]> {
     const students = mapApiStudentsToStudents(apiStudents);
     return students;
   } catch (error) {
-    console.error("Error al obtener estudiantes:", error);
     throw error; // Propagar el error para que se maneje en el componente
   }
 }
@@ -374,7 +364,6 @@ export async function fetchStudentById(id: string): Promise<Student | null> {
     const students = mapApiStudentsToStudents([apiStudent]);
     return students[0] || null;
   } catch (error) {
-    console.error(`Error al obtener estudiante con ID ${id}`, error);
     throw error; // Propagar el error para que se maneje en el componente
   }
 }
@@ -403,7 +392,6 @@ export async function fetchStudentDetails(
     const studentDetails = (await response.json()) as StudentDetailResponse;
     return studentDetails;
   } catch (error) {
-    console.error(`Error en fetchStudentDetails para ID ${id}:`, error);
     throw error; // Propagar el error para que se maneje en el componente
   }
 }

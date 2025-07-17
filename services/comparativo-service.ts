@@ -17,13 +17,11 @@ export async function fetchAlertById(id: string): Promise<AlertPage | null> {
     const alert = await response.json();
 
     if (!alert) {
-      console.error(`No se encontró ninguna alerta con ID ${id}`);
       throw new Error(`No se encontró ninguna alerta con ID ${id}`);
     }
     if (Array.isArray(alert)) return alert[0];
     return alert;
   } catch (error) {
-    console.error(`Error al obtener alerta con ID ${id}:`, error);
     throw error;
   }
 }
@@ -43,7 +41,6 @@ export async function fetchRecentAlerts(): Promise<Alert[]> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error in fetchRecentAlerts:", error);
     throw error;
   }
 }
@@ -60,9 +57,7 @@ export async function getComparativaEmotionsCourses(): Promise<any> {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(
-        `Error al obtener comparativas: ${response.status} - ${errorText}`
-      );
+
       throw new Error(
         `Error al obtener comparativas: ${response.status} - ${errorText}`
       );
@@ -71,7 +66,6 @@ export async function getComparativaEmotionsCourses(): Promise<any> {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }

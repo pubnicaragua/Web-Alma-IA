@@ -54,7 +54,6 @@ export function ImportantDates({
         });
       }
     } catch (err) {
-      console.error("Error crítico al cargar fechas importantes:", err);
       setError(
         "No se pudieron cargar las fechas importantes. Intente nuevamente."
       );
@@ -80,7 +79,6 @@ export function ImportantDates({
         year: "numeric",
       }).format(date);
     } catch (error) {
-      console.error("Error al formatear fecha:", error);
       return dateString;
     }
   };

@@ -31,7 +31,6 @@ export function RecentAlerts() {
         const data = await fetchRecentAlerts();
         setAlerts(data);
       } catch (error) {
-        console.error("Error al cargar alertas recientes:", error);
         setError("No se pudieron cargar las alertas recientes");
       } finally {
         setIsLoading(false);
