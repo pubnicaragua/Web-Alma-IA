@@ -19,15 +19,17 @@ import { useToast } from "@/hooks/use-toast";
 import { getSchoolById } from "@/services/school-service";
 import { BarChartComparisonPatologieGeneral } from "@/components/bar-chart-comparison-patologie-general";
 import { BarChartComparisonNeurodivergences } from "@/components/bar-chart-comparison-neurodivergences";
+import { useUser } from "@/middleware/user-context";
 
 export default function Home() {
+  const { getFuntions } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [cardData, setCardData] = useState<CardData | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
   const [tokenExpired, setTokenExpired] = useState(false);
-  const [schoolName, setSchoolName] = useState("");
+  const [haveAccess, setHaveAccess] = useState(false);
   const [selectedEmotionsGeneral, setSelectedEmotionsGeneral] = useState<
     string[]
   >(["Tristeza", "Felicidad", "Estrés", "Ansiedad", "Enojo", "Otros"]);
@@ -111,7 +113,6 @@ export default function Home() {
       // cargar colegio seleccionado
       const school = await getSchoolById(selectedSchool);
       if (school) {
-        setSchoolName(school.name);
         localStorage.setItem("schoolData", JSON.stringify(school));
       } else {
         router.push("/select-school");
@@ -148,6 +149,7 @@ export default function Home() {
     };
 
     loadSchool();
+    getFuntions("Alertas") ? setHaveAccess(true) : setHaveAccess(false);
     loadCardData();
   }, [router, toast]); // Dependencias: router y toast
 
@@ -230,14 +232,18 @@ export default function Home() {
             ))}
           </div>
           {/* Skeleton para Media emocional General */}
-          <div className="mb-8">
-            <BarChartSkeleton />
-          </div>
+          {getFuntions("Grafico Emociones") ? (
+            <div className="mb-8">
+              <BarChartSkeleton />
+            </div>
+          ) : null}
+
           {/* Skeletons para gráficos y datos */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <BarChartSkeleton />
             <DonutChartSkeleton />
           </div>
+
           {/* Skeletons para fechas importantes y alertas recientes */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ImportantDatesSkeleton />
@@ -279,39 +285,47 @@ export default function Home() {
                 stats={card.stats}
                 className={card.className}
                 textColor={card.textColor}
+                isPress={haveAccess}
               />
             ))}
           </div>
         )}
         {/* Media emocional General */}
-        <div className="mb-8">
-          <BarChartComparison
-            title="Media emocional General"
-            selectedEmotions={selectedEmotionsGeneral}
-            onToggleEmotion={handleToggleEmotionGeneral}
-            setSelectedEmotions={setSelectedEmotionsGeneral}
-          />
-        </div>
+        {getFuntions("Grafico Emociones") ? (
+          <div className="mb-8">
+            <BarChartComparison
+              title="Media emocional General"
+              selectedEmotions={selectedEmotionsGeneral}
+              onToggleEmotion={handleToggleEmotionGeneral}
+              setSelectedEmotions={setSelectedEmotionsGeneral}
+            />
+          </div>
+        ) : null}
         {/* Gráficos y datos */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <BarChartComparisonPatologieGeneral
-            title="Patologias"
-            selectedEmotions={selectedEmotions}
-            onToggleEmotion={handleToggleEmotion}
-            setSelectedEmotions={setSelectedEmotions}
-          />
-          <BarChartComparisonNeurodivergences
-            title="Neurodivergencias"
-            initialSelectedEmotions={selectedEmotions}
-            onEmotionsChange={handleToggleEmotionNeuro}
-            setSelectedEmotions={setSelectedEmotions}
-          />
+          {getFuntions("Grafico Patologias") ? (
+            <BarChartComparisonPatologieGeneral
+              title="Patologias"
+              selectedEmotions={selectedEmotions}
+              onToggleEmotion={handleToggleEmotion}
+              setSelectedEmotions={setSelectedEmotions}
+            />
+          ) : null}
+
+          {getFuntions("Grafico Neurodivergencias") ? (
+            <BarChartComparisonNeurodivergences
+              title="Neurodivergencias"
+              initialSelectedEmotions={selectedEmotions}
+              onEmotionsChange={handleToggleEmotionNeuro}
+              setSelectedEmotions={setSelectedEmotions}
+            />
+          ) : null}
         </div>
         <DonutChart />
         {/* Fechas importantes y alertas recientes */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
           <ImportantDates title="Fechas importantes" />
-          <RecentAlerts />
+          {haveAccess ? <RecentAlerts /> : null}
         </div>
       </div>
     </AppLayout>

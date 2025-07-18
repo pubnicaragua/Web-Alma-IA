@@ -95,6 +95,8 @@ export interface StudentDetailResponse {
     activo: boolean;
     persona_id: number;
     personas: {
+      tipo_documento: string;
+      numero_documento: string;
       generos: {
         nombre: string;
         genero_id: number;
@@ -210,7 +212,7 @@ export interface StudentDetailResponse {
     };
   }>;
   datosComparativa: Array<{
-    emocion: string;
+    name: string;
     alumno: number;
     promedio: number;
   }>;

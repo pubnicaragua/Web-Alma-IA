@@ -1,5 +1,5 @@
 import { fetchWithAuth } from "@/lib/api-config";
-import { fetchProfileData } from "./profile-service";
+import { fetchUserProfile } from "./profile-service";
 
 // Interfaces para los datos de la API según la estructura real
 export interface ApiSchool {

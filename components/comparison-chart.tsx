@@ -4,7 +4,7 @@ import { DataTable } from "@/components/data-table";
 import { useState } from "react";
 
 interface ComparisonData {
-  emocion: string;
+  name: string;
   alumno: number;
   promedio: number;
 }
@@ -36,50 +36,53 @@ export function ComparisonChart({ comparisonData }: ComparisonChartProps) {
     2
   ); // Mínimo 2 para la escala
 
-  // Función para convertir valor a coordenadas polares
+  const numEmotions = comparisonData.length;
+  const angleStep = 360 / (numEmotions || 1);
+
+  // Convierte valor a coordenadas polares y usa el nombre correcto de la emoción
   const valueToCoordinates = (
     value: number,
-    angle: number,
+    angleIndex: number,
     offset: number = 0
   ): Point => {
+    const angle = angleIndex * angleStep;
     const radius = (value / maxValue) * maxRadius;
     const radian = (angle * Math.PI) / 180;
+    const emotion = comparisonData[angleIndex]?.name ?? "";
     return {
       x: center.x + radius * Math.sin(radian) + offset,
       y: center.y - radius * Math.cos(radian) + offset,
       value,
-      emotion: comparisonData[angle / 72]?.emocion || "",
+      emotion,
     };
   };
 
-  // Generar puntos para el alumno y el promedio
+  // Genera puntos para el polígono
   const generatePolygonPoints = (data: ComparisonData[], isAverage = false) => {
     return data
-      .map((item, index) => {
-        const angle = index * 72; // 72° por cada punto (360/5)
+      .map((item, idx) => {
         const value = isAverage ? item.promedio : item.alumno;
-        return valueToCoordinates(value, angle);
+        return valueToCoordinates(value, idx);
       })
       .map((point) => `${point.x},${point.y}`)
       .join(" ");
   };
 
-  // Generar puntos individuales para interactividad
+  // Genera puntos individuales
   const generateInteractivePoints = (
     data: ComparisonData[],
     isAverage = false
   ) => {
-    return data.map((item, index) => {
-      const angle = index * 72;
+    return data.map((item, idx) => {
       const value = isAverage ? item.promedio : item.alumno;
-      return valueToCoordinates(value, angle);
+      return valueToCoordinates(value, idx);
     });
   };
 
   const alumnoPoints = generateInteractivePoints(comparisonData);
   const promedioPoints = generateInteractivePoints(comparisonData, true);
 
-  // Manejadores para el tooltip
+  // Manejadores de tooltip
   const handleMouseEnter = (
     e: React.MouseEvent<SVGCircleElement>,
     point: Point
@@ -99,14 +102,25 @@ export function ComparisonChart({ comparisonData }: ComparisonChartProps) {
     setTooltip({ visible: false, x: 0, y: 0, text: "" });
   };
 
-  // Posicionamiento de etiquetas de emociones
-  const emotionLabels = [
-    { angle: 0, text: "Felicidad", anchor: "middle" },
-    { angle: 72, text: "Tristeza", anchor: "start" },
-    { angle: 144, text: "Estrés", anchor: "middle" },
-    { angle: 216, text: "Enojo", anchor: "middle" },
-    { angle: 288, text: "Ansiedad", anchor: "end" },
-  ];
+  // Posición de las etiquetas (emociones) usando solamente .name
+  const emotionLabels = comparisonData.map((item, idx) => {
+    const name = item.name;
+    const angle = idx * angleStep;
+    const radian = (angle * Math.PI) / 180;
+    return {
+      name,
+      x: center.x + (maxRadius + 20) * Math.sin(radian),
+      y: center.y - (maxRadius + 20) * Math.cos(radian),
+      anchor:
+        angle === 0
+          ? "middle"
+          : angle < 180
+          ? "start"
+          : angle === 180
+          ? "middle"
+          : "end",
+    };
+  });
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 border border-blue-200">
@@ -141,7 +155,7 @@ export function ComparisonChart({ comparisonData }: ComparisonChartProps) {
 
             {/* Líneas radiales */}
             {alumnoPoints.map((_, index) => {
-              const angle = index * 72;
+              const angle = index * angleStep;
               const radian = (angle * Math.PI) / 180;
               return (
                 <line
@@ -217,25 +231,20 @@ export function ComparisonChart({ comparisonData }: ComparisonChartProps) {
               />
             ))}
 
-            {/* Etiquetas de emociones */}
-            {emotionLabels.map((label, index) => {
-              const radian = (label.angle * Math.PI) / 180;
-              const x = center.x + (maxRadius + 20) * Math.sin(radian);
-              const y = center.y - (maxRadius + 20) * Math.cos(radian);
-              return (
-                <text
-                  key={index}
-                  x={x}
-                  y={y}
-                  textAnchor={label.anchor as any}
-                  fontSize="12"
-                  fontWeight="bold"
-                  fill="#333"
-                >
-                  {label.text}
-                </text>
-              );
-            })}
+            {/* Etiquetas de emociones usando solamente 'name' */}
+            {emotionLabels.map((label, idx) => (
+              <text
+                key={idx}
+                x={label.x}
+                y={label.y}
+                textAnchor={label.anchor as any}
+                fontSize="12"
+                fontWeight="bold"
+                fill="#333"
+              >
+                {label.name}
+              </text>
+            ))}
 
             {/* Tooltip */}
             {tooltip.visible && (
@@ -268,7 +277,7 @@ export function ComparisonChart({ comparisonData }: ComparisonChartProps) {
         <DataTable
           columns={[
             {
-              key: "emocion",
+              key: "name",
               title: "Emoción",
               className: "text-left",
             },
@@ -289,7 +298,7 @@ export function ComparisonChart({ comparisonData }: ComparisonChartProps) {
             },
           ]}
           data={comparisonData.map((item) => ({
-            emocion: item.emocion,
+            name: item.name,
             alumno: item.alumno,
             promedio: item.promedio,
             diferencia: item.alumno - item.promedio,
@@ -323,7 +332,7 @@ export function ComparisonChart({ comparisonData }: ComparisonChartProps) {
                 </div>
               );
             }
-            if (column.key === "emocion")
+            if (column.key === "name")
               return <div className="text-center">{row[column.key]}</div>;
           }}
         />

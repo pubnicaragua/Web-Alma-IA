@@ -5,14 +5,12 @@ import { StudentAlerts } from "@/components/student/student-alerts";
 import { StudentReports } from "@/components/student/student-reports";
 import { StudentSkeleton } from "@/components/student/student-skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DataTable } from "@/components/data-table";
 import {
   fetchStudentDetails,
   type StudentDetailResponse,
 } from "@/services/students-service";
 import {
   AlertTriangle,
-  ArrowUpRight,
   Bell,
   FileText,
   Mail,
@@ -26,13 +24,16 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BarChartComparisonAlumno } from "@/components/bar-chart-comparison-alumno";
 import { ComparisonChart } from "@/components/comparison-chart";
+import { useUser } from "@/middleware/user-context";
+import { UnauthorizedMessage } from "@/components/unauthorized-message";
 
 export default function StudentDetailPage() {
+  const { getFuntions } = useUser();
   const { id } = useParams();
   const [studentDetails, setStudentDetails] =
     useState<StudentDetailResponse | null>(null);
-  const [activeTab, setActiveTab] = useState("ficha");
   const [isLoading, setIsLoading] = useState(true);
+  const [haveAccess, setHaveAccess] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refresh, setRefresh] = useState(false);
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([
@@ -45,9 +46,11 @@ export default function StudentDetailPage() {
   ]);
 
   useEffect(() => {
+    setIsLoading(true);
+    if (getFuntions("Ficha Alumnos")) setHaveAccess(false);
+
     const loadStudentDetails = async () => {
       try {
-        setIsLoading(true);
         setError(null);
 
         const details = await fetchStudentDetails(id as string);
@@ -96,6 +99,16 @@ export default function StudentDetailPage() {
     );
   }
 
+  if (haveAccess) {
+    return (
+      <AppLayout>
+        <div className="flex w-full h-full justify-center items-center">
+          <UnauthorizedMessage />
+        </div>
+      </AppLayout>
+    );
+  }
+
   if (error || !studentDetails) {
     return (
       <AppLayout>
@@ -122,7 +135,6 @@ export default function StudentDetailPage() {
     emociones,
     apoderados,
     datosComparativa,
-    tipo_informe,
   } = studentDetails;
 
   const studentName =
@@ -130,7 +142,7 @@ export default function StudentDetailPage() {
   const studentLastName = alumno.personas.apellidos;
 
   const comparisonData = datosComparativa.map((data) => ({
-    emocion: data.emocion,
+    name: data.name,
     alumno: data.alumno,
     promedio: data.promedio,
   }));
@@ -189,11 +201,7 @@ export default function StudentDetailPage() {
 
         {/* Zona 2: Pestañas de navegación */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-blue-200">
-          <Tabs
-            defaultValue="ficha"
-            className="w-full"
-            onValueChange={setActiveTab}
-          >
+          <Tabs defaultValue="ficha" className="w-full">
             <TabsList className="bg-blue-100 w-full justify-start overflow-x-auto flex-nowrap whitespace-nowrap">
               <TabsTrigger
                 value="ficha"
@@ -202,27 +210,35 @@ export default function StudentDetailPage() {
                 <User className="h-4 w-4 mr-2" />
                 Ficha
               </TabsTrigger>
-              <TabsTrigger
-                value="alertas"
-                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center text-xs sm:text-sm px-2 sm:px-4"
-              >
-                <Bell className="h-4 w-4 mr-2" />
-                Alertas
-              </TabsTrigger>
-              <TabsTrigger
-                value="informes"
-                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center text-xs sm:text-sm px-2 sm:px-4"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Informes
-              </TabsTrigger>
-              <TabsTrigger
-                value="emociones"
-                className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center text-xs sm:text-sm px-2 sm:px-4"
-              >
-                <Smile className="h-4 w-4 mr-2" />
-                Emociones
-              </TabsTrigger>
+              {getFuntions("Ficha Alumno->Alertas") ? (
+                <TabsTrigger
+                  value="alertas"
+                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center text-xs sm:text-sm px-2 sm:px-4"
+                >
+                  <Bell className="h-4 w-4 mr-2" />
+                  Alertas
+                </TabsTrigger>
+              ) : null}
+
+              {getFuntions("Ficha Alumno->Informes") ? (
+                <TabsTrigger
+                  value="informes"
+                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center text-xs sm:text-sm px-2 sm:px-4"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Informes
+                </TabsTrigger>
+              ) : null}
+
+              {getFuntions("Ficha Alumno->Emociones") ? (
+                <TabsTrigger
+                  value="emociones"
+                  className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center text-xs sm:text-sm px-2 sm:px-4"
+                >
+                  <Smile className="h-4 w-4 mr-2" />
+                  Emociones
+                </TabsTrigger>
+              ) : null}
             </TabsList>
 
             {/* Zona 3: Contenido de las pestañas */}
@@ -324,150 +340,154 @@ export default function StudentDetailPage() {
                 </div>
 
                 {/* Ficha médica */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
-                    <AlertTriangle className="mr-2 h-5 w-5 text-blue-500" />
-                    Antecedentes clínicos
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                      <h4 className="font-medium text-gray-700 mb-2">
-                        Historial médico
-                      </h4>
-                      <p className="text-gray-600">
-                        {ficha[0]?.historial_medico || "No disponible"}
-                      </p>
-                    </div>
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                      <h4 className="font-medium text-gray-700 mb-2">
-                        Alergias
-                      </h4>
-                      <p className="text-gray-600">
-                        {ficha[0]?.alergias.trim() || "No disponible"}
-                      </p>
-                    </div>
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                      <h4 className="font-medium text-gray-700 mb-2">
-                        Enfermedades crónicas
-                      </h4>
-                      <p className="text-gray-600">
-                        {ficha[0]?.enfermedades_cronicas.trim() ||
-                          "No disponible"}
-                      </p>
-                    </div>
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                      <h4 className="font-medium text-gray-700 mb-2">
-                        Condiciones médicas relevantes
-                      </h4>
-                      <p className="text-gray-600">
-                        {ficha[0]?.condiciones_medicas_relevantes.trim() ||
-                          "No disponible"}
-                      </p>
-                    </div>
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                      <h4 className="font-medium text-gray-700 mb-2">
-                        Medicamentos actuales
-                      </h4>
-                      <p className="text-gray-600">
-                        {ficha[0]?.medicamentos_actuales.trim() ||
-                          "No disponible"}
-                      </p>
-                    </div>
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                      <h4 className="font-medium text-gray-700 mb-2">
-                        Diagnósticos previos
-                      </h4>
-                      <p className="text-gray-600">
-                        {ficha[0]?.diagnosticos_previos.trim() ||
-                          "No disponible"}
-                      </p>
-                    </div>
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 md:col-span-2">
-                      <h4 className="font-medium text-gray-700 mb-2">
-                        Terapias y tratamientos en curso
-                      </h4>
-                      <p className="text-gray-600">
-                        {ficha[0]?.terapias_tratamiento_curso.trim() ||
-                          "No disponible"}
-                      </p>
+                {getFuntions("Ficha Alumno->Antecedentes Clinicos") ? (
+                  <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+                      <AlertTriangle className="mr-2 h-5 w-5 text-blue-500" />
+                      Antecedentes clínicos
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <h4 className="font-medium text-gray-700 mb-2">
+                          Historial médico
+                        </h4>
+                        <p className="text-gray-600">
+                          {ficha[0]?.historial_medico || "No disponible"}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <h4 className="font-medium text-gray-700 mb-2">
+                          Alergias
+                        </h4>
+                        <p className="text-gray-600">
+                          {ficha[0]?.alergias.trim() || "No disponible"}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <h4 className="font-medium text-gray-700 mb-2">
+                          Enfermedades crónicas
+                        </h4>
+                        <p className="text-gray-600">
+                          {ficha[0]?.enfermedades_cronicas.trim() ||
+                            "No disponible"}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <h4 className="font-medium text-gray-700 mb-2">
+                          Condiciones médicas relevantes
+                        </h4>
+                        <p className="text-gray-600">
+                          {ficha[0]?.condiciones_medicas_relevantes.trim() ||
+                            "No disponible"}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <h4 className="font-medium text-gray-700 mb-2">
+                          Medicamentos actuales
+                        </h4>
+                        <p className="text-gray-600">
+                          {ficha[0]?.medicamentos_actuales.trim() ||
+                            "No disponible"}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <h4 className="font-medium text-gray-700 mb-2">
+                          Diagnósticos previos
+                        </h4>
+                        <p className="text-gray-600">
+                          {ficha[0]?.diagnosticos_previos.trim() ||
+                            "No disponible"}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-100 md:col-span-2">
+                        <h4 className="font-medium text-gray-700 mb-2">
+                          Terapias y tratamientos en curso
+                        </h4>
+                        <p className="text-gray-600">
+                          {ficha[0]?.terapias_tratamiento_curso.trim() ||
+                            "No disponible"}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : null}
 
                 {/* Apoderados */}
-                <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
-                    <Users className="mr-2 h-5 w-5 text-blue-500" />
-                    Apoderados
-                  </h3>
-                  {apoderados.length ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full min-w-[640px]">
-                        <thead>
-                          <tr className="bg-blue-300">
-                            <th className="px-4 py-3 text-left font-medium text-white">
-                              Nombre
-                            </th>
-                            <th className="px-4 py-3 text-left font-medium text-white">
-                              Tipo
-                            </th>
-                            <th className="px-4 py-3 text-left font-medium text-white">
-                              Observaciones
-                            </th>
-                            <th className="px-4 py-3 text-left font-medium text-white">
-                              Estado
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {apoderados.map((apoderado, index) => (
-                            <tr
-                              key={index}
-                              className="border-b-2 border-gray-100 hover:bg-gray-50"
-                            >
-                              <td className="px-4 py-3 text-sm font-medium">
-                                {apoderado.apoderados.personas.nombres}{" "}
-                                {apoderado.apoderados.personas.apellidos}
-                              </td>
-                              <td className="px-4 py-3 text-sm">
-                                <span
-                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    apoderado.tipo_apoderado === "Padre" ||
-                                    apoderado.tipo_apoderado === "Madre"
-                                      ? "bg-green-100 text-green-800"
-                                      : "bg-blue-100 text-blue-800"
-                                  }`}
-                                >
-                                  {apoderado.tipo_apoderado}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3 text-sm">
-                                {apoderado.observaciones}
-                              </td>
-                              <td className="px-4 py-3 text-sm">
-                                <span
-                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    apoderado.estado_usuario === "activo"
-                                      ? "bg-green-100 text-green-800"
-                                      : "bg-red-100 text-red-800"
-                                  }`}
-                                >
-                                  {apoderado.estado_usuario}
-                                </span>
-                              </td>
+                {getFuntions("Ficha Alumno->Apoderados") ? (
+                  <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border border-blue-200">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200 flex items-center">
+                      <Users className="mr-2 h-5 w-5 text-blue-500" />
+                      Apoderados
+                    </h3>
+                    {apoderados.length ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[640px]">
+                          <thead>
+                            <tr className="bg-blue-300">
+                              <th className="px-4 py-3 text-left font-medium text-white">
+                                Nombre
+                              </th>
+                              <th className="px-4 py-3 text-left font-medium text-white">
+                                Tipo
+                              </th>
+                              <th className="px-4 py-3 text-left font-medium text-white">
+                                Observaciones
+                              </th>
+                              <th className="px-4 py-3 text-left font-medium text-white">
+                                Estado
+                              </th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  ) : (
-                    <div className="bg-blue-500 rounded-md p-2">
-                      <h1 className="font-medium text-white">
-                        Apoderados no disponibles
-                      </h1>
-                    </div>
-                  )}
-                </div>
+                          </thead>
+                          <tbody>
+                            {apoderados.map((apoderado, index) => (
+                              <tr
+                                key={index}
+                                className="border-b-2 border-gray-100 hover:bg-gray-50"
+                              >
+                                <td className="px-4 py-3 text-sm font-medium">
+                                  {apoderado.apoderados.personas.nombres}{" "}
+                                  {apoderado.apoderados.personas.apellidos}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  <span
+                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                      apoderado.tipo_apoderado === "Padre" ||
+                                      apoderado.tipo_apoderado === "Madre"
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-blue-100 text-blue-800"
+                                    }`}
+                                  >
+                                    {apoderado.tipo_apoderado}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  {apoderado.observaciones}
+                                </td>
+                                <td className="px-4 py-3 text-sm">
+                                  <span
+                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                      apoderado.estado_usuario === "activo"
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    {apoderado.estado_usuario}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="bg-blue-500 rounded-md p-2">
+                        <h1 className="font-medium text-white">
+                          Apoderados no disponibles
+                        </h1>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
               </TabsContent>
 
               <TabsContent value="alertas">

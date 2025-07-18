@@ -1,48 +1,48 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useAuth } from "./auth-provider"
-import { isAuthenticated, getAuthToken } from "@/lib/api-config"
-import { subscribeToAuthChanges } from "@/lib/auth-events"
+import { useState, useEffect } from "react";
+import { useAuth } from "../middleware/auth-provider";
+import { isAuthenticated, getAuthToken } from "@/lib/api-config";
+import { subscribeToAuthChanges } from "@/lib/auth-events";
 
 export function AuthDebug() {
-  const { isAuthenticated: contextAuth, checkAuth } = useAuth()
-  const [directAuth, setDirectAuth] = useState(isAuthenticated())
-  const [token, setToken] = useState<string | null>(null)
-  const [lastUpdate, setLastUpdate] = useState(new Date())
+  const { isAuthenticated: contextAuth, checkAuth } = useAuth();
+  const [directAuth, setDirectAuth] = useState(isAuthenticated());
+  const [token, setToken] = useState<string | null>(null);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
 
   useEffect(() => {
     // Actualizar el estado inicial
-    setDirectAuth(isAuthenticated())
-    setToken(getAuthToken())
+    setDirectAuth(isAuthenticated());
+    setToken(getAuthToken());
 
     // Suscribirse a cambios de autenticación
     const unsubscribe = subscribeToAuthChanges(() => {
-      setDirectAuth(isAuthenticated())
-      setToken(getAuthToken())
-      setLastUpdate(new Date())
-    })
+      setDirectAuth(isAuthenticated());
+      setToken(getAuthToken());
+      setLastUpdate(new Date());
+    });
 
     // Actualizar cada segundo para mostrar cambios
     const interval = setInterval(() => {
-      setDirectAuth(isAuthenticated())
-      setToken(getAuthToken())
-      setLastUpdate(new Date())
-    }, 1000)
+      setDirectAuth(isAuthenticated());
+      setToken(getAuthToken());
+      setLastUpdate(new Date());
+    }, 1000);
 
     return () => {
-      unsubscribe()
-      clearInterval(interval)
-    }
-  }, [])
+      unsubscribe();
+      clearInterval(interval);
+    };
+  }, []);
 
   const forceCheck = () => {
-    const result = checkAuth()
-    setDirectAuth(isAuthenticated())
-    setToken(getAuthToken())
-    setLastUpdate(new Date())
-    return result
-  }
+    const result = checkAuth();
+    setDirectAuth(isAuthenticated());
+    setToken(getAuthToken());
+    setLastUpdate(new Date());
+    return result;
+  };
 
   return (
     <div className="fixed bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg border border-gray-200 z-50 text-xs">
@@ -69,12 +69,16 @@ export function AuthDebug() {
           )}
         </p>
         <p>
-          <span className="font-semibold">Última actualización:</span> {lastUpdate.toLocaleTimeString()}
+          <span className="font-semibold">Última actualización:</span>{" "}
+          {lastUpdate.toLocaleTimeString()}
         </p>
       </div>
-      <button onClick={forceCheck} className="mt-2 px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">
+      <button
+        onClick={forceCheck}
+        className="mt-2 px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+      >
         Forzar verificación
       </button>
     </div>
-  )
+  );
 }

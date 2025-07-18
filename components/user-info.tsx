@@ -1,13 +1,12 @@
 "use client";
 
 import { User } from "lucide-react";
-import { useAuth } from "./auth-provider";
 import { useContext } from "react";
-import { UserContext } from "@/lib/user-context";
+import { UserContext } from "@/middleware/user-context";
 
 export function UserInfo() {
-  const { isAuthenticated } = useAuth();
   const { userData } = useContext(UserContext);
+  // userData?.funcionalidades[0].descripcion
 
   return (
     <div className="border-t p-4">

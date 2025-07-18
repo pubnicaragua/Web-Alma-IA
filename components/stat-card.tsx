@@ -12,6 +12,7 @@ interface StatCardProps {
   }[];
   className?: string;
   textColor?: string;
+  isPress: boolean;
 }
 
 export function StatCard({
@@ -21,11 +22,12 @@ export function StatCard({
   stats,
   className,
   textColor = "text-white",
+  isPress,
 }: StatCardProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    if (index !== 0) {
+    if (index !== 0 && !isPress) {
       router.push(`/alertas`);
     }
     localStorage.setItem("selectedTab", title);

@@ -16,11 +16,12 @@ import {
 import { removeAuthToken } from "@/lib/api-config";
 import { useToast } from "@/hooks/use-toast";
 import {
-  fetchProfileData,
+  fetchUserProfile,
   type ProfileResponse,
 } from "@/services/profile-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getNotificationCount } from "@/services/header-service";
+import { useUser } from "@/middleware/user-context";
 
 interface HeaderProps {
   toggleSidebar?: () => void;
@@ -29,6 +30,7 @@ interface HeaderProps {
 export function Header({ toggleSidebar }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { getFuntions } = useUser();
   const { toast } = useToast();
   const [profileData, setProfileData] = useState<ProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,8 +41,8 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const [dataSchool, setDataSchool] = useState<any>({});
 
   const handleBellClick = () => {
-    if (notificationCount > 0) {
-      router.push("/alertas?notifications=true");
+    if (notificationCount > 0 && getFuntions("Alertas")) {
+      router.push("/alertas");
     }
   };
 
@@ -57,7 +59,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const loadUserProfile = async () => {
     try {
       setIsLoading(true);
-      const data = await fetchProfileData();
+      const data = await fetchUserProfile();
       setProfileData(data);
     } catch (error) {
       setProfileData(null);

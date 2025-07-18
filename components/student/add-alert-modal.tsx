@@ -34,7 +34,7 @@ import type {
   ApiAlertSeverity,
   CreateAlertParams,
 } from "@/services/alerts-service";
-import { useUser } from "@/lib/user-context";
+import { useUser } from "@/middleware/user-context";
 import { useToast } from "@/hooks/use-toast";
 
 interface AlertState {

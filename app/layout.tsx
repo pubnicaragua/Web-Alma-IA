@@ -4,9 +4,9 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeColorsProvider } from "@/lib/theme-colors";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/components/auth-provider";
-import { UserProvider } from "@/lib/user-context";
-import { ProtectedRoute } from "@/middleware/isLogin";
+import { AuthProvider } from "@/middleware/auth-provider";
+import { UserProvider } from "@/middleware/user-context";
+import { ProtectedRoute } from "@/middleware/is-login";
 import ClientWrapper from "@/components/ClientWrapper";
 
 const inter = Inter({ subsets: ["latin"] });

@@ -7,7 +7,7 @@ import { Header } from "@/components/header";
 import { loadSchoolsByUsuario_id } from "@/services/school-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SchoolCardSkeleton } from "@/components/school-card-skeleton";
-import { fetchProfileData } from "@/services/profile-service";
+import { fetchUserProfile } from "@/services/profile-service";
 import { getPowerUsers } from "@/services/alerts-service";
 import { AppLayout } from "@/components/layout/app-layout";
 
@@ -49,7 +49,7 @@ export default function SelectSchoolPage() {
       let powerUsers = await getPowerUsers();
       localStorage.setItem("powerUsers", JSON.stringify(powerUsers));
       setIsLoading(true);
-      const profile = await fetchProfileData();
+      const profile = await fetchUserProfile();
       const schools = await loadSchoolsByUsuario_id(profile.usuario.usuario_id);
       setSchools(schools);
     } catch (error) {

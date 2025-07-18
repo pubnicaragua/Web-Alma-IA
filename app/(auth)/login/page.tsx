@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { removeAuthToken, setAuthToken } from "@/lib/api-config";
-import { fetchProfileData } from "@/services/profile-service";
+import { fetchUserProfile } from "@/services/profile-service";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -98,7 +98,7 @@ export default function LoginPage() {
         localStorage.setItem("isAuthenticated", "true");
 
         try {
-          const profile = await fetchProfileData();
+          const profile = await fetchUserProfile();
           if (
             profile.rol.nombre === "Alumno" ||
             profile.rol.nombre === "Apoderado"

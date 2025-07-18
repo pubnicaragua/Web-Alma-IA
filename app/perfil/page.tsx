@@ -6,9 +6,9 @@ import { AppLayout } from "@/components/layout/app-layout";
 import { ProfileField } from "@/components/profile-field";
 import { Button } from "@/components/ui/button";
 import { LogOut, AlertCircle, Edit } from "lucide-react";
-import { useAuth } from "@/components/auth-provider";
+import { useAuth } from "@/middleware/auth-provider";
 import {
-  fetchProfileData,
+  fetchUserProfile,
   type ProfileResponse,
   updateProfile,
   type ProfileData,
@@ -31,7 +31,7 @@ export default function ProfilePage() {
       try {
         setLoading(true);
         setError(null);
-        const data = await fetchProfileData();
+        const data = await fetchUserProfile();
         setProfileData(data);
       } catch (err) {
         setError(
@@ -69,7 +69,7 @@ export default function ProfilePage() {
 
     try {
       await updateProfile(profileData?.usuario.usuario_id, data);
-      const profile = await fetchProfileData();
+      const profile = await fetchUserProfile();
       setProfileData(profile);
       //cerrar el modal
       setIsEditModalOpen(false);
