@@ -93,11 +93,11 @@ export function UserProvider({ children }: UserProviderProps) {
   const getFuntions = useCallback(
     (busqueda: string): boolean => {
       if (!state.userData?.funcionalidades) return false;
-
       return state.userData.funcionalidades.some(
         (funcionalidad) =>
           typeof funcionalidad.nombre === "string" &&
-          funcionalidad.nombre.includes(busqueda)
+          funcionalidad.nombre.trim().toLowerCase() ===
+            busqueda.trim().toLowerCase()
       );
     },
     [state.userData]
