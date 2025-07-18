@@ -27,7 +27,7 @@ export function StatCard({
   const router = useRouter();
 
   const handleClick = () => {
-    if (index !== 0 && !isPress) {
+    if (index !== 0 && isPress) {
       router.push(`/alertas`);
     }
     localStorage.setItem("selectedTab", title);

@@ -199,14 +199,11 @@ export default function AlertsPage({
         const [day, month, year] = dateStr.split("/");
         const time = timeStr || "00:00";
 
-        // Validar que el año sea numérico y razonable
         const yearNum = parseInt(year, 10);
         if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
-          console.warn(`Año inválido detectado: ${year} en fecha ${dateStr}`);
-          return new Date(0); // Fecha muy antigua para que aparezca al final
+          return new Date(0);
         }
 
-        // Crear fecha de manera más explícita
         const monthNum = parseInt(month, 10) - 1; // Mes base 0
         const dayNum = parseInt(day, 10);
         const [hours, minutes] = time.split(":").map((t) => parseInt(t, 10));

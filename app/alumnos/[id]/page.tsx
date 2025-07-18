@@ -47,7 +47,7 @@ export default function StudentDetailPage() {
 
   useEffect(() => {
     setIsLoading(true);
-    if (getFuntions("Ficha Alumnos")) setHaveAccess(false);
+    if (getFuntions("Ficha Alumno")) setHaveAccess(false);
 
     const loadStudentDetails = async () => {
       try {
@@ -210,7 +210,8 @@ export default function StudentDetailPage() {
                 <User className="h-4 w-4 mr-2" />
                 Ficha
               </TabsTrigger>
-              {getFuntions("Ficha Alumno->Alertas") ? (
+              {getFuntions("Ficha Alumno->Alertas") &&
+              getFuntions("Alertas") ? (
                 <TabsTrigger
                   value="alertas"
                   className="data-[state=active]:bg-blue-500 data-[state=active]:text-white flex items-center text-xs sm:text-sm px-2 sm:px-4"
