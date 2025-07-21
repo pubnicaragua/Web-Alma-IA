@@ -13,7 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { removeAuthToken } from "@/lib/api-config";
 import { useToast } from "@/hooks/use-toast";
 import {
   fetchUserProfile,
@@ -22,6 +21,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { getNotificationCount } from "@/services/header-service";
 import { useUser } from "@/middleware/user-context";
+import { useAuth } from "@/middleware/auth-provider";
 
 interface HeaderProps {
   toggleSidebar?: () => void;
@@ -30,6 +30,7 @@ interface HeaderProps {
 export function Header({ toggleSidebar }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const { logout } = useAuth();
   const { getFuntions } = useUser();
   const { toast } = useToast();
   const [profileData, setProfileData] = useState<ProfileResponse | null>(null);
@@ -106,21 +107,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
     router.push("/select-school");
   };
 
-  const handleLogout = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("selectedSchool");
-      localStorage.removeItem("notificationsRead");
-      localStorage.removeItem("notificationCount");
-    }
-    removeAuthToken();
-    toast({
-      title: "Sesión cerrada",
-      description: "Has cerrado sesión correctamente",
-      variant: "default",
-    });
-    router.push("/login");
-  };
+  const handleLogout = () => logout();
 
   const getFullName = () => {
     if (!profileData) return "Usuario";

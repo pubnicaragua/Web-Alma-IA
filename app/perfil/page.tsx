@@ -45,9 +45,6 @@ export default function ProfilePage() {
             "No se pudieron cargar los datos del perfil. Se están mostrando datos de ejemplo.",
           variant: "destructive",
         });
-
-        // Usar datos de ejemplo en caso de error
-        // setProfileData(FALLBACK_PROFILE_DATA)
       } finally {
         setLoading(false);
       }
@@ -56,11 +53,7 @@ export default function ProfilePage() {
     loadProfileData();
   }, [toast]);
 
-  const handleLogout = () => {
-    logout();
-    // Redirección manual después del logout
-    window.location.href = "/login";
-  };
+  const handleLogout = () => logout();
 
   const handleSaveProfile = async (data: ProfileData): Promise<void> => {
     if (!profileData?.usuario.usuario_id) {

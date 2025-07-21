@@ -4,6 +4,8 @@ import type React from "react";
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { isAuthenticated, removeAuthToken } from "@/lib/api-config";
 import { subscribeToAuthChanges } from "@/lib/auth-events";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -21,6 +23,9 @@ export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuth, setIsAuth] = useState(false);
+  const router = useRouter();
+  const { toast } = useToast();
+
   // Usar useRef para evitar múltiples verificaciones
   const initialCheckDone = useRef(false);
 
@@ -53,9 +58,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = () => {
+    router.push("/login");
     removeAuthToken();
     setIsAuth(false);
-    // No redirigir automáticamente
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = "/";
+    toast({
+      title: "Sesión cerrada",
+      description: "Has cerrado sesión correctamente",
+      variant: "default",
+    });
   };
 
   return (
