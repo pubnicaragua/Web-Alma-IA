@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 
 type AuthContextType = {
   isAuthenticated: boolean;
-  logout: () => void;
+  logout: (isForTime?: boolean) => void;
   checkAuth: () => boolean;
 };
 
@@ -25,8 +25,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuth, setIsAuth] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-
-  // Usar useRef para evitar múltiples verificaciones
   const initialCheckDone = useRef(false);
 
   const checkAuth = () => {
@@ -57,16 +55,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const logout = () => {
+  const logout = (isForTime = false) => {
     router.push("/login");
-    removeAuthToken();
-    setIsAuth(false);
     localStorage.clear();
     sessionStorage.clear();
-    window.location.href = "/";
+    removeAuthToken();
+    setIsAuth(false);
+    window.location.reload();
     toast({
       title: "Sesión cerrada",
-      description: "Has cerrado sesión correctamente",
+      description: isForTime
+        ? "Tu sesión ha expirado por inactividad"
+        : "Has cerrado sesión correctamente",
       variant: "default",
     });
   };

@@ -49,6 +49,25 @@ export interface ProfileResponse {
     descripcion: string;
     rol_id: number;
   };
+  docentes: {
+    docente_id: number;
+    especialidad: string;
+    colegios: Array<{
+      nombre: string;
+      colegio_id: number;
+      dependencia: string;
+      tipo_colegio: string;
+      nombre_fantasía: string;
+    }>;
+    docentes_cursos: Array<{
+      ano_escolar: number;
+      cursos: Array<{
+        curso_id: number;
+        grado_id: number;
+        nombre_curso: string;
+      }>;
+    }>;
+  };
   funcionalidades: Array<{
     id: number;
     nombre: string;

@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import {
   type Alert,
   fetchAlerts,
-  getPowerUsers,
   fetchStates,
   fetchTypes,
   fetchPrority,

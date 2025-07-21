@@ -62,82 +62,86 @@ export function NavigationMenu({ onItemClick }: NavigationMenuProps) {
         ))}
 
         {/* Settings Submenu */}
-        <li>
-          <details
-            className={cn(pathname?.startsWith("/configuracion") && "open")}
-          >
-            <summary
-              className={cn(
-                "flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors list-none",
-                pathname?.startsWith("/configuracion")
-                  ? "bg-primary text-white"
-                  : "text-gray-700 hover:bg-gray-100"
-              )}
+        {getFuntions("Configuracion") ? (
+          <li>
+            <details
+              className={cn(pathname?.startsWith("/configuracion") && "open")}
             >
-              <div className="flex items-center">
-                <Settings className="mr-3 h-5 w-5" />
-                Configuración
-              </div>
-              <ChevronDown className="h-4 w-4 transition-transform ui-open:rotate-180" />
-            </summary>
-            <ul className="mt-1 space-y-1 pl-10">
-              <li>
-                <Link
-                  href="/configuracion/preguntas"
-                  className={cn(
-                    "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                    isActive("/configuracion/preguntas")
-                      ? "bg-primary/80 text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  )}
-                  onClick={onItemClick}
-                >
-                  <FileText className="mr-3 h-4 w-4" />
-                  Preguntas
-                </Link>
-              </li>
-            </ul>
-          </details>
-        </li>
+              <summary
+                className={cn(
+                  "flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors list-none",
+                  pathname?.startsWith("/configuracion")
+                    ? "bg-primary text-white"
+                    : "text-gray-700 hover:bg-gray-100"
+                )}
+              >
+                <div className="flex items-center">
+                  <Settings className="mr-3 h-5 w-5" />
+                  Configuración
+                </div>
+                <ChevronDown className="h-4 w-4 transition-transform ui-open:rotate-180" />
+              </summary>
+              <ul className="mt-1 space-y-1 pl-10">
+                <li>
+                  <Link
+                    href="/configuracion/preguntas"
+                    className={cn(
+                      "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      isActive("/configuracion/preguntas")
+                        ? "bg-primary/80 text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    )}
+                    onClick={onItemClick}
+                  >
+                    <FileText className="mr-3 h-4 w-4" />
+                    Preguntas
+                  </Link>
+                </li>
+              </ul>
+            </details>
+          </li>
+        ) : null}
 
         {/* Administrative Submenu */}
-        <li>
-          <details
-            className={cn(pathname?.startsWith("/administrativo") && "open")}
-          >
-            <summary
-              className={cn(
-                "flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors list-none",
-                pathname?.startsWith("/administrativo")
-                  ? "bg-primary text-white"
-                  : "text-gray-700 hover:bg-gray-100"
-              )}
+        {getFuntions("Administrativo") ? (
+          <li>
+            <details
+              className={cn(pathname?.startsWith("/administrativo") && "open")}
             >
-              <div className="flex items-center">
-                <School className="mr-3 h-5 w-5" />
-                Administrativo
-              </div>
-              <ChevronDown className="h-4 w-4 transition-transform ui-open:rotate-180" />
-            </summary>
-            <ul className="mt-1 space-y-1 pl-10">
-              <li>
-                <Link
-                  href="/administrativo/docentes"
-                  className={cn(
-                    "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                    isActive("/administrativo/docentes")
-                      ? "bg-primary/80 text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  )}
-                  onClick={onItemClick}
-                >
-                  <School className="mr-3 h-4 w-4" />
-                  Docentes
-                </Link>
-              </li>
-            </ul>
-          </details>
-        </li>
+              <summary
+                className={cn(
+                  "flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors list-none",
+                  pathname?.startsWith("/administrativo")
+                    ? "bg-primary text-white"
+                    : "text-gray-700 hover:bg-gray-100"
+                )}
+              >
+                <div className="flex items-center">
+                  <School className="mr-3 h-5 w-5" />
+                  Administrativo
+                </div>
+                <ChevronDown className="h-4 w-4 transition-transform ui-open:rotate-180" />
+              </summary>
+              <ul className="mt-1 space-y-1 pl-10">
+                <li>
+                  <Link
+                    href="/administrativo/docentes"
+                    className={cn(
+                      "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      isActive("/administrativo/docentes")
+                        ? "bg-primary/80 text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    )}
+                    onClick={onItemClick}
+                  >
+                    <School className="mr-3 h-4 w-4" />
+                    Docentes
+                  </Link>
+                </li>
+              </ul>
+            </details>
+          </li>
+        ) : null}
       </ul>
     </nav>
   );

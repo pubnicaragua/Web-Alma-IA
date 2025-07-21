@@ -302,7 +302,7 @@ export async function fetchRecentAlerts(
         return [];
       }
     } catch (error) {
-      return FALLBACK_RECENT_ALERTS;
+      return [];
     }
   } catch (error) {
     throw error;
