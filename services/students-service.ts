@@ -317,12 +317,10 @@ export const getStudentReports = async (
 // Función para obtener la lista de estudiantes
 export async function fetchStudents(): Promise<Student[]> {
   try {
-    // Realizar la solicitud GET a la API
     const response = await fetchWithAuth("/alumnos", {
       method: "GET",
     });
 
-    // Si la respuesta no es exitosa, lanzar un error
     if (!response.ok) {
       // Intentar leer el mensaje de error
       const errorText = await response.text();

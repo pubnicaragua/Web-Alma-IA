@@ -18,12 +18,16 @@ import { cn } from "@/lib/utils";
 interface FormErrors {
   nombres?: string;
   apellidos?: string;
+  email?: string;
+  fecha_nacimiento?: string;
+  telefono_contacto?: string;
 }
 
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   profileData: ProfileData;
+  onRefresh: () => void;
   onSave: (
     data: ProfileData & { foto_perfil_base64?: string | null }
   ) => Promise<void>;
@@ -34,6 +38,7 @@ export function EditProfileModal({
   onClose,
   profileData,
   onSave,
+  onRefresh,
 }: EditProfileModalProps) {
   const [formData, setFormData] = useState<ProfileData>(profileData);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +51,7 @@ export function EditProfileModal({
       setFormData(profileData);
       setFotoPerfilBase64(null);
       setPreviewImg(profileData.url_foto_perfil || null);
+      setErrors({});
     }
   }, [isOpen, profileData]);
 
@@ -55,6 +61,19 @@ export function EditProfileModal({
       case "nombres":
       case "apellidos":
         if (!value.trim()) error = "Este campo es requerido";
+        break;
+      case "email":
+        if (!value.trim()) {
+          error = "El correo es requerido";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          error = "Correo electrónico inválido";
+        }
+        break;
+      case "fecha_nacimiento":
+        if (!value.trim()) error = "La fecha de nacimiento es requerida";
+        break;
+      case "telefono_contacto":
+        if (!value.trim()) error = "El teléfono es requerido";
         break;
     }
     return error;
@@ -73,7 +92,6 @@ export function EditProfileModal({
     }));
   };
 
-  // Convertir archivo a base64 y guardar en el estado
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     if (file) {
@@ -83,7 +101,7 @@ export function EditProfileModal({
         setFotoPerfilBase64(result);
         setPreviewImg(result);
       };
-      reader.readAsDataURL(file); // Esto genera el string data:image/...;base64,...
+      reader.readAsDataURL(file);
     } else {
       setFotoPerfilBase64(null);
       setPreviewImg(formData.url_foto_perfil || null);
@@ -93,14 +111,24 @@ export function EditProfileModal({
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
     let isValid = true;
-    if (!formData.nombres?.trim()) {
-      newErrors.nombres = "Los nombres son requeridos";
-      isValid = false;
-    }
-    if (!formData.apellidos?.trim()) {
-      newErrors.apellidos = "Los apellidos son requeridos";
-      isValid = false;
-    }
+
+    // Campos obligatorios
+    const requiredFields: Array<keyof ProfileData> = [
+      "nombres",
+      "apellidos",
+      "email",
+      "fecha_nacimiento",
+      "telefono_contacto",
+    ];
+
+    requiredFields.forEach((field) => {
+      const error = validateField(field, formData[field] || "");
+      if (error) {
+        newErrors[field] = error;
+        isValid = false;
+      }
+    });
+
     setErrors(newErrors);
     return isValid;
   };
@@ -110,10 +138,19 @@ export function EditProfileModal({
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      await onSave({ ...formData, url_foto_perfil: fotoPerfilBase64 });
+      let dataToSend: ProfileData & { foto_perfil_base64?: string | null } = {
+        ...formData,
+      };
+
+      if (fotoPerfilBase64 !== null) {
+        dataToSend.url_foto_perfil = fotoPerfilBase64;
+      } else if (formData.url_foto_perfil) {
+        dataToSend.url_foto_perfil = formData.url_foto_perfil;
+      }
+
+      await onSave(dataToSend);
+      onRefresh();
       onClose();
-    } catch (error) {
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -144,7 +181,7 @@ export function EditProfileModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="nombres">Nombres</Label>
+                  <Label htmlFor="nombres">Nombres*</Label>
                   {errors.nombres && (
                     <span className="text-xs text-red-500">
                       {errors.nombres}
@@ -154,7 +191,7 @@ export function EditProfileModal({
                 <Input
                   id="nombres"
                   name="nombres"
-                  value={formData.nombres}
+                  value={formData.nombres || ""}
                   onChange={handleChange}
                   onBlur={(e) => {
                     const error = validateField(e.target.name, e.target.value);
@@ -168,7 +205,7 @@ export function EditProfileModal({
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="apellidos">Apellidos</Label>
+                  <Label htmlFor="apellidos">Apellidos*</Label>
                   {errors.apellidos && (
                     <span className="text-xs text-red-500">
                       {errors.apellidos}
@@ -178,7 +215,7 @@ export function EditProfileModal({
                 <Input
                   id="apellidos"
                   name="apellidos"
-                  value={formData.apellidos}
+                  value={formData.apellidos || ""}
                   onChange={handleChange}
                   onBlur={(e) => {
                     const error = validateField(e.target.name, e.target.value);
@@ -204,14 +241,24 @@ export function EditProfileModal({
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="email">Correo electrónico</Label>
+                  <Label htmlFor="email">Correo electrónico*</Label>
+                  {errors.email && (
+                    <span className="text-xs text-red-500">{errors.email}</span>
+                  )}
                 </div>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  value={formData.email}
+                  value={formData.email || ""}
                   onChange={handleChange}
+                  onBlur={(e) => {
+                    const error = validateField(e.target.name, e.target.value);
+                    setErrors((prev) => ({ ...prev, email: error }));
+                  }}
+                  className={cn(
+                    errors.email && "border-red-500 focus-visible:ring-red-500"
+                  )}
                 />
               </div>
             </div>
@@ -219,36 +266,67 @@ export function EditProfileModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <Label htmlFor="fecha_nacimiento">Fecha de nacimiento</Label>
+                  <Label htmlFor="fecha_nacimiento">Fecha de nacimiento*</Label>
+                  {errors.fecha_nacimiento && (
+                    <span className="text-xs text-red-500">
+                      {errors.fecha_nacimiento}
+                    </span>
+                  )}
                 </div>
                 <Input
                   id="fecha_nacimiento"
                   name="fecha_nacimiento"
                   type="date"
-                  value={formData.fecha_nacimiento}
+                  value={formData.fecha_nacimiento || ""}
                   onChange={handleChange}
+                  onBlur={(e) => {
+                    const error = validateField(e.target.name, e.target.value);
+                    setErrors((prev) => ({
+                      ...prev,
+                      fecha_nacimiento: error,
+                    }));
+                  }}
+                  className={cn(
+                    errors.fecha_nacimiento &&
+                      "border-red-500 focus-visible:ring-red-500"
+                  )}
                 />
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="telefono_contacto">
-                    Teléfono de contacto
+                    Teléfono de contacto*
                   </Label>
+                  {errors.telefono_contacto && (
+                    <span className="text-xs text-red-500">
+                      {errors.telefono_contacto}
+                    </span>
+                  )}
                 </div>
                 <Input
                   id="telefono_contacto"
                   name="telefono_contacto"
                   type="tel"
-                  value={formData.telefono_contacto}
+                  value={formData.telefono_contacto || ""}
                   onChange={handleChange}
+                  onBlur={(e) => {
+                    const error = validateField(e.target.name, e.target.value);
+                    setErrors((prev) => ({
+                      ...prev,
+                      telefono_contacto: error,
+                    }));
+                  }}
+                  className={cn(
+                    errors.telefono_contacto &&
+                      "border-red-500 focus-visible:ring-red-500"
+                  )}
                 />
               </div>
             </div>
 
-            {/* Subida de imagen en base64 */}
             <div className="space-y-2">
               <Label htmlFor="foto_perfil_file">
-                Foto de perfil (puede subir una imagen)
+                Foto de perfil (opcional)
               </Label>
               <Input
                 id="foto_perfil_file"
@@ -257,7 +335,6 @@ export function EditProfileModal({
                 accept="image/*"
                 onChange={handleFileChange}
               />
-              {/* Vista previa de la imagen */}
               {previewImg && (
                 <div className="mt-2">
                   <img

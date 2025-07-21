@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [refrehs, setRefresh] = useState(false);
   const { logout } = useAuth();
   const { toast } = useToast();
 
@@ -51,7 +52,7 @@ export default function ProfilePage() {
     }
 
     loadProfileData();
-  }, [toast]);
+  }, [toast, refrehs]);
 
   const handleLogout = () => logout();
 
@@ -361,6 +362,7 @@ export default function ProfilePage() {
         onClose={() => setIsEditModalOpen(false)}
         profileData={getFormDataFromProfile()}
         onSave={handleSaveProfile}
+        onRefresh={() => setRefresh(!refrehs)}
       />
     </AppLayout>
   );
