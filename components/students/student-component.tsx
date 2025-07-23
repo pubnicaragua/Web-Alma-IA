@@ -33,14 +33,21 @@ export function StudentsContent() {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const loadStudents = async () => {
+  // Control to know if we should load search or normal students
+  const [useSearch, setUseSearch] = useState<boolean>(!!searchParam);
+
+  // Updated load function to accept param whether to use search or fetchStudents
+  const loadStudents = async (useSearchParam = true) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      let data: Student[] = searchParam
-        ? await searchStudents(searchParam)
-        : await fetchStudents();
+      let data: Student[];
+      if (useSearchParam && searchParam) {
+        data = await searchStudents(searchParam);
+      } else {
+        data = await fetchStudents();
+      }
 
       const uniqueLevels = Array.from(new Set(data.map((s) => s.level)));
       const uniqueCourses = Array.from(new Set(data.map((s) => s.course)));
@@ -51,6 +58,7 @@ export function StudentsContent() {
       setStatusOptions(["Todos", ...uniqueStatuses]);
 
       setStudents(data);
+      setUseSearch(useSearchParam && !!searchParam);
     } catch (err) {
       setError("No se pudieron cargar los datos.");
       toast({
@@ -64,7 +72,7 @@ export function StudentsContent() {
   };
 
   useEffect(() => {
-    loadStudents();
+    loadStudents(!!searchParam);
   }, [searchParam]);
 
   useEffect(() => {
@@ -122,6 +130,17 @@ export function StudentsContent() {
     }
   };
 
+  const resetFilters = async () => {
+    setLevelFilter("Todos");
+    setCourseFilter("Todos");
+    setStatusFilter("Todos");
+    setMinAge(undefined);
+    setMaxAge(undefined);
+
+    // Load unfiltered students ignoring search param
+    await loadStudents(false);
+  };
+
   if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-8 text-center">
@@ -136,7 +155,7 @@ export function StudentsContent() {
       <div className="text-center py-8">
         <div className="text-red-500 mb-4">{error}</div>
         <button
-          onClick={loadStudents}
+          onClick={() => loadStudents(useSearch)}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
         >
           <RefreshCw className="w-4 h-4 mr-2 inline" />
@@ -148,6 +167,25 @@ export function StudentsContent() {
 
   return (
     <>
+      <div className="flex items-center gap-2 mb-4">
+        <button
+          onClick={() => loadStudents(useSearch)}
+          aria-label="Refrescar datos"
+          className="px-3 py-1 border border-gray-300 rounded text-gray-600 hover:bg-gray-100 transition text-sm"
+          type="button"
+        >
+          Refrescar
+        </button>
+        <button
+          onClick={resetFilters}
+          aria-label="Eliminar filtros"
+          className="px-3 py-1 border border-gray-300 rounded text-gray-600 hover:bg-gray-100 transition text-sm"
+          type="button"
+        >
+          Eliminar filtros
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <FilterDropdown
           label="Nivel"

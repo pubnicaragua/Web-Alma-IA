@@ -23,12 +23,32 @@ export async function getNotificationCount(): Promise<number> {
 
 export async function searchStudents(term: string): Promise<Student[]> {
   try {
-    const response = await fetchWithAuth(`/alumnos/buscar`, {
+    const storedCursos =
+      typeof window !== "undefined"
+        ? localStorage.getItem("docente_cursos")
+        : null;
+
+    let bodyPayload: { termino: string; cursos?: number[] } = {
+      termino: term,
+    };
+
+    if (storedCursos) {
+      try {
+        const cursoIds = JSON.parse(storedCursos);
+        if (Array.isArray(cursoIds) && cursoIds.length > 0) {
+          bodyPayload.cursos = cursoIds;
+        }
+      } catch {
+        console.warn("No se pudo parsear 'docente_cursos' de localStorage.");
+      }
+    }
+
+    const response = await fetchWithAuth("/alumnos/buscar", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ termino: term }),
+      body: JSON.stringify(bodyPayload),
     });
 
     if (!response.ok) {
@@ -39,6 +59,6 @@ export async function searchStudents(term: string): Promise<Student[]> {
     const students = mapApiStudentsToStudents(data);
     return students || [];
   } catch (error) {
-    throw error; // Re-lanzamos el error para manejarlo en el componente
+    throw error;
   }
 }

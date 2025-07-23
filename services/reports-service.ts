@@ -165,30 +165,56 @@ const sampleReports: Report[] = [
   },
 ];
 
-// Función para obtener los informes
 export async function fetchReports(): Promise<APIReportGeneral[]> {
   try {
-    // Usar el proxy local en lugar de la URL directa
-    const response = await fetchWithAuth("/informes/generales", {
+    let baseUrl = "/informes/generales";
+
+    // Obtener los IDs de curso del localStorage
+    const storedCursos =
+      typeof window !== "undefined"
+        ? localStorage.getItem("docente_cursos") // Usamos la misma llave que para los alumnos
+        : null;
+
+    if (storedCursos) {
+      let cursoIds: number[] = [];
+      try {
+        cursoIds = JSON.parse(storedCursos);
+      } catch {
+        console.warn("No se pudo parsear 'docente_cursos' de localStorage.");
+      }
+
+      if (Array.isArray(cursoIds) && cursoIds.length > 0) {
+        // Construir query params con todos los curso_id
+        // Ejemplo: /informes/generales?curso_id=9&curso_id=18
+        const params = new URLSearchParams();
+        cursoIds.forEach((id) => params.append("curso_id", id.toString())); // Aquí cambia "colegio_id" a "curso_id"
+
+        baseUrl += `?${params.toString()}`;
+      }
+    }
+
+    const response = await fetchWithAuth(baseUrl, {
       method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (!response.ok) {
-      // Si la respuesta no es exitosa, lanzar un error
       const errorText = await response.text();
       throw new Error(
-        `Error al obtener informes: ${response.status} ${response.statusText}`
+        `Error al obtener informes: ${response.status} ${response.statusText} - ${errorText}`
       );
     }
 
     const data = await response.json();
-    // Verificar que data sea un array antes de mapearlo
+
     if (!Array.isArray(data)) {
       throw new Error("Error al obtener informes, intente más tarde");
     }
+
     return data;
   } catch (error) {
-    // En caso de error, devolver datos de ejemplo
     throw error;
   }
 }
