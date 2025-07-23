@@ -49,7 +49,7 @@ export interface ProfileResponse {
     descripcion: string;
     rol_id: number;
   };
-  docentes: {
+  docentes: Array<{
     docente_id: number;
     especialidad: string;
     colegios: Array<{
@@ -61,18 +61,35 @@ export interface ProfileResponse {
     }>;
     docentes_cursos: Array<{
       ano_escolar: number;
-      cursos: Array<{
+      cursos: {
         curso_id: number;
         grado_id: number;
         nombre_curso: string;
-      }>;
+      };
     }>;
-  };
+  }>;
   funcionalidades: Array<{
     id: number;
     nombre: string;
     descripcion: string;
   }>;
+}
+
+function guardarCursosEnLocalStorage(profile?: ProfileResponse) {
+  if (typeof window === "undefined") return;
+  if (localStorage.getItem("docente_cursos")) return;
+
+  if (!profile || !profile.docentes) return;
+
+  const cursosSet = new Set<number>();
+
+  profile.docentes[0].docentes_cursos.forEach((docente) => {
+    cursosSet.add(docente.cursos.curso_id);
+  });
+
+  const cursosArray = Array.from(cursosSet);
+
+  localStorage.setItem("docente_cursos", JSON.stringify(cursosArray));
 }
 
 export async function fetchUserProfile(): Promise<ProfileResponse | null> {
@@ -89,6 +106,7 @@ export async function fetchUserProfile(): Promise<ProfileResponse | null> {
     }
 
     const data = await response.json();
+    guardarCursosEnLocalStorage(data);
     return data;
   } catch (error) {
     return null;

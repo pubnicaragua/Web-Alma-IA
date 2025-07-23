@@ -314,29 +314,54 @@ export const getStudentReports = async (
   }
 };
 
-// Función para obtener la lista de estudiantes
+// Asumo que Student y ApiStudent están tipados en otro lado
+
 export async function fetchStudents(): Promise<Student[]> {
   try {
-    const response = await fetchWithAuth("/alumnos", {
+    let baseUrl = "/alumnos";
+
+    const storedCursos =
+      typeof window !== "undefined"
+        ? localStorage.getItem("docente_cursos")
+        : null;
+
+    if (storedCursos) {
+      let cursoIds: number[] = [];
+      try {
+        cursoIds = JSON.parse(storedCursos);
+      } catch {
+        console.warn("No se pudo parsear 'docente_cursos' de localStorage.");
+      }
+
+      if (Array.isArray(cursoIds) && cursoIds.length > 0) {
+        const params = new URLSearchParams();
+        cursoIds.forEach((id) =>
+          params.append("cursos.curso_id", id.toString())
+        );
+
+        baseUrl += `?${params.toString()}`;
+      }
+    }
+
+    const response = await fetchWithAuth(baseUrl, {
       method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (!response.ok) {
-      // Intentar leer el mensaje de error
       const errorText = await response.text();
       throw new Error(
         `Error al obtener alumnos: ${response.status} - ${errorText}`
       );
     }
 
-    // Intentar parsear la respuesta como JSON
     const apiStudents = (await response.json()) as ApiStudent[];
-
-    // Transformar los datos de la API a nuestro modelo de Student
     const students = mapApiStudentsToStudents(apiStudents);
     return students;
   } catch (error) {
-    throw error; // Propagar el error para que se maneje en el componente
+    throw error;
   }
 }
 

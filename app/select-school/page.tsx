@@ -53,10 +53,6 @@ export default function SelectSchoolPage() {
       const schools = await loadSchoolsByUsuario_id(profile.usuario.usuario_id);
       setSchools(schools);
     } catch (error) {
-      // Mostrar mensaje de error al usuario
-      setError(
-        "No se pudieron cargar los colegios. Por favor, intente nuevamente."
-      );
     } finally {
       setIsLoading(false);
     }
