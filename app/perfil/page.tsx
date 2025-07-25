@@ -5,7 +5,7 @@ import Image from "next/image";
 import { AppLayout } from "@/components/layout/app-layout";
 import { ProfileField } from "@/components/profile-field";
 import { Button } from "@/components/ui/button";
-import { LogOut, AlertCircle, Edit } from "lucide-react";
+import { LogOut, AlertCircle, Edit, Key } from "lucide-react";
 import { useAuth } from "@/middleware/auth-provider";
 import {
   fetchUserProfile,
@@ -18,11 +18,19 @@ import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
 import { EditProfileModal } from "@/components/profile/edit-profile-modal";
 
+// Importa el modal de edición de contraseña que te proporcioné previamente
+import { EditPasswordModal } from "@/components/profile/change-password-modal";
+import {
+  fetchUpdatePassword,
+  UpdatePasswordData,
+} from "@/services/auth-service";
+
 export default function ProfilePage() {
   const [profileData, setProfileData] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [refrehs, setRefresh] = useState(false);
   const { logout } = useAuth();
   const { toast } = useToast();
@@ -35,11 +43,6 @@ export default function ProfilePage() {
         const data = await fetchUserProfile();
         setProfileData(data);
       } catch (err) {
-        setError(
-          "No se pudieron cargar los datos del perfil. Por favor, intenta de nuevo más tarde."
-        );
-
-        // Mostrar toast de error
         toast({
           title: "Error al cargar perfil",
           description:
@@ -65,16 +68,13 @@ export default function ProfilePage() {
       await updateProfile(profileData?.usuario.usuario_id, data);
       const profile = await fetchUserProfile();
       setProfileData(profile);
-      //cerrar el modal
       setIsEditModalOpen(false);
 
-      // Mostrar mensaje de éxito
       toast({
         title: "Perfil actualizado",
         description: "Tus cambios se han guardado correctamente.",
       });
     } catch (error) {
-      //cerrar el modal
       setIsEditModalOpen(false);
       toast({
         title: "Error",
@@ -83,6 +83,42 @@ export default function ProfilePage() {
         variant: "destructive",
       });
       throw error;
+    }
+  };
+
+  // Nueva función para manejar el guardado de la nueva contraseña
+  const handleSavePassword = async (
+    newPassword: string,
+    currentPassword: string
+  ) => {
+    if (!profileData?.usuario.usuario_id) {
+      toast({
+        title: "Error",
+        description: "No se pudo identificar al usuario.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const updateDate: UpdatePasswordData = {
+      new_password: newPassword,
+      currentPassword: currentPassword,
+    };
+    try {
+      fetchUpdatePassword(updateDate);
+
+      toast({
+        title: "Contraseña actualizada",
+        description: "Tu contraseña ha sido cambiada con éxito.",
+      });
+      setRefresh(!refrehs);
+    } catch (err) {
+      toast({
+        title: "Error",
+        description:
+          "No se pudo actualizar la contraseña. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
+      });
+      throw err;
     }
   };
 
@@ -114,18 +150,13 @@ export default function ProfilePage() {
     } as ProfileData;
   };
 
-  // Calcular edad a partir de la fecha de nacimiento
   const calculateAge = (birthDateString: string): number | null => {
     try {
       if (!birthDateString) return 0;
-
       const birthDate = new Date(birthDateString);
-
-      // Verificar si la fecha es válida
       if (isNaN(birthDate.getTime())) {
         return 0;
       }
-
       const today = new Date();
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -138,12 +169,11 @@ export default function ProfilePage() {
       }
 
       return age;
-    } catch (error) {
+    } catch {
       return 0;
     }
   };
 
-  // Mostrar skeleton mientras se cargan los datos
   if (loading) {
     return (
       <AppLayout>
@@ -152,7 +182,6 @@ export default function ProfilePage() {
     );
   }
 
-  // Si no hay datos, mostrar mensaje de error
   if (!profileData) {
     return (
       <AppLayout>
@@ -182,7 +211,7 @@ export default function ProfilePage() {
       <div className="container mx-auto px-3 sm:px-6 py-8">
         {/* Zona 1: Información de perfil principal */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8 border border-blue-200">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative">
+          <div className="flex flex-col md:flex-row items-center gap-6 ">
             <div className="relative w-32 h-32 rounded-full overflow-hidden mb-4 flex-shrink-0 border-4 border-blue-100">
               <Image
                 src={usuario?.url_foto_perfil || "/confident-businessman.png"}
@@ -212,15 +241,28 @@ export default function ProfilePage() {
                     {rol?.nombre}
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="ml-4"
-                  onClick={() => setIsEditModalOpen(true)}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Editar perfil
-                </Button>
+                <div className="flex space-x- flex-col gap-5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditModalOpen(true)}
+                    aria-label="Editar perfil"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar perfil
+                  </Button>
+
+                  {/* Nuevo botón para abrir modal de cambio de contraseña */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsPasswordModalOpen(true)}
+                    aria-label="Editar contraseña"
+                  >
+                    <Key className="h-4 w-4 mr-2" />
+                    Cambiar contraseña
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -236,6 +278,13 @@ export default function ProfilePage() {
               <ProfileField
                 label="Nombre completo"
                 value={`${persona?.nombres} ${persona?.apellidos}`}
+              />
+              <ProfileField
+                label="Fecha nacimiento"
+                value={`${persona?.fecha_nacimiento
+                  .split("-")
+                  .reverse()
+                  .join("/")}`}
               />
               <ProfileField
                 label="Edad"
@@ -304,7 +353,7 @@ export default function ProfilePage() {
               {funcionalidades && funcionalidades?.length > 0 ? (
                 funcionalidades.map((funcionalidad) => (
                   <div
-                    key={funcionalidad.funcionalidad_id}
+                    key={funcionalidad.id}
                     className="bg-green-50 p-3 rounded-md mb-2 flex items-center"
                   >
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
@@ -363,6 +412,13 @@ export default function ProfilePage() {
         profileData={getFormDataFromProfile()}
         onSave={handleSaveProfile}
         onRefresh={() => setRefresh(!refrehs)}
+      />
+
+      {/* Modal para editar contraseña */}
+      <EditPasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSave={handleSavePassword}
       />
     </AppLayout>
   );

@@ -31,7 +31,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { logout } = useAuth();
-  const { getFuntions } = useUser();
+  const { getFuntions, refresh } = useUser();
   const { toast } = useToast();
   const [profileData, setProfileData] = useState<ProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +55,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
     const schoolData =
       typeof window !== "undefined" ? localStorage.getItem("schoolData") : null;
     setDataSchool(schoolData ? JSON.parse(schoolData) : {});
-  }, []);
+  }, [refresh]);
 
   const loadUserProfile = async () => {
     try {

@@ -13,6 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import type { ProfileData } from "@/services/profile-service";
+import { useUser } from "@/middleware/user-context";
 import { cn } from "@/lib/utils";
 
 interface FormErrors {
@@ -45,6 +46,7 @@ export function EditProfileModal({
   const [errors, setErrors] = useState<FormErrors>({});
   const [fotoPerfilBase64, setFotoPerfilBase64] = useState<string | null>(null);
   const [previewImg, setPreviewImg] = useState<string | null>(null);
+  const { isRefreshing } = useUser();
 
   useEffect(() => {
     if (isOpen) {
@@ -124,7 +126,7 @@ export function EditProfileModal({
     requiredFields.forEach((field) => {
       const error = validateField(field, formData[field] || "");
       if (error) {
-        newErrors[field] = error;
+        // newErrors[field] = error;
         isValid = false;
       }
     });
@@ -149,7 +151,9 @@ export function EditProfileModal({
       }
 
       await onSave(dataToSend);
+      console.log(dataToSend.encripted_password);
       onRefresh();
+      isRefreshing();
       onClose();
     } finally {
       setIsLoading(false);
@@ -347,27 +351,6 @@ export function EditProfileModal({
               <p className="text-xs text-muted-foreground mt-1">
                 Formatos permitidos: jpg, jpeg, png, webp, gif, etc.
               </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="encripted_password">
-                Nueva contraseña (dejar en blanco para no cambiar)
-              </Label>
-              <Input
-                id="encripted_password"
-                name="encripted_password"
-                type="password"
-                value={formData.encripted_password || ""}
-                onChange={handleChange}
-                placeholder="••••••••"
-                minLength={8}
-              />
-              {formData.encripted_password &&
-                formData.encripted_password.length < 8 && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    La contraseña debe tener al menos 8 caracteres
-                  </p>
-                )}
             </div>
           </div>
           <div className="border-t px-6 py-4">

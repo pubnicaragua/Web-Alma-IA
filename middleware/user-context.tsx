@@ -6,6 +6,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  use,
 } from "react";
 import { ProfileResponse } from "@/services/profile-service";
 import { useAuth } from "@/middleware/auth-provider";
@@ -15,11 +16,13 @@ export interface UserContextState {
   userData: ProfileResponse | null;
   isLoading: boolean;
   error: string | null;
+  refresh: boolean;
 }
 
 export interface UserContextActions {
   loadUserData: () => Promise<void>;
   clearUserData: () => void;
+  isRefreshing: () => void;
   getFuntions: (busqueda: string) => boolean;
 }
 
@@ -30,6 +33,8 @@ const initialContextValue: UserContextType = {
   userData: null,
   isLoading: false,
   error: null,
+  refresh: false,
+  isRefreshing: () => {},
   loadUserData: async () => {},
   clearUserData: () => {},
   getFuntions: () => false,
@@ -59,6 +64,7 @@ export function UserProvider({ children }: UserProviderProps) {
     isLoading: false,
     error: null as string | null,
   });
+  const [refresh, setRefresh] = useState(false);
 
   const loadUserData = useCallback(async () => {
     try {
@@ -103,6 +109,10 @@ export function UserProvider({ children }: UserProviderProps) {
     [state.userData]
   );
 
+  const isRefreshing = () => {
+    setRefresh(!refresh);
+  };
+
   useEffect(() => {
     if (isAuthenticated && !state.userData) {
       loadUserData();
@@ -116,6 +126,8 @@ export function UserProvider({ children }: UserProviderProps) {
         loadUserData,
         clearUserData,
         getFuntions,
+        isRefreshing,
+        refresh,
       }}
     >
       {children}

@@ -113,7 +113,9 @@ export const fetchWithAuth = async (
 
   const headers = {
     "Content-Type": "application/json",
-    "Date-Zone": JSON.stringify(Intl.DateTimeFormat().resolvedOptions()),
+    "Date-Zone": JSON.stringify(
+      Intl.DateTimeFormat(undefined, { timeZone: "UTC" }).resolvedOptions()
+    ),
     "Access-Control-Request-Headers": "date-zone",
 
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
