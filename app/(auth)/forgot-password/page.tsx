@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft } from "lucide-react";
 import { fetchRestorePassword } from "@/services/auth-service";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 export default function ForgotPasswordPage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -74,11 +76,14 @@ export default function ForgotPasswordPage() {
             </p>
           </div>
 
-          <Link href={`/reset-password?email=${encodeURIComponent(email)}`}>
-            <Button className="bg-blue-500 hover:bg-blue-600">
-              Continuar recuperacion
-            </Button>
-          </Link>
+          <Button
+            className="bg-blue-500 hover:bg-blue-600"
+            onClick={() =>
+              router.push(`/reset-password?email=${encodeURIComponent(email)}`)
+            }
+          >
+            Continuar recuperacion
+          </Button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
