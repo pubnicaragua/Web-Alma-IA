@@ -132,7 +132,7 @@ export const updateProfile = async (
   data: Partial<UpdateProfileData>
 ): Promise<ProfileResponse> => {
   try {
-    const response = await fetchWithAuth(`/alumnos/perfil/${userId}`, {
+    const response = await fetchWithAuth("/alumnos/perfil/update", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
