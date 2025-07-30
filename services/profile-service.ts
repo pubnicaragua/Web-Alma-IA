@@ -150,3 +150,24 @@ export const updateProfile = async (
     throw error;
   }
 };
+
+export async function fetchUserProfileBitacora(): Promise<ProfileResponse | null> {
+  try {
+    const response = await fetchWithAuth("/perfil/obtener", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    guardarCursosEnLocalStorage(data);
+    return data;
+  } catch (error) {
+    return null;
+  }
+}

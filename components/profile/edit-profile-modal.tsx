@@ -149,9 +149,7 @@ export function EditProfileModal({
       } else if (formData.url_foto_perfil) {
         dataToSend.url_foto_perfil = formData.url_foto_perfil;
       }
-
       await onSave(dataToSend);
-      console.log(dataToSend.encripted_password);
       onRefresh();
       isRefreshing();
       onClose();

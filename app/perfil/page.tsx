@@ -279,17 +279,23 @@ export default function ProfilePage() {
                 label="Nombre completo"
                 value={`${persona?.nombres} ${persona?.apellidos}`}
               />
-              <ProfileField
-                label="Fecha nacimiento"
-                value={`${persona?.fecha_nacimiento
-                  .split("-")
-                  .reverse()
-                  .join("/")}`}
-              />
-              <ProfileField
-                label="Edad"
-                value={`${calculateAge(persona?.fecha_nacimiento)} años`}
-              />
+              {persona?.fecha_nacimiento && (
+                <ProfileField
+                  label="Fecha nacimiento"
+                  value={persona.fecha_nacimiento
+                    .split("-")
+                    .reverse()
+                    .join("/")}
+                />
+              )}
+
+              {persona?.fecha_nacimiento && (
+                <ProfileField
+                  label="Edad"
+                  value={`${calculateAge(persona.fecha_nacimiento)} años`}
+                />
+              )}
+
               <ProfileField
                 label={persona?.tipo_documento}
                 value={persona?.numero_documento}

@@ -282,9 +282,11 @@ export function Header({ toggleSidebar }: HeaderProps) {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem onClick={handleNavigateToProfile}>
-                Mi perfil
-              </DropdownMenuItem>
+              {pathname !== "/select-school" && (
+                <DropdownMenuItem onClick={handleNavigateToProfile}>
+                  Mi perfil
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={handleChangeSchool}>
                 Cambiar colegio
               </DropdownMenuItem>

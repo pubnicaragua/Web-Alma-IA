@@ -1,10 +1,7 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import React, { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,11 +14,12 @@ import { useToast } from "@/hooks/use-toast";
 export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const email = searchParams ? searchParams.get("email") : "";
+  const email = searchParams?.get("email") || "";
   const { toast } = useToast();
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [resetCoder, setResetCode] = useState("");
+  const [resetCode, setResetCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -31,7 +29,7 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError("");
 
-    if (!password || !confirmPassword || !resetCoder) {
+    if (!password || !confirmPassword || !resetCode) {
       setError("Por favor, completa todos los campos");
       return;
     }
@@ -49,11 +47,12 @@ export default function ResetPasswordPage() {
     try {
       setIsLoading(true);
       const data: fetchRestorePasswordCodeType = {
-        email: email || "",
-        resetCode: resetCoder,
+        email,
+        resetCode,
         newPassword: password,
       };
-      if (await fetchRestorePasswordCode(data)) {
+      const success = await fetchRestorePasswordCode(data);
+      if (success) {
         toast({
           title: "Contraseña restablecida",
           description:
@@ -70,7 +69,7 @@ export default function ResetPasswordPage() {
           variant: "default",
         });
       }
-    } catch (err) {
+    } catch {
       setError("Ocurrió un error. Por favor, inténtalo de nuevo.");
     } finally {
       setIsLoading(false);
@@ -78,7 +77,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="bg-white rounded-lg p-8 shadow-md">
+    <div className="bg-white rounded-lg p-8 shadow-md max-w-md mx-auto">
       <header className="flex items-center mb-6">
         <Button
           variant="ghost"
@@ -100,17 +99,23 @@ export default function ResetPasswordPage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2 relative">
-          <Input type="text" value={email ? email : ""} required disabled />
+        <div className="space-y-2">
+          <Input
+            type="email"
+            value={email}
+            disabled
+            aria-label="Correo electrónico"
+          />
         </div>
 
         <div className="space-y-2 relative">
           <Input
             type="text"
-            placeholder="Codigo de recuperación"
-            value={resetCoder}
+            placeholder="Código de recuperación"
+            value={resetCode}
             onChange={(e) => setResetCode(e.target.value)}
             required
+            aria-label="Código de recuperación"
           />
         </div>
 
@@ -122,6 +127,7 @@ export default function ResetPasswordPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
+            aria-label="Nueva contraseña"
           />
           <button
             type="button"
@@ -143,6 +149,7 @@ export default function ResetPasswordPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             minLength={6}
+            aria-label="Confirmar contraseña"
           />
           <button
             type="button"
