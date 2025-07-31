@@ -32,12 +32,12 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light">
           <ThemeColorsProvider>
             <AuthProvider>
-              <ProtectedRoute>
-                <UserProvider>
-                  <ClientWrapper>{children}</ClientWrapper>
-                  <Toaster />
-                </UserProvider>
-              </ProtectedRoute>
+              {/* <ProtectedRoute> */}
+              <UserProvider>
+                <ClientWrapper>{children}</ClientWrapper>
+                <Toaster />
+              </UserProvider>
+              {/* </ProtectedRoute> */}
             </AuthProvider>
           </ThemeColorsProvider>
         </ThemeProvider>
