@@ -1,4 +1,3 @@
-// app/(auth)/login/page.tsx
 "use client";
 
 import type React from "react";
@@ -26,9 +25,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [isCaptchaChecked, setIsCaptchaChecked] = useState(true); // Nuevo estado para el checkbox de captcha
 
-  // Función para obtener un mensaje de error amigable
   const getFriendlyErrorMessage = (error: any): string => {
-    // Si el error es un objeto con message y error
     if (typeof error === "object" && error !== null) {
       if (error.error === "Invalid login credentials") {
         return "Las credenciales ingresadas no son válidas. Por favor, verifica tu correo y contraseña.";
@@ -38,7 +35,6 @@ export default function LoginPage() {
       }
     }
 
-    // Si es un string que contiene "Invalid login credentials"
     if (
       typeof error === "string" &&
       error.includes("Invalid login credentials")
@@ -46,7 +42,6 @@ export default function LoginPage() {
       return "Las credenciales ingresadas no son válidas. Por favor, verifica tu correo y contraseña.";
     }
 
-    // Si es un string que contiene "Error interno del servidor"
     if (
       typeof error === "string" &&
       error.includes("Error interno del servidor")
@@ -54,7 +49,6 @@ export default function LoginPage() {
       return "Ha ocurrido un problema en el servidor. Por favor, intenta nuevamente más tarde.";
     }
 
-    // Mensaje genérico para otros errores
     return "Ha ocurrido un error al intentar iniciar sesión. Por favor, intenta nuevamente.";
   };
 
@@ -63,7 +57,6 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
-    // Validación del checkbox "No soy un robot"
     if (!isCaptchaChecked) {
       setError("Por favor, marca la casilla 'No soy un robot'.");
       setIsLoading(false);
@@ -87,13 +80,10 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Extraer el mensaje de error del servidor
         throw new Error(JSON.stringify(data));
       }
 
-      // Asegurarnos de que el token se guarde correctamente
       if (data.token) {
-        // Guardar el token usando la función centralizada
         setAuthToken(data.token);
         localStorage.setItem("isAuthenticated", "true");
 
@@ -133,7 +123,6 @@ export default function LoginPage() {
     } catch (error) {
       let errorMessage = "";
       try {
-        // Intentar parsear el mensaje de error si es un JSON
         const errorObj =
           error instanceof Error
             ? error.message.startsWith("{")
@@ -143,7 +132,6 @@ export default function LoginPage() {
 
         errorMessage = getFriendlyErrorMessage(errorObj);
       } catch (e) {
-        // Si hay un error al parsear, usar el mensaje original
         errorMessage =
           error instanceof Error
             ? error.message
@@ -153,7 +141,6 @@ export default function LoginPage() {
 
       setError(errorMessage);
 
-      // Mostrar notificación de error
       toast({
         title: "Error de inicio de sesión",
         description: errorMessage,
@@ -162,6 +149,11 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Nueva función para manejar click en botón Contáctanos
+  const handleContactClick = () => {
+    router.push("/contact");
   };
 
   return (
@@ -264,6 +256,15 @@ export default function LoginPage() {
         >
           {isLoading ? "Iniciando sesión..." : "Ingresar"}
         </Button>
+        {/* Nuevo bloque pregunta y botón */}
+        <div className="flex items-center justify-between mb-6 px-2">
+          <p className="text-gray-700 text-base font-medium">
+            ¿Quieres llegar a nosotros?
+          </p>
+          <Button onClick={handleContactClick} variant="outline">
+            Contáctanos
+          </Button>
+        </div>
       </form>
     </div>
   );
