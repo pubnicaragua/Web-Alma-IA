@@ -37,6 +37,7 @@ export const fetchRestorePassword = async (email: string): Promise<boolean> => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
         },
         body: JSON.stringify({ email }),
       }
@@ -66,6 +67,7 @@ export const fetchRestorePasswordCode = async (
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
         },
         body: JSON.stringify({
           email: data.email,
