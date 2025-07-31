@@ -9,9 +9,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace("/login");
-    }
+    if (!isAuthenticated) router.replace("/login");
   }, [isAuthenticated, router]);
 
   return <>{children}</>;
