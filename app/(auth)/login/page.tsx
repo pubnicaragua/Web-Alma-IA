@@ -89,6 +89,7 @@ export default function LoginPage() {
 
         try {
           const profile = await fetchUserProfile();
+          if (!profile) return;
           if (
             profile.rol.nombre === "Alumno" ||
             profile.rol.nombre === "Apoderado"
@@ -257,14 +258,14 @@ export default function LoginPage() {
           {isLoading ? "Iniciando sesión..." : "Ingresar"}
         </Button>
         {/* Nuevo bloque pregunta y botón */}
-        <div className="flex items-center justify-between mb-6 px-2">
+        {/* <div className="flex items-center justify-between mb-6 px-2">
           <p className="text-gray-700 text-base font-medium">
             ¿Quieres llegar a nosotros?
           </p>
           <Button onClick={handleContactClick} variant="outline">
             Contáctanos
           </Button>
-        </div>
+        </div> */}
       </form>
     </div>
   );

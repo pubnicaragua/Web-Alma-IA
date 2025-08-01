@@ -70,7 +70,6 @@ export default function ContactForm() {
           telefono: phone,
         }),
       });
-      await new Promise((r) => setTimeout(r, 1500));
 
       toast({
         title: "Mensaje enviado",

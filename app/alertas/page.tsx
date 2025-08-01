@@ -42,10 +42,10 @@ export default function AlertsPage({
   >([]);
   const [alertTypes, setAlertTypes] = useState<
     { alerta_tipo_id: number; nombre: string }[]
-  >([]); // <-- Añade este estado para los tipos
+  >([]);
   const [alertPriorities, setAlertPriorities] = useState<
     { alerta_prioridad_id: number; nombre: string }[]
-  >([]); // <-- Añade este estado para las prioridades
+  >([]);
 
   useEffect(() => {
     selectByDefaul();
@@ -63,11 +63,11 @@ export default function AlertsPage({
         setAlertStates(statesData);
 
         // Cargar tipos desde la base de datos
-        const typesData = await fetchTypes(); // <-- Descomenta cuando implementes fetchTypes
+        const typesData = await fetchTypes();
         setAlertTypes(typesData);
 
         // Cargar prioridades desde la base de datos
-        const prioritiesData = await fetchPrority(); // <-- Descomenta cuando implementes fetchPriorities
+        const prioritiesData = await fetchPrority();
         setAlertPriorities(prioritiesData);
 
         // Filtrar por notificaciones si aplica
@@ -112,19 +112,6 @@ export default function AlertsPage({
     return ["Todos", ...alertPriorities.map((p) => p.nombre)];
   };
 
-  const getUniqueValues = (key: keyof Alert): string[] => {
-    const values = alerts
-      .map((alert) => {
-        const value = alert[key];
-        if (value === undefined || value === null) return null;
-        return String(value);
-      })
-      .filter((value): value is string => value !== null);
-
-    const uniqueValues = Array.from(new Set(values)).sort();
-    return ["Todos", ...uniqueValues];
-  };
-
   const typeOptions = getTypeOptions();
   const priorityOptions = getPriorityOptions();
   const statusOptions = [
@@ -133,18 +120,36 @@ export default function AlertsPage({
   ];
   const dateOptions = ["Todos", "Hoy", "Hasta..."];
 
-  const parseAlertDate = (dateString: string): Date | null => {
+  // Nueva función para parseo considerando la hora local
+  const parseAlertDateTime = (
+    dateString: string,
+    timeString?: string
+  ): Date | null => {
     if (!dateString) return null;
-    const [day, month, year] = dateString.split("/");
-
-    // Validar año razonable
-    const yearNum = Number(year);
-    if (yearNum < 1900 || yearNum > 2100) {
-      console.warn(`Fecha con año inválido ignorada: ${dateString}`);
+    const [day, month, year] = dateString.split("/").map(Number);
+    if (
+      !day ||
+      !month ||
+      !year ||
+      year < 1900 ||
+      year > 2100 ||
+      month < 1 ||
+      month > 12 ||
+      day < 1 ||
+      day > 31
+    ) {
+      console.warn(
+        `Fecha con formato inválido o año fuera de rango: ${dateString}`
+      );
       return null;
     }
-
-    return new Date(Date.UTC(yearNum, Number(month) - 1, Number(day)));
+    let hours = 0,
+      minutes = 0;
+    if (timeString) {
+      [hours, minutes] = timeString.split(":").map((t) => parseInt(t, 10) || 0);
+    }
+    // Construye fecha local (no UTC)
+    return new Date(year, month - 1, day, hours, minutes);
   };
 
   const filteredAlerts = useMemo(() => {
@@ -159,24 +164,25 @@ export default function AlertsPage({
 
       if (dateFilter !== "Todos" && alert.date) {
         try {
-          const alertDate = parseAlertDate(alert.date);
+          const alertDate = parseAlertDateTime(alert.date, alert.time);
           if (!alertDate) return false;
 
           const today = new Date();
-          today.setUTCHours(0, 0, 0, 0);
+          today.setHours(0, 0, 0, 0);
 
           switch (dateFilter) {
             case "Hoy":
-              const todayStart = new Date();
-              todayStart.setUTCHours(0, 0, 0, 0);
-              const todayEnd = new Date();
-              todayEnd.setUTCHours(23, 59, 59, 999);
+              const todayStart = new Date(today);
+              const todayEnd = new Date(today);
+              todayEnd.setHours(23, 59, 59, 999);
               return alertDate >= todayStart && alertDate <= todayEnd;
             case "Hasta...":
               if (!selectedDate) return false;
               const untilDate = new Date(selectedDate);
-              untilDate.setUTCHours(23, 59, 59, 999);
+              untilDate.setHours(23, 59, 59, 999);
               return alertDate.getTime() <= untilDate.getTime();
+            default:
+              return true;
           }
         } catch (error) {
           return false;
@@ -192,26 +198,10 @@ export default function AlertsPage({
     });
 
     return filtered.sort((a, b) => {
-      const parseDateTime = (dateStr: string, timeStr: string) => {
-        if (!dateStr) return new Date(0);
-
-        const [day, month, year] = dateStr.split("/");
-        const time = timeStr || "00:00";
-
-        const yearNum = parseInt(year, 10);
-        if (isNaN(yearNum) || yearNum < 1900 || yearNum > 2100) {
-          return new Date(0);
-        }
-
-        const monthNum = parseInt(month, 10) - 1; // Mes base 0
-        const dayNum = parseInt(day, 10);
-        const [hours, minutes] = time.split(":").map((t) => parseInt(t, 10));
-
-        return new Date(yearNum, monthNum, dayNum, hours || 0, minutes || 0);
-      };
-
-      const dateTimeA = parseDateTime(a.date || "", a.time || "");
-      const dateTimeB = parseDateTime(b.date || "", b.time || "");
+      const dateTimeA =
+        parseAlertDateTime(a.date || "", a.time || "") || new Date(0);
+      const dateTimeB =
+        parseAlertDateTime(b.date || "", b.time || "") || new Date(0);
 
       return dateTimeB.getTime() - dateTimeA.getTime();
     });
@@ -262,8 +252,27 @@ export default function AlertsPage({
             <AlertBadge type="status" value={alert.status} />
           </div>
         );
-      case "time":
-        return <div className="text-left">{alert.time || "N/A"}</div>;
+      case "date": {
+        const localDate = parseAlertDateTime(alert.date || "", alert.time);
+        return (
+          <div className="text-left">
+            {localDate ? localDate.toLocaleDateString() : "N/A"}
+          </div>
+        );
+      }
+      case "time": {
+        const localDate = parseAlertDateTime(alert.date || "", alert.time);
+        return (
+          <div className="text-left">
+            {localDate
+              ? localDate.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "N/A"}
+          </div>
+        );
+      }
       default:
         return (
           <div className="text-left">

@@ -77,15 +77,22 @@ export interface ProfileResponse {
 
 function guardarCursosEnLocalStorage(profile?: ProfileResponse) {
   if (typeof window === "undefined") return;
+
   if (localStorage.getItem("docente_cursos")) return;
 
   if (!profile || !profile.docentes) return;
 
+  if (profile.docentes.length === 0) return;
+
   const cursosSet = new Set<number>();
 
-  profile.docentes[0].docentes_cursos.forEach((docente) => {
-    cursosSet.add(docente.cursos.curso_id);
+  profile.docentes.forEach((docente) => {
+    docente.docentes_cursos.forEach((cursoDocente) => {
+      cursosSet.add(cursoDocente.cursos.curso_id);
+    });
   });
+
+  console.log("TEST", profile);
 
   const cursosArray = Array.from(cursosSet);
 
@@ -100,7 +107,6 @@ export async function fetchUserProfile(): Promise<ProfileResponse | null> {
         "Content-Type": "application/json",
       },
     });
-
     if (!response.ok) {
       return null;
     }
