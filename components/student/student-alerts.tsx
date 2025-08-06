@@ -155,8 +155,6 @@ export function StudentAlerts({
 
   // Función para convertir fecha y hora a Date
   const parseDateTime = (fecha: string, hora: string): Date => {
-    // fecha: "DD/MM/YYYY"
-    // hora: "HH:mm"
     const [day, month, year] = fecha.split("/").map(Number);
     const [hours, minutes] = hora.split(":").map(Number);
     return new Date(year, month - 1, day, hours, minutes);

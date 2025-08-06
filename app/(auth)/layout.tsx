@@ -1,8 +1,10 @@
 "use client";
 
-import type React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import { useState } from "react";
+
+// Importamos version desde package.json (ajusta la ruta según donde esté este archivo)
+import packageInfo from "../../package.json";
 
 export default function AuthLayout({
   children,
@@ -10,6 +12,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const [isHovered, setIsHovered] = useState(false);
+  const year = new Date().getFullYear();
 
   return (
     <>
@@ -53,6 +56,17 @@ export default function AuthLayout({
             {children}
           </div>
         </div>
+
+        {/* Footer simple y minimalista */}
+        <footer
+          className="text-center text-gray-200 bg-blue-400 border-t border-blue-400 py-3 text-sm select-none"
+          style={{ userSelect: "none" }}
+        >
+          <div>
+            Versión: {packageInfo.version} © {year} AlmaIA
+          </div>
+          <div>Todos los derechos reservados.</div>
+        </footer>
       </div>
     </>
   );
