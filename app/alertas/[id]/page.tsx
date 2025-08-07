@@ -75,10 +75,6 @@ export default function AlertDetailPage({
     }
   }, [id, loadAlert, refresh]);
 
-  const handleEditClick = () => {
-    setIsEditModalOpen(true);
-  };
-
   const handleSaveChanges = async (data: any) => {
     if (!alert) return;
 
@@ -191,7 +187,10 @@ export default function AlertDetailPage({
                       />
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold text-gray-800">
+                      <h1
+                        className="text-2xl font-bold text-gray-800"
+                        onClick={() => console.log(alert)}
+                      >
                         {alert.anonimo ? "Anónimo" : alert.alumno.nombre}
                       </h1>
                       <p className="text-sm text-gray-500">
