@@ -97,7 +97,6 @@ export const Header = React.memo(
 
     const loadUserProfile = async () => {
       try {
-        // Solo mostrar loading si no hay datos previos
         if (!profileData) {
           setIsLoading(true);
         }

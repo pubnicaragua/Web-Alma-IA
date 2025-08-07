@@ -4,8 +4,16 @@ import {
   mapApiStudentsToStudents,
   Student,
 } from "./students-service";
+import { cacheService } from "@/lib/cache-service";
 
 export async function getNotificationCount(): Promise<number> {
+  const cacheKey = "notification-count";
+
+  const cachedCount = cacheService.get<number>(cacheKey);
+  if (cachedCount !== null) {
+    return cachedCount;
+  }
+
   try {
     const response = await fetchWithAuth(`/alumnos/alertas/conteo`);
 
@@ -14,13 +22,16 @@ export async function getNotificationCount(): Promise<number> {
     }
 
     const data = (await response.json()) as { count: number };
-    return data.count || 0;
+    const count = data.count || 0;
+
+    // Cache por 2 minutos
+    cacheService.set(cacheKey, count, 2 * 60 * 1000);
+
+    return count;
   } catch (error) {
-    // Return a default value in case of error
     return 0;
   }
 }
-
 export async function searchStudents(term: string): Promise<Student[]> {
   try {
     const storedCursos =

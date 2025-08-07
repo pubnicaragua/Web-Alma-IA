@@ -6,11 +6,13 @@ import React, {
   useState,
   useEffect,
   useCallback,
-  use,
+  useRef,
 } from "react";
 import { ProfileResponse } from "@/services/profile-service";
 import { useAuth } from "@/middleware/auth-provider";
 import { getAuthToken } from "../lib/api-config";
+import { cacheService } from "@/lib/cache-service";
+
 // 1. Definición de tipos
 export interface UserContextState {
   userData: ProfileResponse | null;
@@ -20,10 +22,11 @@ export interface UserContextState {
 }
 
 export interface UserContextActions {
-  loadUserData: () => Promise<void>;
+  loadUserData: (forceRefresh?: boolean) => Promise<void>;
   clearUserData: () => void;
   isRefreshing: () => void;
   getFuntions: (busqueda: string) => boolean;
+  updateUserData: (newData: ProfileResponse) => void;
 }
 
 type UserContextType = UserContextState & UserContextActions;
@@ -38,6 +41,7 @@ const initialContextValue: UserContextType = {
   loadUserData: async () => {},
   clearUserData: () => {},
   getFuntions: () => false,
+  updateUserData: () => {},
 };
 
 // 3. Creación del contexto
@@ -65,23 +69,76 @@ export function UserProvider({ children }: UserProviderProps) {
     error: null as string | null,
   });
   const [refresh, setRefresh] = useState(false);
+  const lastFetchTimeRef = useRef<number | null>(null);
+  const isLoadingRef = useRef(false);
 
-  const loadUserData = useCallback(async () => {
+  // Tiempo de caché en milisegundos (5 minutos)
+  const CACHE_DURATION = 5 * 60 * 1000;
+  const updateUserData = useCallback((newData: ProfileResponse) => {
+    // Actualizar el estado inmediatamente
+    setState((prev) => ({ ...prev, userData: newData, error: null }));
+
+    // Actualizar el cache
+    cacheService.set("user-profile", newData, 10 * 60 * 1000);
+
+    // Actualizar el timestamp del cache
+    lastFetchTimeRef.current = Date.now();
+  }, []);
+
+  // Modificar loadUserData para no sobrescribir datos recién actualizados
+  const loadUserData = useCallback(async (forceRefresh = false) => {
     try {
+      const now = Date.now();
+
+      // Si forceRefresh, limpiar cache
+      if (forceRefresh) {
+        cacheService.clear("user-profile");
+      }
+
+      // Evitar múltiples peticiones simultáneas
+      if (isLoadingRef.current && !forceRefresh) {
+        return;
+      }
+
+      // Verificar cache primero (pero no si acabamos de actualizar)
+      const cachedData = cacheService.get<ProfileResponse>("user-profile");
+      if (cachedData && !forceRefresh) {
+        setState((prev) => ({
+          ...prev,
+          userData: cachedData,
+          error: null,
+        }));
+        return;
+      }
+
+      isLoadingRef.current = true;
       const token = getAuthToken();
-      const options = {
-        headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          "Content-Type": "application/json",
-        },
-      };
+
+      if (!token) {
+        setState((prev) => ({ ...prev, error: "No auth token available" }));
+        return;
+      }
+
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-      const response = await fetch("/api/proxy/perfil/obtener", options);
+      const response = await fetch("/api/proxy/perfil/obtener", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = (await response.json()) as ProfileResponse;
 
       setState((prev) => ({ ...prev, userData: data }));
+
+      // Guardar en cache
+      cacheService.set("user-profile", data, 10 * 60 * 1000);
+      lastFetchTimeRef.current = now;
     } catch (err) {
       setState((prev) => ({
         ...prev,
@@ -89,11 +146,12 @@ export function UserProvider({ children }: UserProviderProps) {
       }));
     } finally {
       setState((prev) => ({ ...prev, isLoading: false }));
+      isLoadingRef.current = false;
     }
   }, []);
-
   const clearUserData = useCallback(() => {
-    setState((prev) => ({ ...prev, userData: null }));
+    setState((prev) => ({ ...prev, userData: null, error: null }));
+    lastFetchTimeRef.current = null;
   }, []);
 
   const getFuntions = useCallback(
@@ -109,15 +167,25 @@ export function UserProvider({ children }: UserProviderProps) {
     [state.userData]
   );
 
-  const isRefreshing = () => {
-    setRefresh(!refresh);
-  };
+  const isRefreshing = useCallback(() => {
+    setRefresh((prev) => !prev);
+  }, []);
 
+  // Efecto separado para manejar cambios de autenticación
   useEffect(() => {
-    if (isAuthenticated && !state.userData) {
+    if (isAuthenticated && !state.userData && !isLoadingRef.current) {
       loadUserData();
+    } else if (!isAuthenticated) {
+      clearUserData();
     }
-  }, [isAuthenticated, state.userData, loadUserData]);
+  }, [isAuthenticated]); // Solo depende de isAuthenticated
+
+  // Efecto separado para manejar refresh manual
+  useEffect(() => {
+    if (refresh && isAuthenticated) {
+      loadUserData(true);
+    }
+  }, [refresh, isAuthenticated]);
 
   return (
     <UserContext.Provider
@@ -127,6 +195,7 @@ export function UserProvider({ children }: UserProviderProps) {
         clearUserData,
         getFuntions,
         isRefreshing,
+        updateUserData,
         refresh,
       }}
     >

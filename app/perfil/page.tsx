@@ -17,8 +17,7 @@ import { ProfileSkeleton } from "@/components/profile-skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { formatDate } from "@/lib/utils";
 import { EditProfileModal } from "@/components/profile/edit-profile-modal";
-
-// Importa el modal de edición de contraseña que te proporcioné previamente
+import { useUser } from "@/middleware/user-context";
 import { EditPasswordModal } from "@/components/profile/change-password-modal";
 import {
   fetchUpdatePassword,
@@ -32,6 +31,7 @@ export default function ProfilePage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [refrehs, setRefresh] = useState(false);
+  const { updateUserData } = useUser(); // Agregar esta línea
   const { logout } = useAuth();
   const { toast } = useToast();
 
@@ -65,17 +65,23 @@ export default function ProfilePage() {
     }
 
     try {
-      await updateProfile(profileData?.usuario.usuario_id, data);
-      const profile = await fetchUserProfile();
-      setProfileData(profile);
+      const updatedProfile = await updateProfile(
+        profileData?.usuario.usuario_id,
+        data
+      );
+      if (!updatedProfile || !updatedProfile.usuario) {
+        throw new Error("Datos de perfil inválidos recibidos");
+      }
+      setProfileData(updatedProfile);
+      updateUserData(updatedProfile);
       setIsEditModalOpen(false);
-
       toast({
         title: "Perfil actualizado",
         description: "Tus cambios se han guardado correctamente.",
       });
     } catch (error) {
       setIsEditModalOpen(false);
+      console.error("Error updating profile:", error);
       toast({
         title: "Error",
         description:
@@ -85,7 +91,6 @@ export default function ProfilePage() {
       throw error;
     }
   };
-
   // Nueva función para manejar el guardado de la nueva contraseña
   const handleSavePassword = async (
     newPassword: string,

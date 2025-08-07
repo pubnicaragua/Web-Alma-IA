@@ -1,6 +1,7 @@
 "use client";
 
 import { fetchWithAuth } from "@/lib/api-config";
+import { cacheService } from "@/lib/cache-service";
 
 export interface ProfileResponse {
   usuario: {
@@ -92,14 +93,20 @@ function guardarCursosEnLocalStorage(profile?: ProfileResponse) {
     });
   });
 
-  console.log("TEST", profile);
-
   const cursosArray = Array.from(cursosSet);
 
   localStorage.setItem("docente_cursos", JSON.stringify(cursosArray));
 }
 
 export async function fetchUserProfile(): Promise<ProfileResponse | null> {
+  const cacheKey = "user-profile";
+
+  // Verificar cache primero
+  const cachedProfile = cacheService.get<ProfileResponse>(cacheKey);
+  if (cachedProfile) {
+    return cachedProfile;
+  }
+
   try {
     const response = await fetchWithAuth("/perfil/obtener", {
       method: "GET",
@@ -107,12 +114,17 @@ export async function fetchUserProfile(): Promise<ProfileResponse | null> {
         "Content-Type": "application/json",
       },
     });
+
     if (!response.ok) {
       return null;
     }
 
     const data = await response.json();
     guardarCursosEnLocalStorage(data);
+
+    // Guardar en cache por 10 minutos
+    cacheService.set(cacheKey, data, 10 * 60 * 1000);
+
     return data;
   } catch (error) {
     return null;
@@ -150,13 +162,18 @@ export const updateProfile = async (
       throw new Error("Error al actualizar el perfil");
     }
 
-    // Devolver los datos actualizados del perfil
-    return await response.json();
+    // Después de actualizar exitosamente, obtener el perfil actualizado
+    const updatedProfile = await fetchUserProfile();
+
+    if (!updatedProfile) {
+      throw new Error("No se pudo obtener el perfil actualizado");
+    }
+
+    return updatedProfile;
   } catch (error) {
     throw error;
   }
 };
-
 export async function fetchUserProfileBitacora(): Promise<ProfileResponse | null> {
   try {
     const response = await fetchWithAuth("/perfil/obtener", {

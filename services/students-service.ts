@@ -1,4 +1,5 @@
 import { fetchWithAuth } from "@/lib/api-config";
+import { cacheService } from "@/lib/cache-service";
 
 // Interfaces para la respuesta de la API
 export interface ApiStudent {
@@ -317,13 +318,20 @@ export const getStudentReports = async (
 // Asumo que Student y ApiStudent están tipados en otro lado
 
 export async function fetchStudents(): Promise<Student[]> {
+  const storedCursos =
+    typeof window !== "undefined"
+      ? localStorage.getItem("docente_cursos")
+      : null;
+
+  const cacheKey = `students-${storedCursos || "all"}`;
+
+  const cachedStudents = cacheService.get<Student[]>(cacheKey);
+  if (cachedStudents) {
+    return cachedStudents;
+  }
+
   try {
     let baseUrl = "/alumnos";
-
-    const storedCursos =
-      typeof window !== "undefined"
-        ? localStorage.getItem("docente_cursos")
-        : null;
 
     if (storedCursos) {
       let cursoIds: number[] = [];
@@ -338,7 +346,6 @@ export async function fetchStudents(): Promise<Student[]> {
         cursoIds.forEach((id) =>
           params.append("cursos.curso_id", id.toString())
         );
-
         baseUrl += `?${params.toString()}`;
       }
     }
@@ -359,6 +366,10 @@ export async function fetchStudents(): Promise<Student[]> {
 
     const apiStudents = (await response.json()) as ApiStudent[];
     const students = mapApiStudentsToStudents(apiStudents);
+
+    // Cache por 5 minutos
+    cacheService.set(cacheKey, students, 5 * 60 * 1000);
+
     return students;
   } catch (error) {
     throw error;

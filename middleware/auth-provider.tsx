@@ -6,6 +6,7 @@ import { isAuthenticated, removeAuthToken } from "@/lib/api-config";
 import { subscribeToAuthChanges } from "@/lib/auth-events";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import { cacheService } from "@/lib/cache-service";
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     sessionStorage.clear();
     removeAuthToken();
     setIsAuth(false);
+    cacheService.clear();
     window.location.href = "/login";
     toast({
       title: "Sesión cerrada",
