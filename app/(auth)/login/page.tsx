@@ -152,11 +152,6 @@ export default function LoginPage() {
     }
   };
 
-  // Nueva función para manejar click en botón Contáctanos
-  const handleContactClick = () => {
-    router.push("/contact");
-  };
-
   return (
     <div className="bg-white rounded-lg p-8 shadow-md">
       <h1 className="text-2xl font-bold text-center mb-6">Inicia sesión</h1>

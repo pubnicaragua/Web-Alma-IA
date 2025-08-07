@@ -10,6 +10,7 @@ import { SchoolCardSkeleton } from "@/components/school-card-skeleton";
 import { fetchUserProfile } from "@/services/profile-service";
 import { getPowerUsers } from "@/services/alerts-service";
 import { AppLayout } from "@/components/layout/app-layout";
+import { getSchoolById } from "@/services/school-service";
 
 interface School {
   id: string;
@@ -58,9 +59,17 @@ export default function SelectSchoolPage() {
     }
   };
 
-  const handleSelectSchool = (schoolId: string) => {
+  const handleSelectSchool = async (schoolId: string) => {
     // Guardar el colegio seleccionado
     localStorage.setItem("selectedSchool", schoolId);
+
+    // Cargar y guardar datos completos del colegio
+    const school = await getSchoolById(schoolId);
+    if (school) {
+      localStorage.setItem("schoolData", JSON.stringify(school));
+      // Disparar evento personalizado para notificar el cambio
+      window.dispatchEvent(new CustomEvent("schoolDataChanged"));
+    }
 
     // Redirigir al dashboard
     router.push("/");
