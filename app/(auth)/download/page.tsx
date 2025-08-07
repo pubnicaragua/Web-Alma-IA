@@ -15,7 +15,7 @@ const APP_INFO = {
   name: "AlmaIA",
   version: "v1.0.0",
   description: "A alex se le ocurrira algo mejor 🥲.",
-  Url: "/AlmaIA.apk",
+  Url: "http://almaia.cl/app-android-almaia-v1.0.apk",
   updatedAt: "2025-08-07",
   size: "72.3 MB",
   downloads: "12k",
