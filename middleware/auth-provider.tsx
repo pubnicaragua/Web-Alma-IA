@@ -56,12 +56,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = (isForTime = false) => {
-    router.push("/login");
     localStorage.clear();
     sessionStorage.clear();
     removeAuthToken();
     setIsAuth(false);
-    window.location.reload();
+    window.location.href = "/login";
     toast({
       title: "Sesión cerrada",
       description: isForTime
