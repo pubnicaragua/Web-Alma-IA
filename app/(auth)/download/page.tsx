@@ -14,7 +14,23 @@ import axios from "axios";
 const APP_INFO = {
   name: "AlmaIA",
   version: "v1.0.0",
-  description: "A alex se le ocurrira algo mejor 🥲.",
+  description: (
+    <>
+      <p>
+        <strong>AlmaIA</strong> es la <strong>aplicación inteligente</strong>{" "}
+        diseñada para que colegios y familias puedan <strong>monitorear</strong>{" "}
+        el <strong>estado emocional</strong> y la asistencia de los estudiantes
+        en <strong>tiempo real</strong>.
+      </p>
+      <br />
+      <p>
+        Con un <strong>enfoque amigable</strong> y <strong>seguro</strong>,{" "}
+        <strong>AlmaIA</strong> ayuda a <strong>detectar</strong> a tiempo
+        cambios emocionales, generar <strong>alertas</strong> y entregar{" "}
+        información útil a profesores, especialistas y apoderados.
+      </p>
+    </>
+  ),
   Url: "http://almaia.cl/app-android-almaia-v1.0.apk",
   updatedAt: "2025-08-07",
   size: "72.3 MB",
@@ -75,7 +91,7 @@ export default function AndroidDownload() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-16 p-8 bg-white rounded-3xl shadow-2xl relative">
+    <div className="max-w-md mx-auto mt-4 p-8 bg-white rounded-3xl shadow-2xl relative">
       <AnimatePresence>
         <motion.div
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
@@ -141,11 +157,7 @@ export default function AndroidDownload() {
               }`}
             >
               <ArrowDownTrayIcon className="w-5 h-5" />
-              {downloading
-                ? "Descargando…"
-                : done
-                ? "Descargado"
-                : "Descargar APK"}
+              {downloading ? "Descargando…" : done ? "Descargado" : "Descargar"}
             </motion.button>
 
             <motion.button
@@ -157,7 +169,7 @@ export default function AndroidDownload() {
               aria-controls="technical-info"
             >
               <InformationCircleIcon className="w-5 h-5" />
-              Info Técnica
+              Informacion
             </motion.button>
           </div>
 

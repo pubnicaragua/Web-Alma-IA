@@ -11,6 +11,7 @@ import { fetchUserProfile } from "@/services/profile-service";
 import { getPowerUsers } from "@/services/alerts-service";
 import { AppLayout } from "@/components/layout/app-layout";
 import { getSchoolById } from "@/services/school-service";
+import { useUser } from "@/middleware/user-context";
 
 interface School {
   id: string;
@@ -25,6 +26,7 @@ export default function SelectSchoolPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [schools, setSchools] = useState<School[]>([]);
+  const { getFuntions } = useUser();
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -121,12 +123,15 @@ export default function SelectSchoolPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-3 sm:gap-0 sm:flex-nowrap sm:items-center sm:space-x-6 w-full sm:w-auto">
-                      <div className="flex items-center space-x-2">
-                        <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
-                        <span className="text-xs sm:text-sm text-gray-600">
-                          {school.alerts} alertas
-                        </span>
-                      </div>
+                      {getFuntions("Alertas") ? (
+                        <div className="flex items-center space-x-2">
+                          <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
+                          <span className="text-xs sm:text-sm text-gray-600">
+                            {school.alerts} alertas
+                          </span>
+                        </div>
+                      ) : null}
+
                       <div className="flex items-center space-x-2">
                         <Users className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500" />
                         <span className="text-xs sm:text-sm text-gray-600">

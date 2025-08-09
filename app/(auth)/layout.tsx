@@ -15,7 +15,6 @@ export default function AuthLayout({
   const [isHovered, setIsHovered] = useState(false);
   const year = new Date().getFullYear();
   const pathname = usePathname();
-  const apkUrl = "/download"; // Cambia la url si tienes otra ruta
 
   return (
     <>
@@ -65,13 +64,12 @@ export default function AuthLayout({
           className="text-center text-gray-200 bg-blue-400 border-t border-blue-400 py-3 text-sm select-none"
           style={{ userSelect: "none" }}
         >
-          {" "}
           {pathname !== "/download" ? (
             <a
-              href={apkUrl}
+              href="/download"
               className="mb-8 inline-flex items-center gap-2 px-5 py-3 bg-green-600 text-white font-semibold rounded-full shadow-lg hover:bg-green-700 transition"
             >
-              Descargar APK Android
+              Descargar APK
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"
@@ -84,6 +82,52 @@ export default function AuthLayout({
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 12l5 5m0 0l5-5m-5 5V4"
+                />
+              </svg>
+            </a>
+          ) : null}
+          {pathname !== "/login" ? (
+            <a
+              href="/login"
+              className="ml-4 inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-semibold rounded-full shadow-lg hover:bg-blue-700 transition"
+              aria-label="Ir a login"
+            >
+              Login
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15 12H3m12 0l-4-4m4 4l-4 4"
+                />
+              </svg>
+            </a>
+          ) : null}
+          {pathname !== "/support" ? (
+            <a
+              href="/support"
+              className="mb-8 ml-4 inline-flex items-center gap-2 px-5 py-3 bg-indigo-600 text-white font-semibold rounded-full shadow-lg hover:bg-indigo-700 transition"
+              aria-label="Ir a soporte"
+            >
+              Soporte
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 17l4-4-4-4m5 8h3a2 2 0 002-2V7a2 2 0 00-2-2h-3"
                 />
               </svg>
             </a>
