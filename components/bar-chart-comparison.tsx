@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { Smile, RefreshCw, AlertCircle, Calendar } from "lucide-react";
+import { Smile, RefreshCw, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   fetchEmotions,
@@ -20,8 +20,7 @@ import {
 } from "@/services/home-service";
 import { useToast } from "@/hooks/use-toast";
 import { themeColors } from "@/lib/theme-colors";
-import { DatePicker } from "@/components/ui/date-picker"; // Asegúrate que este componente esté disponible
-import { Console } from "console";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface BarChartComparisonProps {
   title: string;
@@ -30,8 +29,9 @@ interface BarChartComparisonProps {
   setSelectedEmotions: Dispatch<SetStateAction<string[]>>;
   initialData?: Emotion[];
   apiEmotions?: Array<{
-    nombre: string;
-    valor: number;
+    name: string; // Nota: acá asegúrate que la clave sea 'name' para coincidir con el endpoint recibido
+    value: number;
+    color: string;
   }>;
 }
 
@@ -43,15 +43,15 @@ export function BarChartComparison({
   initialData,
   apiEmotions,
 }: BarChartComparisonProps) {
-  const [data, setData] = useState<Emotion[]>(initialData || []);
+  const [data, setData] = useState<
+    Array<{ name: string; value: number; color: string }>
+  >(initialData || []);
   const [isLoading, setIsLoading] = useState(!initialData && !apiEmotions);
   const [error, setError] = useState<string | null>(null);
 
-  // Estado para controlar modo de filtro: "today" o "date"
   const [dateMode, setDateMode] = useState<"today" | "date">("date");
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
-  // Valor final del filtro para usar en peticiones (formato YYYY/MM/DD)
   const dateFilterValue =
     dateMode === "today"
       ? "today"
@@ -65,12 +65,9 @@ export function BarChartComparison({
     if (!initialData && !apiEmotions) {
       loadData(dateFilterValue);
     } else if (apiEmotions) {
-      const transformedData = apiEmotions.map((emotion) => ({
-        name: emotion.nombre,
-        value: Math.round(emotion.valor / 100),
-        color: getEmotionColor(emotion.nombre),
-      }));
-      setData(transformedData);
+      // Usamos directamente los datos que llegan del endpoint con color ya asignado
+      setData(apiEmotions);
+      setSelectedEmotions(apiEmotions.map((emotion) => emotion.name));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialData, apiEmotions]);
@@ -98,7 +95,8 @@ export function BarChartComparison({
       setSelectedEmotions(emotionsData.map((emotion) => emotion.name));
       setData(
         emotionsData.map((emotion) => ({
-          ...emotion,
+          name: emotion.name,
+          value: emotion.value,
           color: getEmotionColor(emotion.name),
         }))
       );
@@ -118,6 +116,7 @@ export function BarChartComparison({
     }
   };
 
+  // Filtrar datos según emociones seleccionadas
   const filteredData =
     data && data.length > 0
       ? data.filter((emotion) => selectedEmotions.includes(emotion.name))
@@ -258,7 +257,6 @@ export function BarChartComparison({
   );
 }
 
-// Función para formatear fecha a YYYY/MM/DD
 function formatDateToYYYYMMDD(date: Date): string {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, "0");

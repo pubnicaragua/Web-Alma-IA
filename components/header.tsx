@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -33,6 +34,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const { logout } = useAuth();
   const { getFuntions, refresh } = useUser();
   const { toast } = useToast();
+
   const [profileData, setProfileData] = useState<ProfileResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -40,63 +42,39 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [dataSchool, setDataSchool] = useState<any>({});
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string | null>(null);
 
-  const handleBellClick = () => {
-    if (notificationCount > 0 && getFuntions("Alertas")) {
-      router.push("/alertas");
+  // Actualiza el estado selectedSchoolId y dataSchool desde localStorage
+  const loadSchoolDataFromStorage = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const schoolData = localStorage.getItem("schoolData");
+    const selectedSchool = localStorage.getItem("selectedSchool");
+
+    if (schoolData) {
+      setDataSchool(JSON.parse(schoolData));
+    } else {
+      setDataSchool({});
     }
-  };
 
-  // useEffect principal para cargar datos iniciales
-  useEffect(() => {
-    setIsClient(true);
-    loadUserProfile();
-    loadNotifications();
-    const schoolData =
-      typeof window !== "undefined" ? localStorage.getItem("schoolData") : null;
-    setDataSchool(schoolData ? JSON.parse(schoolData) : {});
-  }, [refresh]);
-
-  // Nuevo useEffect para detectar cambios en localStorage
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "selectedSchool" || e.key === "schoolData") {
-        loadNotifications();
-        const schoolData = localStorage.getItem("schoolData");
-        setDataSchool(schoolData ? JSON.parse(schoolData) : {});
-      }
-    };
-
-    // Listener para cambios en localStorage desde otras pestañas/ventanas
-    window.addEventListener("storage", handleStorageChange);
-
-    // Listener personalizado para cambios en la misma pestaña
-    const handleCustomStorageChange = (event: CustomEvent) => {
-      if (
-        event.detail.key === "selectedSchool" ||
-        event.detail.key === "schoolData"
-      ) {
-        loadNotifications();
-        const schoolData = localStorage.getItem("schoolData");
-        setDataSchool(schoolData ? JSON.parse(schoolData) : {});
-      }
-    };
-
-    window.addEventListener(
-      "localStorageChange",
-      handleCustomStorageChange as EventListener
-    );
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener(
-        "localStorageChange",
-        handleCustomStorageChange as EventListener
-      );
-    };
+    if (selectedSchool) {
+      setSelectedSchoolId(selectedSchool);
+    } else {
+      setSelectedSchoolId(null);
+    }
   }, []);
 
-  const loadUserProfile = async () => {
+  // Cargar el número de notificaciones, pasando el colegio seleccionado
+  const loadNotifications = useCallback(async () => {
+    try {
+      const count = await getNotificationCount(selectedSchoolId);
+      setNotificationCount(count);
+    } catch (error) {
+      setNotificationCount(0);
+    }
+  }, [selectedSchoolId]);
+
+  // Carga el perfil del usuario
+  const loadUserProfile = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await fetchUserProfile();
@@ -105,6 +83,54 @@ export function Header({ toggleSidebar }: HeaderProps) {
       setProfileData(null);
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  // Efecto inicial para marcar que estamos en cliente, cargar perfil y escuela
+  useEffect(() => {
+    setIsClient(true);
+    loadUserProfile();
+    loadSchoolDataFromStorage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refresh]);
+
+  // Efecto que recarga notificaciones cada vez que cambia el colegio seleccionado
+  useEffect(() => {
+    if (!isClient) return;
+    if (selectedSchoolId) {
+      loadNotifications();
+    } else {
+      setNotificationCount(0);
+    }
+  }, [selectedSchoolId, loadNotifications, isClient]);
+
+  // Efecto que recarga notificaciones al cambiar de página (ruta)
+  useEffect(() => {
+    if (!isClient) return;
+    loadNotifications();
+  }, [pathname, loadNotifications, isClient]);
+
+  // Escuchar evento 'storage' para cambios en localStorage desde otras pestañas
+  useEffect(() => {
+    if (!isClient) return;
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "selectedSchool" || e.key === "schoolData") {
+        loadSchoolDataFromStorage();
+        loadNotifications();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [isClient, loadSchoolDataFromStorage, loadNotifications]);
+
+  // Manejo del clic en el ícono de campana
+  const handleBellClick = () => {
+    if (notificationCount > 0 && getFuntions("Alertas")) {
+      router.push("/alertas");
     }
   };
 
@@ -126,15 +152,6 @@ export function Header({ toggleSidebar }: HeaderProps) {
     } finally {
       setIsSearching(false);
       setSearchTerm("");
-    }
-  };
-
-  const loadNotifications = async () => {
-    try {
-      const count = await getNotificationCount();
-      setNotificationCount(count);
-    } catch (error) {
-      setNotificationCount(0);
     }
   };
 
@@ -175,7 +192,6 @@ export function Header({ toggleSidebar }: HeaderProps) {
     return url.trim() || "/confident-businessman.png";
   };
 
-  // Resto del JSX permanece igual...
   return (
     <header className="w-full relative h-[100px]">
       {/* Fondo SVG como imagen */}

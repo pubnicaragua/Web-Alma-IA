@@ -28,7 +28,7 @@ import { useUser } from "@/middleware/user-context";
 import { UnauthorizedMessage } from "@/components/unauthorized-message";
 
 export default function StudentDetailPage() {
-  const { getFuntions } = useUser();
+  const { getFuntions, userData, isLoading: userLoading } = useUser();
   const { id } = useParams();
   const [studentDetails, setStudentDetails] =
     useState<StudentDetailResponse | null>(null);
@@ -45,12 +45,23 @@ export default function StudentDetailPage() {
     "Otros",
   ]);
 
+  // Verificar permisos solo cuando los datos del usuario estén cargados
   useEffect(() => {
-    setIsLoading(true);
-    if (getFuntions("Ficha Alumno")) setHaveAccess(false);
+    if (!userLoading && userData) {
+      // Solo verificar permisos cuando los datos del usuario estén disponibles
+      if (getFuntions("Ficha Alumno")) {
+        setHaveAccess(false);
+      } else {
+        setHaveAccess(true);
+      }
+    }
+  }, [userLoading, userData, getFuntions]);
 
+  // Cargar datos del estudiante
+  useEffect(() => {
     const loadStudentDetails = async () => {
       try {
+        setIsLoading(true);
         setError(null);
 
         const details = await fetchStudentDetails(id as string);
@@ -66,8 +77,11 @@ export default function StudentDetailPage() {
       }
     };
 
-    loadStudentDetails();
-  }, [id, refresh]);
+    // Solo cargar datos del estudiante si tenemos acceso y no estamos cargando datos del usuario
+    if (!userLoading && userData && !haveAccess) {
+      loadStudentDetails();
+    }
+  }, [id, refresh, userLoading, userData, haveAccess]);
 
   const handleToggleEmotion = (emotion: string) => {
     if (selectedEmotions.includes(emotion)) {
@@ -89,7 +103,8 @@ export default function StudentDetailPage() {
     return parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
   };
 
-  if (isLoading) {
+  // Mostrar skeleton mientras se cargan los datos del usuario o del estudiante
+  if (userLoading || isLoading) {
     return (
       <AppLayout>
         <div className="container mx-auto px-2 sm:px-6 py-4 sm:py-8">
@@ -99,7 +114,8 @@ export default function StudentDetailPage() {
     );
   }
 
-  if (haveAccess) {
+  // Mostrar mensaje de acceso no autorizado solo después de verificar permisos
+  if (!userLoading && userData && haveAccess) {
     return (
       <AppLayout>
         <div className="flex w-full h-full justify-center items-center">
@@ -127,6 +143,7 @@ export default function StudentDetailPage() {
     );
   }
 
+  // Resto del componente permanece igual...
   const {
     alumno,
     ficha,
@@ -146,6 +163,51 @@ export default function StudentDetailPage() {
     alumno: data.alumno,
     promedio: data.promedio,
   }));
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-ES", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString("es-ES", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatDateMensual = (dateString: string) => {
+    const date = new Date(dateString);
+    const month = date.toLocaleDateString("es-ES", { month: "long" });
+    const year = date.getFullYear();
+    return `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
+  };
+
+  const getTipoAlerta = (tipoId: number) => {
+    const tipos: { [key: number]: string } = {
+      1: "SOS Alma",
+      2: "Alerta amarilla",
+      3: "Alerta Naranja",
+      4: "Denuncia",
+      5: "Alerta General",
+    };
+    return tipos[tipoId] || "Desconocido";
+  };
+
+  const getPrioridad = (prioridadId: number) => {
+    const prioridades: { [key: number]: string } = {
+      1: "Baja",
+      2: "Media",
+      3: "Alta",
+      4: "Critica",
+    };
+    return prioridades[prioridadId] || "Desconocida";
+  };
 
   const alertsData = alertas.map((alerta) => ({
     alumno_alerta_id: alerta.alumno_alerta_id,
@@ -353,12 +415,12 @@ export default function StudentDetailPage() {
                           Historial médico
                         </h4>
                         <p className="text-gray-600">
-                          {ficha[0]?.historial_medico || "No disponible"}
+                          {ficha[0]?.historial_medico.trim() || "No disponible"}
                         </p>
                       </div>
                       <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                         <h4 className="font-medium text-gray-700 mb-2">
-                          Alergias
+                          Alergias conocidas
                         </h4>
                         <p className="text-gray-600">
                           {ficha[0]?.alergias.trim() || "No disponible"}
@@ -366,21 +428,10 @@ export default function StudentDetailPage() {
                       </div>
                       <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                         <h4 className="font-medium text-gray-700 mb-2">
-                          Enfermedades crónicas
+                          Condiciones médicas actuales
                         </h4>
-                        <p className="text-gray-600">
-                          {ficha[0]?.enfermedades_cronicas.trim() ||
-                            "No disponible"}
-                        </p>
-                      </div>
-                      <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                        <h4 className="font-medium text-gray-700 mb-2">
-                          Condiciones médicas relevantes
-                        </h4>
-                        <p className="text-gray-600">
-                          {ficha[0]?.condiciones_medicas_relevantes.trim() ||
-                            "No disponible"}
-                        </p>
+                        {ficha[0]?.condiciones_medicas_relevantes.trim() ||
+                          "No disponible"}
                       </div>
                       <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                         <h4 className="font-medium text-gray-700 mb-2">

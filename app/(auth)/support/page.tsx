@@ -1,11 +1,7 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  EnvelopeIcon,
-  PhoneIcon,
-  ChatBubbleLeftRightIcon,
-} from "@heroicons/react/24/solid";
+import { EnvelopeIcon, PhoneIcon, InboxIcon } from "@heroicons/react/24/solid";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SupportContact() {
@@ -31,22 +27,21 @@ export default function SupportContact() {
     setSent(false);
 
     try {
-      const response = await fetch("/api/proxy/support", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: form.email, nombre: form.name }),
-      });
-      // Aquí debes poner la lógica para enviar el formulario a tu backend o API de soporte
-      // Ejemplo: await axios.post('/api/support', form);
-      // contacto/almaia BODY ====> {
-      //     "nombre":"sdfds",
-      //     "email":"dsdsfds@jdsnds.com",
-      //     "telefono":"9038473",
-      //     "to":"davidcastro505personal@gmail.com"//opcional, si se envia solo se enviaran a este correo
-      // }
-      // Simulación de envío
+      await fetch(
+        "https://api-almaia-prod.onrender.com/api/v1/contacto/almaia/soporte",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: form.email,
+            nombre: form.name,
+            mensaje: form.message,
+            asunto: form.subject,
+          }),
+        }
+      );
       await new Promise((r) => setTimeout(r, 1500));
       setSent(true);
       setForm({ name: "", email: "", subject: "", message: "" });
@@ -162,15 +157,15 @@ export default function SupportContact() {
               sending ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600"
             }`}
           >
-            <EnvelopeIcon className="w-5 h-5" />
+            <InboxIcon className="w-5 h-5" />
             {sending ? "Enviando..." : "Enviar Mensaje"}
           </motion.button>
         </form>
 
-        {/* <div className="mt-8 text-center text-gray-500 text-sm">
-          <PhoneIcon className="inline w-5 h-5 mr-2" />
-          Para asistencia urgente, llama a nuestro soporte. +123-123 123
-        </div> */}
+        <div className="mt-8 text-center text-blue-700 text-sm">
+          <EnvelopeIcon className="inline w-5 h-5 mr-2" />
+          Soporte@almaia.cl
+        </div>
       </motion.div>
     </div>
   );
