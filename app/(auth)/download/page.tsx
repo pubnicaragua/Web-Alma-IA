@@ -31,7 +31,7 @@ const APP_INFO = {
       </p>
     </>
   ),
-  Url: "http://almaia.cl/app-android-almaia-v1.0.apk",
+  Url: "https://almaia.cl/app-android-almaia-v1.0.apk",
   updatedAt: "2025-08-07",
   size: "72.3 MB",
   downloads: "12k",
@@ -70,7 +70,7 @@ export default function AndroidDownload() {
     setDownloading(true);
     setDone(false);
     try {
-      const response = await axios.get(APP_INFO.apkUrl, {
+      const response = await axios.get(APP_INFO.Url, {
         responseType: "blob",
         onDownloadProgress: (e) => {
           if (e.total) setProgress(Math.round((e.loaded * 100) / e.total));
