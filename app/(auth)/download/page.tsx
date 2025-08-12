@@ -9,7 +9,6 @@ import {
   DevicePhoneMobileIcon,
   StarIcon,
 } from "@heroicons/react/24/solid";
-import axios from "axios";
 
 const APP_INFO = {
   name: "AlmaIA",
@@ -40,7 +39,7 @@ const APP_INFO = {
   reviewsCount: 892,
 };
 
-function renderStars(rating) {
+function renderStars(rating: number) {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
     stars.push(
@@ -60,35 +59,7 @@ function renderStars(rating) {
 }
 
 export default function AndroidDownload() {
-  const [progress, setProgress] = useState(0);
-  const [downloading, setDownloading] = useState(false);
-  const [done, setDone] = useState(false);
   const [showTechnical, setShowTechnical] = useState(false);
-
-  const handleDownload = async () => {
-    setProgress(0);
-    setDownloading(true);
-    setDone(false);
-    try {
-      const response = await axios.get(APP_INFO.Url, {
-        responseType: "blob",
-        onDownloadProgress: (e) => {
-          if (e.total) setProgress(Math.round((e.loaded * 100) / e.total));
-        },
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `${APP_INFO.name}.apk`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      setDone(true);
-    } catch (error) {
-      alert("Error en la descarga.");
-    }
-    setDownloading(false);
-  };
 
   return (
     <div className="max-w-md mx-auto mt-4 p-8 bg-white rounded-3xl shadow-2xl relative">
@@ -147,18 +118,18 @@ export default function AndroidDownload() {
 
           {/* Botones de acción */}
           <div className="flex items-center gap-4 mb-5">
-            <motion.button
-              whileHover={{ scale: 1.04, backgroundColor: "#22c55e" }}
+            {/* Enlace directo para descarga evita CORS */}
+            <motion.a
+              href={APP_INFO.Url}
+              download={`${APP_INFO.name}.apk`}
+              className="flex items-center gap-2 px-6 py-3 text-white rounded-full font-semibold bg-green-500 transition-all shadow-lg hover:bg-green-600"
+              whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
-              disabled={downloading}
-              onClick={handleDownload}
-              className={`flex items-center gap-2 px-6 py-3 text-white rounded-full font-semibold bg-green-500 transition-all shadow-lg ${
-                downloading ? "bg-green-300 cursor-not-allowed" : ""
-              }`}
+              aria-label={`Descargar ${APP_INFO.name}`}
             >
               <ArrowDownTrayIcon className="w-5 h-5" />
-              {downloading ? "Descargando…" : done ? "Descargado" : "Descargar"}
-            </motion.button>
+              Descargar
+            </motion.a>
 
             <motion.button
               onClick={() => setShowTechnical((v) => !v)}
@@ -169,40 +140,11 @@ export default function AndroidDownload() {
               aria-controls="technical-info"
             >
               <InformationCircleIcon className="w-5 h-5" />
-              Informacion
+              Información
             </motion.button>
           </div>
 
-          {/* Barra de progreso */}
-          <div className="mt-2">
-            <AnimatePresence>
-              {downloading && (
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  exit={{ width: 0, opacity: 0 }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                  className="h-3 rounded-lg bg-green-300 overflow-hidden relative"
-                  style={{ width: "100%" }}
-                >
-                  <motion.div
-                    className="h-3 bg-green-500 transition-all"
-                    style={{ width: `${progress}%` }}
-                  />
-                </motion.div>
-              )}
-              {done && !downloading && (
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="mt-3 text-green-600 text-sm font-semibold"
-                >
-                  ¡Descarga completa!
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </div>
+          {/* Barra de progreso: eliminado por no usar axios para descarga */}
 
           {/* Info técnica expandible */}
           <AnimatePresence>
