@@ -32,7 +32,8 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { logout } = useAuth();
-  const { getFuntions, refresh } = useUser();
+  const { getFuntions, refresh, selectedSchoolId, setSelectedSchoolId } =
+    useUser();
   const { toast } = useToast();
 
   const [profileData, setProfileData] = useState<ProfileResponse | null>(null);
@@ -42,92 +43,110 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [dataSchool, setDataSchool] = useState<any>({});
-  const [selectedSchoolId, setSelectedSchoolId] = useState<string | null>(null);
 
-  // Actualiza el estado selectedSchoolId y dataSchool desde localStorage
-  const loadSchoolDataFromStorage = useCallback(() => {
-    if (typeof window === "undefined") return;
-    const schoolData = localStorage.getItem("schoolData");
-    const selectedSchool = localStorage.getItem("selectedSchool");
-
-    if (schoolData) {
-      setDataSchool(JSON.parse(schoolData));
-    } else {
-      setDataSchool({});
-    }
-
-    if (selectedSchool) {
-      setSelectedSchoolId(selectedSchool);
-    } else {
-      setSelectedSchoolId(null);
-    }
-  }, []);
-
-  // Cargar el número de notificaciones, pasando el colegio seleccionado
-  const loadNotifications = useCallback(async () => {
-    try {
-      const count = await getNotificationCount(selectedSchoolId);
-      setNotificationCount(count);
-    } catch (error) {
-      setNotificationCount(0);
-    }
-  }, [selectedSchoolId]);
-
-  // Carga el perfil del usuario
   const loadUserProfile = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await fetchUserProfile();
       setProfileData(data);
-    } catch (error) {
+    } catch {
       setProfileData(null);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Efecto inicial para marcar que estamos en cliente, cargar perfil y escuela
+  const loadNotifications = useCallback(async () => {
+    try {
+      const count = await getNotificationCount(selectedSchoolId);
+      setNotificationCount(count);
+    } catch {
+      setNotificationCount(0);
+    }
+  }, [selectedSchoolId]);
+
+  // Inicializa isClient lo antes posible
   useEffect(() => {
     setIsClient(true);
+  }, []);
+
+  useEffect(() => {
     loadUserProfile();
-    loadSchoolDataFromStorage();
+
+    // Si contexto no tiene selectedSchoolId, intenta sincronizarlo con localStorage
+    if (typeof window !== "undefined" && !selectedSchoolId) {
+      const lsSelected = localStorage.getItem("selectedSchool");
+      if (lsSelected) {
+        setSelectedSchoolId(lsSelected);
+      }
+      const lsSchoolData = localStorage.getItem("schoolData");
+      if (lsSchoolData) setDataSchool(JSON.parse(lsSchoolData));
+    } else if (selectedSchoolId) {
+      // Si context tiene selectedSchoolId, actualiza dataSchool en UI
+      if (typeof window !== "undefined") {
+        const schoolDataLs = localStorage.getItem("schoolData");
+        if (schoolDataLs) {
+          const parsed = JSON.parse(schoolDataLs);
+          if (parsed.id === selectedSchoolId) {
+            setDataSchool(parsed);
+          } else {
+            setDataSchool({});
+          }
+        }
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh]);
 
-  // Efecto que recarga notificaciones cada vez que cambia el colegio seleccionado
+  // Mantener sincronía del dataSchool con selectedSchoolId
+  useEffect(() => {
+    if (!selectedSchoolId) {
+      setDataSchool({});
+      setNotificationCount(0);
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      const schoolDataLs = localStorage.getItem("schoolData");
+      if (schoolDataLs) {
+        const parsed = JSON.parse(schoolDataLs);
+        if (parsed.id === selectedSchoolId) {
+          setDataSchool(parsed);
+        } else {
+          setDataSchool({});
+        }
+      }
+    }
+  }, [selectedSchoolId]);
+
+  // Recarga las notificaciones cuando cambia colegio o ruta, solo si on client
   useEffect(() => {
     if (!isClient) return;
+
     if (selectedSchoolId) {
       loadNotifications();
     } else {
       setNotificationCount(0);
     }
-  }, [selectedSchoolId, loadNotifications, isClient]);
+  }, [selectedSchoolId, pathname, loadNotifications, isClient]);
 
-  // Efecto que recarga notificaciones al cambiar de página (ruta)
-  useEffect(() => {
-    if (!isClient) return;
-    loadNotifications();
-  }, [pathname, loadNotifications, isClient]);
-
-  // Escuchar evento 'storage' para cambios en localStorage desde otras pestañas
+  // Escuchar eventos storage para sincronización entre pestañas (no en la misma pestaña)
   useEffect(() => {
     if (!isClient) return;
 
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "selectedSchool" || e.key === "schoolData") {
-        loadSchoolDataFromStorage();
-        loadNotifications();
+        const newSelected = localStorage.getItem("selectedSchool");
+        if (newSelected !== selectedSchoolId) {
+          setSelectedSchoolId(newSelected);
+        }
       }
     };
 
     window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, [isClient, loadSchoolDataFromStorage, loadNotifications]);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [isClient, selectedSchoolId, setSelectedSchoolId]);
 
-  // Manejo del clic en el ícono de campana
   const handleBellClick = () => {
     if (notificationCount > 0 && getFuntions("Alertas")) {
       router.push("/alertas");
@@ -137,12 +156,11 @@ export function Header({ toggleSidebar }: HeaderProps) {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchTerm.trim()) return;
-
     try {
       if (pathname !== "/select-school")
         router.push(`/alumnos?search=${searchTerm}`);
       else setIsSearching(true);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description:
@@ -167,24 +185,15 @@ export function Header({ toggleSidebar }: HeaderProps) {
 
   const getFullName = () => {
     if (!profileData) return "Usuario";
-
     const nombres = profileData.persona?.nombres || "";
     const apellidos = profileData.persona?.apellidos || "";
-
-    if (nombres && apellidos) {
-      return `${nombres} ${apellidos}`;
-    } else if (nombres) {
-      return nombres;
-    } else if (apellidos) {
-      return apellidos;
-    } else {
-      return profileData.usuario?.nombre_social || "Usuario";
-    }
+    if (nombres && apellidos) return `${nombres} ${apellidos}`;
+    if (nombres) return nombres;
+    if (apellidos) return apellidos;
+    return profileData.usuario?.nombre_social || "Usuario";
   };
 
-  const getUserRole = () => {
-    return profileData?.rol?.nombre || "Usuario";
-  };
+  const getUserRole = () => profileData?.rol?.nombre || "Usuario";
 
   const getUserImageUrl = () => {
     const url =
@@ -194,7 +203,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
 
   return (
     <header className="w-full relative h-[100px]">
-      {/* Fondo SVG como imagen */}
+      {/* Fondo SVG */}
       <div className="absolute inset-0 w-full h-full overflow-hidden">
         <svg
           width="100%"
@@ -218,13 +227,12 @@ export function Header({ toggleSidebar }: HeaderProps) {
         </svg>
       </div>
 
-      {/* Contenido del header */}
+      {/* Contenido principal */}
       <div
         className="relative z-10 w-full h-full flex items-center justify-between px-4 sm:px-8 lg:px-12"
         style={{ transform: "translateY(-10%)" }}
       >
         <div className="flex items-center gap-4 flex-shrink-0">
-          {/* Botón de hamburguesa para móviles */}
           {toggleSidebar && (
             <button
               onClick={toggleSidebar}
@@ -249,7 +257,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
           </Link>
         </div>
 
-        {pathname !== "/select-school" ? (
+        {pathname !== "/select-school" && (
           <div className="flex items-center justify-between w-full max-w-2xl mx-4">
             <h2 className="hidden md:block text-xl font-semibold text-white whitespace-nowrap overflow-hidden text-ellipsis mr-4 min-w-[180px] max-w-[220px]">
               {dataSchool.name}
@@ -263,9 +271,10 @@ export function Header({ toggleSidebar }: HeaderProps) {
                 type="submit"
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
                 disabled={isSearching}
+                aria-label="Buscar alumno"
               >
                 {isSearching ? (
-                  <div className="h-4 w-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="h-4 w-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Search size={16} />
                 )}
@@ -281,10 +290,10 @@ export function Header({ toggleSidebar }: HeaderProps) {
               />
             </form>
           </div>
-        ) : null}
+        )}
 
         <div className="flex items-center space-x-4 flex-shrink-0">
-          {pathname !== "/select-school" ? (
+          {pathname !== "/select-school" && (
             <div
               className={`relative ${
                 isClient && notificationCount > 0
@@ -292,6 +301,9 @@ export function Header({ toggleSidebar }: HeaderProps) {
                   : "cursor-default"
               }`}
               onClick={handleBellClick}
+              role="button"
+              tabIndex={0}
+              aria-label={`Notificaciones: ${notificationCount}`}
             >
               <Bell className="text-white h-7 w-7 hidden sm:block" />
               {isClient && notificationCount > 0 && (
@@ -300,7 +312,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                 </span>
               )}
             </div>
-          ) : null}
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center space-x-3 focus:outline-none">
@@ -318,6 +330,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                     />
                   )}
                 </div>
+
                 <div className="text-white text-right hidden sm:block min-w-[120px]">
                   {isLoading ? (
                     <>
@@ -337,6 +350,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                 </div>
               </div>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent align="end" className="w-56">
               {pathname !== "/select-school" && (
                 <DropdownMenuItem onClick={handleNavigateToProfile}>
@@ -347,7 +361,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                 Cambiar colegio
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuItem onClick={() => console.log(selectedSchoolId)}>
                 Cerrar sesión
               </DropdownMenuItem>
             </DropdownMenuContent>

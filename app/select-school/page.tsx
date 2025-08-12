@@ -4,13 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, Bell, Users } from "lucide-react";
 import { Header } from "@/components/header";
-import { loadSchoolsByUsuario_id } from "@/services/school-service";
+import {
+  loadSchoolsByUsuario_id,
+  getSchoolById,
+} from "@/services/school-service";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SchoolCardSkeleton } from "@/components/school-card-skeleton";
 import { fetchUserProfile } from "@/services/profile-service";
 import { getPowerUsers } from "@/services/alerts-service";
 import { AppLayout } from "@/components/layout/app-layout";
-import { getSchoolById } from "@/services/school-service";
 import { useUser } from "@/middleware/user-context";
 
 interface School {
@@ -26,7 +28,17 @@ export default function SelectSchoolPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [schools, setSchools] = useState<School[]>([]);
-  const { getFuntions } = useUser();
+  const { getFuntions, setSelectedSchoolId } = useUser();
+
+  const handleSelectSchool = async (schoolId: string) => {
+    setSelectedSchoolId(schoolId);
+    localStorage.setItem("selectedSchool", schoolId);
+    const school = await getSchoolById(schoolId);
+    if (school) {
+      localStorage.setItem("schoolData", JSON.stringify(school));
+    }
+    router.push("/");
+  };
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -42,39 +54,28 @@ export default function SelectSchoolPage() {
       return;
     }
 
-    // Cargar colegios
+    // Cargar colegios y datos requeridos
     loadAllSchools();
   }, [router]);
 
   const loadAllSchools = async () => {
     try {
-      // Cargar power users
+      setIsLoading(true);
+      // Cargar power users y guardar en localStorage si aplica
       let powerUsers = await getPowerUsers();
       localStorage.setItem("powerUsers", JSON.stringify(powerUsers));
-      setIsLoading(true);
+
       const profile = await fetchUserProfile();
-      const schools = await loadSchoolsByUsuario_id(profile.usuario.usuario_id);
-      setSchools(schools);
+      const schoolsData = await loadSchoolsByUsuario_id(
+        profile.usuario.usuario_id
+      );
+
+      setSchools(schoolsData);
     } catch (error) {
+      console.error("Error cargando colegios:", error);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSelectSchool = async (schoolId: string) => {
-    // Guardar el colegio seleccionado
-    localStorage.setItem("selectedSchool", schoolId);
-
-    // Cargar y guardar datos completos del colegio
-    const school = await getSchoolById(schoolId);
-    if (school) {
-      localStorage.setItem("schoolData", JSON.stringify(school));
-      // Disparar evento personalizado para notificar el cambio
-      window.dispatchEvent(new CustomEvent("schoolDataChanged"));
-    }
-
-    // Redirigir al dashboard
-    router.push("/");
   };
 
   if (isLoading) {

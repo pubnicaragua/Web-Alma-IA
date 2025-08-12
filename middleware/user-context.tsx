@@ -7,18 +7,20 @@ import React, {
   useEffect,
   useCallback,
   useRef,
+  useMemo,
 } from "react";
 import { ProfileResponse } from "@/services/profile-service";
 import { useAuth } from "@/middleware/auth-provider";
 import { getAuthToken } from "../lib/api-config";
 import { cacheService } from "@/lib/cache-service";
 
-// 1. Definición de tipos
+// Tipos
 export interface UserContextState {
   userData: ProfileResponse | null;
   isLoading: boolean;
   error: string | null;
   refresh: boolean;
+  selectedSchoolId: string | null;
 }
 
 export interface UserContextActions {
@@ -27,27 +29,28 @@ export interface UserContextActions {
   isRefreshing: () => void;
   getFuntions: (busqueda: string) => boolean;
   updateUserData: (newData: ProfileResponse) => void;
+  setSelectedSchoolId: (id: string | null) => void;
 }
 
 type UserContextType = UserContextState & UserContextActions;
 
-// 2. Valor inicial
+// Valor inicial
 const initialContextValue: UserContextType = {
   userData: null,
   isLoading: false,
   error: null,
   refresh: false,
+  selectedSchoolId: null,
   isRefreshing: () => {},
   loadUserData: async () => {},
   clearUserData: () => {},
   getFuntions: () => false,
   updateUserData: () => {},
+  setSelectedSchoolId: () => {},
 };
 
-// 3. Creación del contexto
 export const UserContext = createContext<UserContextType>(initialContextValue);
 
-// 4. Hook personalizado
 export function useUser() {
   const context = useContext(UserContext);
   if (context === undefined) {
@@ -56,53 +59,70 @@ export function useUser() {
   return context;
 }
 
-// 5. Proveedor del contexto
 interface UserProviderProps {
   children: React.ReactNode;
 }
 
 export function UserProvider({ children }: UserProviderProps) {
   const { isAuthenticated } = useAuth();
+
   const [state, setState] = useState({
     userData: null as ProfileResponse | null,
     isLoading: false,
     error: null as string | null,
+    refresh: false,
+    selectedSchoolId: null as string | null,
   });
-  const [refresh, setRefresh] = useState(false);
+
   const lastFetchTimeRef = useRef<number | null>(null);
   const isLoadingRef = useRef(false);
 
-  // Tiempo de caché en milisegundos (5 minutos)
+  // Cache duration 5 minutos (ms)
   const CACHE_DURATION = 5 * 60 * 1000;
+
+  // Inicializar selectedSchoolId desde localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const selected = localStorage.getItem("selectedSchool");
+      setState((prev) => ({ ...prev, selectedSchoolId: selected }));
+    }
+  }, []);
+
+  // Setter que sincroniza estado y localStorage
+  const setSelectedSchoolId = useCallback((id: string | null) => {
+    setState((prev) => ({ ...prev, selectedSchoolId: id }));
+    if (typeof window !== "undefined") {
+      if (id === null) localStorage.removeItem("selectedSchool");
+      else localStorage.setItem("selectedSchool", id);
+    }
+  }, []);
+
+  // Actualiza userData y cache
   const updateUserData = useCallback((newData: ProfileResponse) => {
-    // Actualizar el estado inmediatamente
     setState((prev) => ({ ...prev, userData: newData, error: null }));
-
-    // Actualizar el cache
     cacheService.set("user-profile", newData, 10 * 60 * 1000);
-
-    // Actualizar el timestamp del cache
     lastFetchTimeRef.current = Date.now();
   }, []);
 
-  // Modificar loadUserData para no sobrescribir datos recién actualizados
+  // Carga perfil usuario con cache y control de peticiones
   const loadUserData = useCallback(async (forceRefresh = false) => {
     try {
       const now = Date.now();
 
-      // Si forceRefresh, limpiar cache
       if (forceRefresh) {
         cacheService.clear("user-profile");
+        lastFetchTimeRef.current = null;
       }
 
-      // Evitar múltiples peticiones simultáneas
-      if (isLoadingRef.current && !forceRefresh) {
-        return;
-      }
+      if (isLoadingRef.current && !forceRefresh) return;
 
-      // Verificar cache primero (pero no si acabamos de actualizar)
       const cachedData = cacheService.get<ProfileResponse>("user-profile");
-      if (cachedData && !forceRefresh) {
+      const cacheValid =
+        cachedData &&
+        lastFetchTimeRef.current !== null &&
+        now - lastFetchTimeRef.current < CACHE_DURATION;
+
+      if (cacheValid && !forceRefresh) {
         setState((prev) => ({
           ...prev,
           userData: cachedData,
@@ -111,14 +131,13 @@ export function UserProvider({ children }: UserProviderProps) {
         return;
       }
 
-      isLoadingRef.current = true;
       const token = getAuthToken();
-
       if (!token) {
         setState((prev) => ({ ...prev, error: "No auth token available" }));
         return;
       }
 
+      isLoadingRef.current = true;
       setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
       const response = await fetch("/api/proxy/perfil/obtener", {
@@ -135,8 +154,6 @@ export function UserProvider({ children }: UserProviderProps) {
       const data = (await response.json()) as ProfileResponse;
 
       setState((prev) => ({ ...prev, userData: data }));
-
-      // Guardar en cache
       cacheService.set("user-profile", data, 10 * 60 * 1000);
       lastFetchTimeRef.current = now;
     } catch (err) {
@@ -149,6 +166,7 @@ export function UserProvider({ children }: UserProviderProps) {
       isLoadingRef.current = false;
     }
   }, []);
+
   const clearUserData = useCallback(() => {
     setState((prev) => ({ ...prev, userData: null, error: null }));
     lastFetchTimeRef.current = null;
@@ -168,38 +186,54 @@ export function UserProvider({ children }: UserProviderProps) {
   );
 
   const isRefreshing = useCallback(() => {
-    setRefresh((prev) => !prev);
+    setState((prev) => ({ ...prev, refresh: !prev.refresh }));
   }, []);
 
-  // Efecto separado para manejar cambios de autenticación
   useEffect(() => {
     if (isAuthenticated && !state.userData && !isLoadingRef.current) {
       loadUserData();
-    } else if (!isAuthenticated) {
+    }
+    if (!isAuthenticated) {
       clearUserData();
     }
-  }, [isAuthenticated]); // Solo depende de isAuthenticated
+  }, [isAuthenticated, loadUserData, clearUserData, state.userData]);
 
-  // Efecto separado para manejar refresh manual
   useEffect(() => {
-    if (refresh && isAuthenticated) {
+    if (state.refresh && isAuthenticated) {
       loadUserData(true);
     }
-  }, [refresh, isAuthenticated]);
+  }, [state.refresh, isAuthenticated, loadUserData]);
+
+  const contextValue = useMemo(
+    () => ({
+      userData: state.userData,
+      isLoading: state.isLoading,
+      error: state.error,
+      refresh: state.refresh,
+      selectedSchoolId: state.selectedSchoolId,
+      loadUserData,
+      clearUserData,
+      getFuntions,
+      isRefreshing,
+      updateUserData,
+      setSelectedSchoolId,
+    }),
+    [
+      state.userData,
+      state.isLoading,
+      state.error,
+      state.refresh,
+      state.selectedSchoolId,
+      loadUserData,
+      clearUserData,
+      getFuntions,
+      isRefreshing,
+      updateUserData,
+      setSelectedSchoolId,
+    ]
+  );
 
   return (
-    <UserContext.Provider
-      value={{
-        ...state,
-        loadUserData,
-        clearUserData,
-        getFuntions,
-        isRefreshing,
-        updateUserData,
-        refresh,
-      }}
-    >
-      {children}
-    </UserContext.Provider>
+    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
   );
 }
