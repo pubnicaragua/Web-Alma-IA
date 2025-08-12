@@ -40,8 +40,6 @@ interface AddActionModalProps {
 
 interface PowerUser {
   usuario_id: number;
-  nombre_social: string;
-  persona_id: number;
   personas: {
     nombres: string;
     apellidos: string;
@@ -114,7 +112,9 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
           const parsedPowerUsers: PowerUser[] = JSON.parse(storedPowerUsers);
           setPowerUsers(parsedPowerUsers);
           if (parsedPowerUsers.length > 0) {
-            setResponsableName(parsedPowerUsers[0].persona_id.toString());
+            setResponsableName(
+              parsedPowerUsers[0].personas.persona_id.toString()
+            );
           }
         }
         const [prioridadesData, severidadesData] = await Promise.all([
@@ -329,7 +329,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                       {powerUsers.map((user) => (
                         <SelectItem
                           key={user.usuario_id}
-                          value={user.persona_id.toString()}
+                          value={user.personas.persona_id.toString()}
                         >
                           {user.personas.nombres} {user.personas.apellidos}
                         </SelectItem>

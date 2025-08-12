@@ -933,14 +933,8 @@ export async function getPowerUsers(): Promise<PowerUser[]> {
       );
     }
 
-    // Intentar parsear la respuesta como JSON
     const apiStudents = await response.json();
-    const filteredStudents = apiStudents.filter((student: PowerUser) =>
-      [5, 6, 7].includes(student.rol_id)
-    );
-
-    // Transformar los datos de la API a nuestro modelo de Student
-    return filteredStudents;
+    return apiStudents;
   } catch (error) {
     throw error; // Propagar el error para que se maneje en el componente
   }

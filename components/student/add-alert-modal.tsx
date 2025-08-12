@@ -48,9 +48,8 @@ interface AlertState {
 }
 
 interface PowerUser {
-  persona_id: number;
-  nombre_social: string;
-  personas?: {
+  usuario_id: number;
+  personas: {
     nombres: string;
     apellidos: string;
     persona_id: number;
@@ -154,7 +153,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
         const parsedUsers: PowerUser[] = JSON.parse(storedUsers);
         setPowerUsers(parsedUsers);
         if (parsedUsers.length > 0) {
-          setSelectedUserId(parsedUsers[0].persona_id);
+          setSelectedUserId(parsedUsers[0].personas.persona_id);
         }
       }
     } catch (e) {}
@@ -414,15 +413,18 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                   <SelectContent>
                     {powerUsers.length > 0 ? (
                       powerUsers.map((user) => {
-                        const nombreCompleto = user.personas
-                          ? `${user.personas.nombres} ${user.personas.apellidos}`
-                          : user.nombre_social;
+                        {
+                          user.personas.nombres;
+                        }
+                        {
+                          user.personas.apellidos;
+                        }
                         return (
                           <SelectItem
-                            key={user.persona_id}
-                            value={user.persona_id.toString()}
+                            key={user.usuario_id}
+                            value={user.personas.persona_id.toString()}
                           >
-                            {nombreCompleto}
+                            {user.personas.nombres} {user.personas.apellidos}{" "}
                           </SelectItem>
                         );
                       })

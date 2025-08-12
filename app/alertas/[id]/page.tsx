@@ -115,16 +115,6 @@ export default function AlertDetailPage({
     return "-";
   };
 
-  const formatTime = (dateString: string | null | undefined) => {
-    if (!dateString) return "-";
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("es-ES", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
   if (isLoading) {
     return (
       <AppLayout>

@@ -361,7 +361,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
                 Cambiar colegio
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => console.log(selectedSchoolId)}>
+              <DropdownMenuItem onClick={handleLogout}>
                 Cerrar sesión
               </DropdownMenuItem>
             </DropdownMenuContent>
