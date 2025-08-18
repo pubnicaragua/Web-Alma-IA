@@ -36,6 +36,7 @@ import type {
 } from "@/services/alerts-service";
 import { useUser } from "@/middleware/user-context";
 import { useToast } from "@/hooks/use-toast";
+import { invalidateNotificationCache } from "@/services/header-service";
 
 interface AlertState {
   alerta_estado_id: number;
@@ -91,7 +92,7 @@ function getHoyFechaHora() {
 export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isOpen, onOpen, onClose } = useModal(false);
-  const { userData, isLoading: userLoading } = useUser();
+  const { userData, isLoading: userLoading, selectedSchoolId } = useUser();
   const isMobile = useIsMobile();
   const params = useParams();
   const { toast } = useToast();
@@ -229,6 +230,13 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
     onClose();
     try {
       await createAlert(data);
+
+      // Invalidar caché de notificaciones  
+      invalidateNotificationCache(selectedSchoolId!);
+
+      // Volver a cargar las notificaciones
+      window.dispatchEvent(new CustomEvent('refresh-notifications'));
+
       toast({
         title: "Éxito",
         description: "Alerta agregada correctamente",

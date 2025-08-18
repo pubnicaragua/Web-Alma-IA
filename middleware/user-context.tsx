@@ -41,12 +41,12 @@ const initialContextValue: UserContextType = {
   error: null,
   refresh: false,
   selectedSchoolId: null,
-  isRefreshing: () => {},
-  loadUserData: async () => {},
-  clearUserData: () => {},
+  isRefreshing: () => { },
+  loadUserData: async () => { },
+  clearUserData: () => { },
   getFuntions: () => false,
-  updateUserData: () => {},
-  setSelectedSchoolId: () => {},
+  updateUserData: () => { },
+  setSelectedSchoolId: () => { },
 };
 
 export const UserContext = createContext<UserContextType>(initialContextValue);
@@ -179,7 +179,7 @@ export function UserProvider({ children }: UserProviderProps) {
         (funcionalidad) =>
           typeof funcionalidad.nombre === "string" &&
           funcionalidad.nombre.trim().toLowerCase() ===
-            busqueda.trim().toLowerCase()
+          busqueda.trim().toLowerCase()
       );
     },
     [state.userData]

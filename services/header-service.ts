@@ -89,3 +89,7 @@ export async function searchStudents(term: string): Promise<Student[]> {
     throw error;
   }
 }
+
+export function invalidateNotificationCache(colegioId?: string): void {
+  cacheService.clear(colegioId ? `notification-count-${colegioId}` : "notification-count");
+}

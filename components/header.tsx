@@ -156,6 +156,19 @@ export function Header({ toggleSidebar }: HeaderProps) {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, [isClient, selectedSchoolId, setSelectedSchoolId]);
 
+  useEffect(() => {
+    if (!isClient) return;
+
+    const handleRefreshNotifications = () => {
+      if (selectedSchoolId) {
+        loadNotifications();
+      }
+    };
+
+    window.addEventListener('refresh-notifications', handleRefreshNotifications);
+    return () => window.removeEventListener('refresh-notifications', handleRefreshNotifications);
+  }, [isClient, selectedSchoolId, loadNotifications]);
+
   const handleBellClick = () => {
     console.log(notificationCount)
     if (notificationCount > 0 && getFuntions("Alertas")) {
