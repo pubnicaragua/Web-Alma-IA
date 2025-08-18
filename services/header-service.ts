@@ -6,8 +6,8 @@ import {
 } from "./students-service";
 import { cacheService } from "@/lib/cache-service";
 
-export async function getNotificationCount(): Promise<number> {
-  const cacheKey = "notification-count";
+export async function getNotificationCount(colegioId?: string): Promise<number> {
+  const cacheKey = colegioId ? `notification-count-${colegioId}` : "notification-count";
 
   const cachedCount = cacheService.get<number>(cacheKey);
   if (cachedCount !== null) {
@@ -15,16 +15,32 @@ export async function getNotificationCount(): Promise<number> {
   }
 
   try {
-    const response = await fetchWithAuth(`/alumnos/alertas/conteo`);
+    let endpoint = `/alumnos/alertas/conteo`;
+
+    if (colegioId) {
+      endpoint += `?colegio_id=${colegioId}`;
+    }
+
+    const response = await fetchWithAuth(endpoint, {}, false);
 
     if (!response.ok) {
       throw new Error("Error al obtener el conteo de notificaciones");
     }
 
-    const data = (await response.json()) as { count: number };
-    const count = data.count || 0;
+    // Actualizar para manejar la nueva estructura de respuesta  
+    const data = await response.json() as {
+      total_alertas: number;
+      pendientes: number;
+      asignadas: number;
+      en_proceso: number;
+      resueltas: number;
+      cerradas: number;
+      anuladas: number;
+    };
 
-    // Cache por 2 minutos
+    // Usar 'pendientes' para la campanita, ya que son las que requieren atención  
+    const count = data.pendientes || 0;
+
     cacheService.set(cacheKey, count, 2 * 60 * 1000);
 
     return count;

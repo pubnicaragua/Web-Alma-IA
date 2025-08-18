@@ -58,7 +58,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
 
   const loadNotifications = useCallback(async () => {
     try {
-      const count = await getNotificationCount(selectedSchoolId);
+      const count = await getNotificationCount(selectedSchoolId || undefined);
       setNotificationCount(count);
     } catch {
       setNotificationCount(0);
@@ -106,6 +106,9 @@ export function Header({ toggleSidebar }: HeaderProps) {
       return;
     }
 
+    // Resetear notificaciones inmediatamente al cambiar colegio  
+    setNotificationCount(0);
+
     if (typeof window !== "undefined") {
       const schoolDataLs = localStorage.getItem("schoolData");
       if (schoolDataLs) {
@@ -119,14 +122,20 @@ export function Header({ toggleSidebar }: HeaderProps) {
     }
   }, [selectedSchoolId]);
 
-  // Recarga las notificaciones cuando cambia colegio o ruta, solo si on client
+  // Recarga las notificaciones cuando cambia colegio o ruta  
   useEffect(() => {
     if (!isClient) return;
 
+    // Resetear inmediatamente  
+    setNotificationCount(0);
+
     if (selectedSchoolId) {
-      loadNotifications();
-    } else {
-      setNotificationCount(0);
+      // Pequeño delay para evitar llamadas múltiples  
+      const timer = setTimeout(() => {
+        loadNotifications();
+      }, 100);
+
+      return () => clearTimeout(timer);
     }
   }, [selectedSchoolId, pathname, loadNotifications, isClient]);
 
@@ -148,6 +157,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
   }, [isClient, selectedSchoolId, setSelectedSchoolId]);
 
   const handleBellClick = () => {
+    console.log(notificationCount)
     if (notificationCount > 0 && getFuntions("Alertas")) {
       router.push("/alertas");
     }
@@ -295,11 +305,10 @@ export function Header({ toggleSidebar }: HeaderProps) {
         <div className="flex items-center space-x-4 flex-shrink-0">
           {pathname !== "/select-school" && (
             <div
-              className={`relative ${
-                isClient && notificationCount > 0
-                  ? "cursor-pointer"
-                  : "cursor-default"
-              }`}
+              className={`relative ${isClient && notificationCount > 0
+                ? "cursor-pointer"
+                : "cursor-default"
+                }`}
               onClick={handleBellClick}
               role="button"
               tabIndex={0}
