@@ -239,9 +239,8 @@ export function mapApiStudentsToStudents(apiStudents: ApiStudent[]): Student[] {
 
         return {
           id: apiStudent.alumno_id.toString(),
-          name: `${apiStudent.personas?.nombres || ""} ${
-            apiStudent.personas?.apellidos || ""
-          }`.trim(),
+          name: `${apiStudent.personas?.nombres || ""} ${apiStudent.personas?.apellidos || ""
+            }`.trim(),
           level: grado,
           course: curso,
           age: edad,
@@ -303,8 +302,8 @@ export const getStudentReports = async (
       const errorText = await response.text();
       throw new Error(
         errorText ||
-          response.statusText ||
-          "Error al obtener informes de alumnos"
+        response.statusText ||
+        "Error al obtener informes de alumnos"
       );
     }
 
@@ -317,13 +316,14 @@ export const getStudentReports = async (
 
 // Asumo que Student y ApiStudent están tipados en otro lado
 
-export async function fetchStudents(): Promise<Student[]> {
+export async function fetchStudents(colegioId?: string): Promise<Student[]> {
   const storedCursos =
     typeof window !== "undefined"
       ? localStorage.getItem("docente_cursos")
       : null;
 
-  const cacheKey = `students-${storedCursos || "all"}`;
+  // Incluir colegioId en la clave del caché para evitar conflictos entre colegios  
+  const cacheKey = `students-${storedCursos || "all"}-${colegioId || "default"}`;
 
   const cachedStudents = cacheService.get<Student[]>(cacheKey);
   if (cachedStudents) {
@@ -333,29 +333,37 @@ export async function fetchStudents(): Promise<Student[]> {
   try {
     let baseUrl = "/alumnos";
 
+    // Construir parámetros de consulta  
+    const params = new URLSearchParams();
+
+    if (colegioId) {
+      params.append("colegio_id", colegioId);
+    }
+
     if (storedCursos) {
-      let cursoIds: number[] = [];
       try {
-        cursoIds = JSON.parse(storedCursos);
+        const cursoIds = JSON.parse(storedCursos);
+        if (Array.isArray(cursoIds) && cursoIds.length > 0) {
+          cursoIds.forEach((id) =>
+            params.append("cursos.curso_id", id.toString())
+          );
+        }
       } catch {
         console.warn("No se pudo parsear 'docente_cursos' de localStorage.");
       }
-
-      if (Array.isArray(cursoIds) && cursoIds.length > 0) {
-        const params = new URLSearchParams();
-        cursoIds.forEach((id) =>
-          params.append("cursos.curso_id", id.toString())
-        );
-        baseUrl += `?${params.toString()}`;
-      }
     }
 
+    if (params.toString()) {
+      baseUrl += `?${params.toString()}`;
+    }
+
+    // Usar addSchoolId: false para evitar duplicar el colegio_id  
     const response = await fetchWithAuth(baseUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-    });
+    }, false);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -367,7 +375,7 @@ export async function fetchStudents(): Promise<Student[]> {
     const apiStudents = (await response.json()) as ApiStudent[];
     const students = mapApiStudentsToStudents(apiStudents);
 
-    // Cache por 5 minutos
+    // Cache por 5 minutos  
     cacheService.set(cacheKey, students, 5 * 60 * 1000);
 
     return students;

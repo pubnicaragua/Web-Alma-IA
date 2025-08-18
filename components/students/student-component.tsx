@@ -11,8 +11,10 @@ import { RefreshCw } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AgeRangeFilter } from "../agerangefilter";
+import { useUser } from "@/middleware/user-context";
 
 export function StudentsContent() {
+  const { selectedSchoolId } = useUser();
   const searchParams = useSearchParams();
   const searchParam = searchParams.get("search") ?? "";
   const router = useRouter();
@@ -44,9 +46,9 @@ export function StudentsContent() {
 
       let data: Student[];
       if (useSearchParam && searchParam) {
-        data = await searchStudents(searchParam);
+        data = await searchStudents(searchParam, selectedSchoolId!);
       } else {
-        data = await fetchStudents();
+        data = await fetchStudents(selectedSchoolId!);
       }
 
       const uniqueLevels = Array.from(new Set(data.map((s) => s.level)));
@@ -73,7 +75,7 @@ export function StudentsContent() {
 
   useEffect(() => {
     loadStudents(!!searchParam);
-  }, [searchParam]);
+  }, [searchParam, selectedSchoolId]);
 
   useEffect(() => {
     setCurrentPage(1);

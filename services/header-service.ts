@@ -48,16 +48,20 @@ export async function getNotificationCount(colegioId?: string): Promise<number> 
     return 0;
   }
 }
-export async function searchStudents(term: string): Promise<Student[]> {
+export async function searchStudents(term: string, colegioId?: string): Promise<Student[]> {
   try {
     const storedCursos =
       typeof window !== "undefined"
         ? localStorage.getItem("docente_cursos")
         : null;
 
-    let bodyPayload: { termino: string; cursos?: number[] } = {
+    let bodyPayload: { termino: string; cursos?: number[]; colegio_id?: string } = {
       termino: term,
     };
+
+    if (colegioId) {
+      bodyPayload.colegio_id = colegioId;
+    }
 
     if (storedCursos) {
       try {
@@ -70,13 +74,14 @@ export async function searchStudents(term: string): Promise<Student[]> {
       }
     }
 
+    // Usar addSchoolId: false para evitar duplicar el colegio_id  
     const response = await fetchWithAuth("/alumnos/buscar", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(bodyPayload),
-    });
+    }, false); // Pasar false para addSchoolId  
 
     if (!response.ok) {
       throw new Error("Error al buscar alumnos");
