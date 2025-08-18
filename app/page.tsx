@@ -22,7 +22,7 @@ import { BarChartComparisonNeurodivergences } from "@/components/bar-chart-compa
 import { useUser } from "@/middleware/user-context";
 
 export default function Home() {
-  const { getFuntions } = useUser();
+  const { getFuntions, isLoading: userLoading, userData } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
@@ -49,6 +49,10 @@ export default function Home() {
     "Enojo",
     "Otros",
   ]);
+
+  console.log('haveAccess:', haveAccess);
+  console.log('isLoading:', isLoading);
+  console.log('tokenExpired:', tokenExpired);
 
   // Funciones para manejar la selección de emociones
   const handleToggleEmotionGeneral = (emotion: string) => {
@@ -149,9 +153,11 @@ export default function Home() {
     };
 
     loadSchool();
-    getFuntions("Alertas") ? setHaveAccess(true) : setHaveAccess(false);
+    if (!userLoading && userData) {
+      getFuntions("Alertas") ? setHaveAccess(true) : setHaveAccess(false);
+    }
     loadCardData();
-  }, [router, toast]); // Dependencias: router y toast
+  }, [router, toast, userLoading, userData, getFuntions]); // Dependencias: router y toast
 
   // Datos para las tarjetas de estadísticas
   const getStatCards = () => {
