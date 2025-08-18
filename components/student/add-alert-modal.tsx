@@ -73,7 +73,9 @@ interface AddAlertModalProps {
 const generarFechaISOUsuario = (fecha: string, hora: string) => {
   if (!fecha || !hora) return "";
   const horaCompleta = hora.length === 5 ? `${hora}:00` : hora;
-  return `${fecha}T${horaCompleta}`;
+
+  const fechaLocal = new Date(`${fecha}T${horaCompleta}`);
+  return fechaLocal.toISOString();
 };
 
 // Función para obtener fecha y hora actual en formato adecuado
@@ -87,6 +89,7 @@ function getHoyFechaHora() {
 }
 
 export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { isOpen, onOpen, onClose } = useModal(false);
   const { userData, isLoading: userLoading } = useUser();
   const isMobile = useIsMobile();
@@ -156,7 +159,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
           setSelectedUserId(parsedUsers[0].personas.persona_id);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
 
     return () => {
       isMounted = false;
@@ -180,9 +183,11 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!validateForm()) {
+    if (!validateForm() || isSubmitting) {
       return;
     }
+
+    setIsSubmitting(true);
 
     const prioridadSeleccionada = prioridades.find(
       (p) => p.nombre === prioridad
@@ -236,8 +241,10 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
         description: "Error al agregar a la alerta.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
-  };
+  }
 
   if (fetchError) {
     return (
@@ -498,6 +505,7 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
                 disabled={
                   userLoading ||
                   loading ||
+                  isSubmitting ||
                   alertStates.length === 0 ||
                   prioridades.length === 0 ||
                   severitys.length === 0 ||

@@ -29,7 +29,14 @@ export function RecentAlerts() {
         setError(null);
 
         const data = await fetchRecentAlerts();
-        setAlerts(data);
+
+        const sortedData = data.sort((a, b) => {
+          const dateA = new Date(a.fecha_generada);
+          const dateB = new Date(b.fecha_generada);
+          return dateB.getTime() - dateA.getTime();
+        });
+
+        setAlerts(sortedData);
       } catch (error) {
         setError("No se pudieron cargar las alertas recientes");
       } finally {
@@ -114,13 +121,11 @@ export function RecentAlerts() {
                           alert.alumnos?.url_foto_perfil ||
                           "/diverse-students-studying.png"
                         }
-                        alt={`${
-                          alert.alumnos?.personas?.nombres || "Estudiante"
-                        }`}
+                        alt={`${alert.alumnos?.personas?.nombres || "Estudiante"
+                          }`}
                         fill
-                        className={`object-cover ${
-                          alert.anonimo ? "blur-xl" : null
-                        }`}
+                        className={`object-cover ${alert.anonimo ? "blur-xl" : null
+                          }`}
                       />
                     </div>
                   )}
