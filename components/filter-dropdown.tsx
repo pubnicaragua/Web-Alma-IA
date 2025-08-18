@@ -15,6 +15,7 @@ interface FilterDropdownProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export function FilterDropdown({
@@ -23,6 +24,7 @@ export function FilterDropdown({
   value,
   onChange,
   className,
+  disabled = false,
 }: FilterDropdownProps) {
   // Mostrar el valor seleccionado o la etiqueta si es "Todos"
   const displayValue = value === "Todos" ? label : `${label}: ${value}`;
@@ -34,9 +36,9 @@ export function FilterDropdown({
           <Button
             variant="outline"
             className="w-full justify-between overflow-hidden"
-            aria-label={`Filtrar por ${
-              label?.toString()?.toLowerCase() || "filtro"
-            }`}
+            disabled={disabled}
+            aria-label={`Filtrar por ${label?.toString()?.toLowerCase() || "filtro"
+              }`}
           >
             <span className="truncate">{displayValue}</span>
             <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

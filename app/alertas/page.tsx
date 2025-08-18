@@ -35,6 +35,7 @@ export default function AlertsPage({
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [horaFilter, setHoraFilter] = useState<string>();
   const [currentPage, setCurrentPage] = useState(1);
+  const [filtersLoading, setFiltersLoading] = useState(true);
 
   // Estados para almacenar los datos desde la BD
   const [alertStates, setAlertStates] = useState<
@@ -50,27 +51,15 @@ export default function AlertsPage({
   useEffect(() => {
     selectByDefaul();
 
-    const loadAlertsAndFilters = async () => {
+    // Cargar alertas inmediatamente  
+    const loadAlerts = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Cargar alertas
         let data = await fetchAlerts();
 
-        // Cargar estados desde la base de datos
-        const statesData = await fetchStates();
-        setAlertStates(statesData);
-
-        // Cargar tipos desde la base de datos
-        const typesData = await fetchTypes();
-        setAlertTypes(typesData);
-
-        // Cargar prioridades desde la base de datos
-        const prioritiesData = await fetchPrority();
-        setAlertPriorities(prioritiesData);
-
-        // Filtrar por notificaciones si aplica
+        // Filtrar por notificaciones si aplica  
         const params = getSearchParam(searchParams, "notifications");
         if (params) {
           data = data.filter((alert) => alert.status === "Pendiente");
@@ -84,7 +73,29 @@ export default function AlertsPage({
       }
     };
 
-    loadAlertsAndFilters();
+    // Cargar filtros en segundo plano  
+    const loadFilters = async () => {
+      try {
+        setFiltersLoading(true)
+
+        const [statesData, typesData, prioritiesData] = await Promise.all([
+          fetchStates(),
+          fetchTypes(),
+          fetchPrority()
+        ]);
+
+        setAlertStates(statesData);
+        setAlertTypes(typesData);
+        setAlertPriorities(prioritiesData);
+      } catch (err) {
+        console.error("Error cargando filtros:", err);
+      } finally {
+        setFiltersLoading(false)
+      }
+    };
+
+    loadAlerts();
+    loadFilters();
   }, []);
 
   const selectByDefaul = () => {
@@ -266,9 +277,9 @@ export default function AlertsPage({
           <div className="text-left">
             {localDate
               ? localDate.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                hour: "2-digit",
+                minute: "2-digit",
+              })
               : "N/A"}
           </div>
         );
@@ -312,26 +323,29 @@ export default function AlertsPage({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <FilterDropdown
             label="Tipo"
-            options={typeOptions}
+            options={filtersLoading ? ["Cargando..."] : typeOptions}
             value={typeFilter}
             onChange={setTypeFilter}
+            disabled={filtersLoading}
           />
           <FilterDropdown
             label="Prioridad"
-            options={priorityOptions}
+            options={filtersLoading ? ["Cargando..."] : priorityOptions}
             value={priorityFilter}
             onChange={setPriorityFilter}
+            disabled={filtersLoading}
           />
           <FilterDropdown
             label="Estado"
-            options={statusOptions}
+            options={filtersLoading ? ["Cargando..."] : statusOptions}
             value={statusFilter}
             onChange={setStatusFilter}
+            disabled={filtersLoading}
           />
           <div className="flex flex-col">
             <FilterDropdown
               label="Fecha"
-              options={dateOptions}
+              options={filtersLoading ? ["Cargando..."] : dateOptions}
               value={dateFilter}
               onChange={(value) => {
                 setDateFilter(value);
@@ -339,6 +353,7 @@ export default function AlertsPage({
                   setSelectedDate(null);
                 }
               }}
+              disabled={filtersLoading}
             />
             {dateFilter === "Hasta..." && (
               <div className="mt-2">
