@@ -30,6 +30,8 @@ export function RecentAlerts() {
 
         const data = await fetchRecentAlerts();
 
+        console.log(data)
+
         const sortedData = data.sort((a, b) => {
           const dateA = new Date(a.fecha_generada);
           const dateB = new Date(b.fecha_generada);
@@ -75,13 +77,18 @@ export function RecentAlerts() {
 
   const formatDate = (dateString: string) => {
     try {
-      const date = new Date(dateString);
-      return formatDistanceToNow(date, { addSuffix: true, locale: es });
+      // Si no termina en Z, agregarlo para forzar UTC  
+      const utcString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+      const date = new Date(utcString);
+
+      return formatDistanceToNow(date, {
+        addSuffix: true,
+        locale: es
+      });
     } catch (error) {
       return "Fecha desconocida";
     }
   };
-
   const handleAlertClick = (alertId: number) => {
     router.push(`/alertas/${alertId}`);
   };

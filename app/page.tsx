@@ -50,10 +50,6 @@ export default function Home() {
     "Otros",
   ]);
 
-  console.log('haveAccess:', haveAccess);
-  console.log('isLoading:', isLoading);
-  console.log('tokenExpired:', tokenExpired);
-
   // Funciones para manejar la selección de emociones
   const handleToggleEmotionGeneral = (emotion: string) => {
     if (selectedEmotionsGeneral.includes(emotion)) {
