@@ -61,7 +61,7 @@ export default function ContactForm() {
     setIsLoading(true);
     const data = {};
     try {
-      fetch("https://api-almaia.onrender.com/api/v1/contacto/almaia", {
+      fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/contacto/almaia`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

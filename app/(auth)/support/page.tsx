@@ -28,7 +28,7 @@ export default function SupportContact() {
 
     try {
       await fetch(
-        "https://api-almaia-prod.onrender.com/api/v1/contacto/almaia/soporte",
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/contacto/almaia/soporte`,
         {
           method: "POST",
           headers: {
@@ -153,9 +153,8 @@ export default function SupportContact() {
             disabled={sending}
             whileHover={{ scale: 1.05, backgroundColor: "#4f46e5" }}
             whileTap={{ scale: 0.95 }}
-            className={`w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold text-white rounded-full shadow-lg transition ${
-              sending ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600"
-            }`}
+            className={`w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold text-white rounded-full shadow-lg transition ${sending ? "bg-indigo-400 cursor-not-allowed" : "bg-indigo-600"
+              }`}
           >
             <InboxIcon className="w-5 h-5" />
             {sending ? "Enviando..." : "Enviar Mensaje"}

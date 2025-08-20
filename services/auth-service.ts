@@ -32,7 +32,7 @@ export const fetchUpdatePassword = async (
 export const fetchRestorePassword = async (email: string): Promise<boolean> => {
   try {
     const response = await fetch(
-      "https://api-almaia.onrender.com/api/v1/auth/solicitar/cambio/password",
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/solicitar/cambio/password`,
       {
         method: "POST",
         headers: {
@@ -61,7 +61,7 @@ export const fetchRestorePasswordCode = async (
 ): Promise<boolean> => {
   try {
     const response = await fetch(
-      "https://api-almaia.onrender.com/api/v1/auth/restore-password",
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/restore-password`,
       {
         method: "POST",
         headers: {
