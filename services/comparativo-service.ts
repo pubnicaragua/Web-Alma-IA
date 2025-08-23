@@ -1,9 +1,9 @@
 import { fetchWithAuth } from "@/lib/api-config";
-import { Alert, Alert as AlertPage } from "@/app/alertas/[id]/page";
+import { AlertPagev1 } from "@/services/alerts-service";
 import { DataPoint } from "@/components/line-chart-comparison";
 
 // Función para obtener una alerta por ID
-export async function fetchAlertById(id: string): Promise<AlertPage | null> {
+export async function fetchAlertById(id: string): Promise<AlertPagev1 | null> {
   try {
     // Intentar obtener todas las alertas
     const response = await fetchWithAuth(`/alumnos/alertas/${id}`, {
@@ -26,24 +26,9 @@ export async function fetchAlertById(id: string): Promise<AlertPage | null> {
   }
 }
 
-export async function fetchRecentAlerts(): Promise<Alert[]> {
-  try {
-    const response = await fetchWithAuth("/alertas/recientes", {
-      method: "GET",
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `Error fetching recent alerts: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw error;
-  }
-}
+// ❌ ENDPOINT INCORRECTO - ELIMINADO
+// /alertas/recientes - No existe en backend, usar /home/alertas/recientes en su lugar
+// Esta función está duplicada con la de home-service.ts
 
 //funcion para la data del chartLine de comparativo
 export async function getComparativaEmotionsCourses(): Promise<any> {
