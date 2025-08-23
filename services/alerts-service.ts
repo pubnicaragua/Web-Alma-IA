@@ -201,8 +201,8 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
 
       // Normalizar texto a partir del id (más determinista)
       let alertTypeText = "General";
-      if (alertTypeId === 3) alertTypeText = "Amarilla";
-      else if (alertTypeId === 4) alertTypeText = "Naranja";
+      if (alertTypeId === 4) alertTypeText = "Amarilla";
+      else if (alertTypeId === 3) alertTypeText = "Naranja";
       else if (tipoNombreRaw && typeof tipoNombreRaw === "string") {
         const s = tipoNombreRaw.trim();
         if (!/^\d+$/.test(s)) alertTypeText = s.charAt(0).toUpperCase() + s.slice(1);
