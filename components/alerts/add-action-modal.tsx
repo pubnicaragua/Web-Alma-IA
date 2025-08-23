@@ -374,7 +374,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                 </div>
                 <div>
                   <Label className="text-sm text-gray-500">Tipo</Label>
-                  <Input value={(alertData as any).alertas_tipos?.nombre ?? alertData.tipo} readOnly disabled />
+                  <Input value={alertData.tipo} readOnly disabled />
                 </div>
                 <div>
                   <Label className="text-sm text-gray-500">Prioridad</Label>
@@ -438,7 +438,7 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
                 Descripción de la alerta
               </Label>
               <Textarea
-                value={(alertData as any).mensaje ?? alertData.descripcion}
+                value={alertData.descripcion}
                 placeholder="Descripción"
                 className="min-h-[120px]"
                 disabled
