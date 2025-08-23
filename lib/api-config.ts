@@ -1,5 +1,6 @@
 // lib/api-config.ts
 import { dispatchAuthChangeEvent } from "./auth-events";
+import { decryptData, encryptData } from "./crypto-utils";
 
 // API base URL para el proxy local
 export const API_BASE_URL = "/api/proxy";
@@ -7,7 +8,10 @@ export const API_BASE_URL = "/api/proxy";
 // Function to get the auth token
 export const getAuthToken = (): string | null => {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("auth_token");
+    const encryptedToken = localStorage.getItem("auth_token");
+    if (encryptedToken) {
+      return decryptData(encryptedToken);
+    }
   }
   return null;
 };
@@ -20,40 +24,37 @@ export const getAuthTokenFromCookie = (): string | null => {
       cookie.startsWith("auth_token=")
     );
     if (authCookie) {
-      const token = authCookie.split("=")[1];
-      return token;
+      const encryptedToken = authCookie.split("=")[1];
+      return decryptData(encryptedToken);
     }
     return null;
   }
   return null;
 };
 
-// Function to set the auth token
 export const setAuthToken = (
   token: string,
   rememberMe: boolean = false
 ): void => {
-  // Añadir parámetro rememberMe
   if (typeof window !== "undefined") {
     try {
-      // Guardar en localStorage
-      localStorage.setItem("auth_token", token);
+      // Cifrar token antes de guardar en localStorage  
+      const encryptedToken = encryptData(token);
+      localStorage.setItem("auth_token", encryptedToken);
 
-      // Guardar en cookies para que el middleware pueda detectarlo
-      // Si rememberMe es true, la cookie dura 30 días, de lo contrario, es una cookie de sesión
-      let cookieString = `auth_token=${token}; path=/; SameSite=Lax`;
+      // Para cookies, también cifrar  
+      let cookieString = `auth_token=${encryptedToken}; path=/; SameSite=Lax`;
       if (rememberMe) {
         const expirationDate = new Date();
-        expirationDate.setDate(expirationDate.getDate() + 15); // 15 días
+        expirationDate.setDate(expirationDate.getDate() + 15);
         cookieString += `; expires=${expirationDate.toUTCString()}`;
-      } else {
-        // Para que la cookie sea de sesión y expire al cerrar el navegador
-        // No se añade 'expires' ni 'max-age'
       }
       document.cookie = cookieString;
 
       dispatchAuthChangeEvent(true);
-    } catch (error) {}
+    } catch (error) {
+      console.error('Error setting encrypted token:', error);
+    }
   }
 };
 
@@ -66,7 +67,7 @@ export const removeAuthToken = (): void => {
         "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax";
 
       dispatchAuthChangeEvent(false);
-    } catch (error) {}
+    } catch (error) { }
   }
 };
 
