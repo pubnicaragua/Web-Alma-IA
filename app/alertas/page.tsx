@@ -248,7 +248,18 @@ export default function AlertsPage({
       case "type":
         return (
           <div className="flex justify-start w-full">
-            <AlertBadge type="type" value={alert.type} />
+            {/* asegurar que value sea string | number (no objeto) */}
+            <AlertBadge
+              type="type"
+              value={
+                typeof alert.alertTypeId === "number"
+                  ? alert.alertTypeId
+                  : typeof alert.type === "string"
+                  ? alert.type
+                  : // Si llega un objeto, intentar usar su nombre o fallback a string vacío
+                    (alert.type as any)?.name ?? String(alert.type) ?? ""
+              }
+            />
           </div>
         );
       case "priority":

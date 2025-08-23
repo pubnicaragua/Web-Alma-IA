@@ -154,7 +154,10 @@ export interface Alert {
     name: string;
     avatar?: string;
   };
+  // nuevo campo: id numérico del tipo (útil para mapear color de forma determinista)
+  alertTypeId?: number;
 }
+// ...existing code...
 
 function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
   return apiAlerts.map((apiAlert) => {
@@ -187,35 +190,25 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
       const studentLastName = apiAlert.alumnos?.personas?.apellidos || "";
       const studentId = (apiAlert.alumno_id ?? apiAlert.alumnos?.alumno_id)?.toString() || "0";
 
-      // NORMALIZAR TIPO: preferir nombre si no es numérico, si viene numérico o falta usar id
-      let alertType = "General";
+      // NORMALIZAR TIPO: obtener id numérico preferente y generar texto consistente
       const tipoNombreRaw = apiAlert.alertas_tipos?.nombre;
-      const tipoId = apiAlert.alertas_tipo_alerta_tipo_id ?? apiAlert.alertas_tipos?.alerta_tipo_id;
+      const tipoIdFromField = apiAlert.alertas_tipo_alerta_tipo_id ?? apiAlert.alertas_tipos?.alerta_tipo_id;
+      // si el nombre viene como "3" o "4" parsearlo
+      const tipoIdFromName = typeof tipoNombreRaw === "string" && /^\d+$/.test(tipoNombreRaw.trim())
+        ? parseInt(tipoNombreRaw.trim(), 10)
+        : undefined;
+      const alertTypeId = tipoIdFromName ?? tipoIdFromField ?? 0;
 
-      // Debug corto (opcional)
-      console.debug("mapApiAlertsToAlerts - tipo incoming", {
-        alumno_alerta_id: apiAlert.alumno_alerta_id,
-        tipoNombreRaw,
-        tipoId,
-      });
-
-      if (tipoNombreRaw) {
-        const s = String(tipoNombreRaw).trim();
-        if (/^\d+$/.test(s)) {
-          const n = parseInt(s, 10);
-          if (n === 3) alertType = "Amarilla";
-          else if (n === 4) alertType = "Naranja";
-          else alertType = `Tipo ${n}`;
-        } else {
-          alertType = s.charAt(0).toUpperCase() + s.slice(1);
-        }
-      } else if (typeof tipoId === "number") {
-        if (tipoId === 3) alertType = "Amarilla";
-        else if (tipoId === 4) alertType = "Naranja";
-        else alertType = `Tipo ${tipoId}`;
+      // Normalizar texto a partir del id (más determinista)
+      let alertTypeText = "General";
+      if (alertTypeId === 3) alertTypeText = "Amarilla";
+      else if (alertTypeId === 4) alertTypeText = "Naranja";
+      else if (tipoNombreRaw && typeof tipoNombreRaw === "string") {
+        const s = tipoNombreRaw.trim();
+        if (!/^\d+$/.test(s)) alertTypeText = s.charAt(0).toUpperCase() + s.slice(1);
       }
 
-      // PRIORIDAD
+      // PRIORIDAD (igual lógica de fallback por nombre o id)
       let priority = "Media";
       const prioridadNombre = apiAlert.alertas_prioridades?.nombre;
       const prioridadId = apiAlert.prioridad_id;
@@ -230,51 +223,33 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
         else priority = "Media";
       }
 
-      // SEVERIDAD
-      let severity = "Media";
-      const severidadNombre = apiAlert.alertas_severidades?.nombre;
-      const severidadId = apiAlert.severidad_id;
-      if (severidadNombre) {
-        const s = String(severidadNombre).toLowerCase();
-        if (s.includes("alta")) severity = "Alta";
-        else if (s.includes("baja")) severity = "Baja";
-        else severity = "Media";
-      } else if (typeof severidadId === "number") {
-        if (severidadId === 1) severity = "Alta";
-        else if (severidadId === 3) severity = "Baja";
-        else severity = "Media";
-      }
-
-      // Estado y demás campos
+      // resto de mapeo...
       let status = apiAlert.estado || "Pendiente";
       status = String(status).charAt(0).toUpperCase() + String(status).slice(1);
       const isRead = Boolean(apiAlert.leida);
       const message = apiAlert.mensaje || "";
       const isAnonymous = Boolean(apiAlert.anonimo);
-      const actionTaken = apiAlert.accion_tomada || "";
       const studentImage = apiAlert.alumnos?.url_foto_perfil || "/confident-businessman.png";
 
       return {
         id: apiAlert.alumno_alerta_id.toString(),
-        title: alertType,
-        description: alertType,
+        title: alertTypeText,
+        description: alertTypeText,
         detailedDescription: message,
         date: formattedDate,
         time: formattedTime,
         status,
         priority,
-        severity,
-        type: alertType,
+        type: alertTypeText,
         isRead,
         isAnonymous,
-        actionTaken,
+        actionTaken: apiAlert.accion_tomada || "",
         currentResponsible: apiAlert.responsable_actual_id ? apiAlert.responsable_actual_id.toString() : "0",
         student: {
           id: studentId,
           name: `${studentName} ${studentLastName}`.trim(),
           avatar: studentImage,
         },
-        // Nuevos campos adicionales
         alertRuleId: apiAlert.alerta_regla_id?.toString() || "0",
         alertOriginId: apiAlert.alerta_origen_id?.toString() || "0",
         createdBy: apiAlert.creado_por?.toString() || "0",
@@ -282,7 +257,8 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
         creationDate: apiAlert.fecha_creacion,
         updateDate: apiAlert.fecha_actualizacion,
         isActive: apiAlert.activo || false,
-        alertTypeId: apiAlert.alertas_tipo_alerta_tipo_id?.toString() || "0",
+        // exportar id numérico para uso en UI
+        alertTypeId,
       };
     } catch (error) {
       throw error;
