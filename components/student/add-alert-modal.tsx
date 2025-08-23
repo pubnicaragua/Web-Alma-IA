@@ -36,7 +36,6 @@ import type {
 } from "@/services/alerts-service";
 import { useUser } from "@/middleware/user-context";
 import { useToast } from "@/hooks/use-toast";
-import { fetchWithAuth } from "@/lib/api-config";
 import { invalidateNotificationCache } from "@/services/header-service";
 
 interface AlertState {
@@ -60,6 +59,16 @@ interface PowerUser {
 
 interface AddAlertModalProps {
   onRefresh: () => void;
+  onAddAlert: (alert: {
+    alumno_alerta_id?: number;
+    tipo: string;
+    descripcion: string;
+    fecha: string;
+    hora: string;
+    prioridad: string;
+    severidad: string;
+    responsable: string;
+  }) => void;
 }
 
 const generarFechaISOUsuario = (fecha: string, hora: string) => {
@@ -80,7 +89,7 @@ function getHoyFechaHora() {
   return { fecha, hora };
 }
 
-export function AddAlertModal({ onRefresh }: AddAlertModalProps) {
+export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isOpen, onOpen, onClose } = useModal(false);
   const { userData, isLoading: userLoading, selectedSchoolId } = useUser();
@@ -115,22 +124,8 @@ export function AddAlertModal({ onRefresh }: AddAlertModalProps) {
       setLoading(true);
       setFetchError(null);
       try {
-        const fetchBitacoraUsers = async (): Promise<PowerUser[]> => {
-          const response = await fetchWithAuth("/auth/usuarios/bitacora");
-          if (!response.ok) {
-            console.error("Error al obtener usuarios de bitácora");
-            return [];
-          }
-          return response.json();
-        };
-
-        const [prioridadesData, alertStatesData, severidadData, bitacoraUsers] =
-          await Promise.all([
-            fetchPrority(),
-            fetchStates(),
-            fetchSeverity(),
-            fetchBitacoraUsers(),
-          ]);
+        const [prioridadesData, alertStatesData, severidadData] =
+          await Promise.all([fetchPrority(), fetchStates(), fetchSeverity()]);
 
         if (!isMounted) return;
 
@@ -147,13 +142,7 @@ export function AddAlertModal({ onRefresh }: AddAlertModalProps) {
         if (severidadData && severidadData.length > 0 && !severidad) {
           setSeveridad(severidadData[0].nombre || "");
         }
-
-        setPowerUsers(bitacoraUsers);
-        if (bitacoraUsers.length > 0) {
-          setSelectedUserId(bitacoraUsers[0].personas.persona_id);
-        }
       } catch (error) {
-        console.error("Error al cargar datos para el modal:", error);
         setFetchError("Error cargando datos para selects.");
       } finally {
         setLoading(false);
@@ -161,6 +150,17 @@ export function AddAlertModal({ onRefresh }: AddAlertModalProps) {
     };
 
     fetchData();
+
+    try {
+      const storedUsers = localStorage.getItem("powerUsers");
+      if (storedUsers) {
+        const parsedUsers: PowerUser[] = JSON.parse(storedUsers);
+        setPowerUsers(parsedUsers);
+        if (parsedUsers.length > 0) {
+          setSelectedUserId(parsedUsers[0].personas.persona_id);
+        }
+      }
+    } catch (e) { }
 
     return () => {
       isMounted = false;
@@ -428,12 +428,18 @@ export function AddAlertModal({ onRefresh }: AddAlertModalProps) {
                   <SelectContent>
                     {powerUsers.length > 0 ? (
                       powerUsers.map((user) => {
+                        {
+                          user.personas.nombres;
+                        }
+                        {
+                          user.personas.apellidos;
+                        }
                         return (
                           <SelectItem
                             key={user.usuario_id}
                             value={user.personas.persona_id.toString()}
                           >
-                            {user.personas.nombres} {user.personas.apellidos}
+                            {user.personas.nombres} {user.personas.apellidos}{" "}
                           </SelectItem>
                         );
                       })

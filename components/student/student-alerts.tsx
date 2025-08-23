@@ -69,6 +69,35 @@ export function StudentAlerts({
     loadData();
   }, []);
 
+  const handleAddAlert = (newAlert: {
+    alumno_alerta_id: number;
+    tipo: string;
+    descripcion: string;
+    fecha: string;
+  }) => {
+    const currentDate = new Date();
+    const hora = `${currentDate
+      .getHours()
+      .toString()
+      .padStart(2, "0")}:${currentDate
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")}`;
+
+    const alert: Alert = {
+      alumno_alerta_id: newAlert.alumno_alerta_id,
+      fecha: newAlert.fecha,
+      hora: hora,
+      tipo: newAlert.tipo,
+      estado: "Pendiente",
+      prioridad: "Alta",
+      responsable: "Enc. Convivencia",
+      severidad_name: "",
+    };
+    setAlerts((prev) => [alert, ...prev]);
+    setCurrentPage(1);
+  };
+
   const handleAlertClick = (alertId: number) => {
     router.push(`/alertas/${alertId}`);
   };
@@ -155,7 +184,7 @@ export function StudentAlerts({
         <h3 className="text-xl font-semibold text-gray-800">
           Alertas del alumno
         </h3>
-        <AddAlertModal onRefresh={setRefresh} />
+        <AddAlertModal onAddAlert={handleAddAlert} onRefresh={setRefresh} />
       </div>
 
       <div className="bg-white rounded-lg shadow-sm overflow-x-auto border border-gray-100">
