@@ -1032,3 +1032,24 @@ export async function createAlert(data: CreateAlertParams): Promise<void> {
     throw error;
   }
 }
+
+export async function fetchBitacoraUsers(): Promise<PowerUser[]> {
+  try {
+    const response = await fetchWithAuth(
+      "/auth/usuarios/bitacora",
+      {},
+      false // ¡Clave! Le decimos que NO añada el colegio_id
+    );
+    if (!response.ok) {
+      console.error(
+        "Error al obtener usuarios de bitácora:",
+        await response.text()
+      );
+      return [];
+    }
+    return response.json();
+  } catch (error) {
+    console.error("Error en fetchBitacoraUsers:", error);
+    return [];
+  }
+}

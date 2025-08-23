@@ -28,24 +28,16 @@ import {
   fetchPrority,
   fetchSeverity,
   fetchStates,
+  fetchBitacoraUsers,
   updateAlertAndBitacora,
+  PowerUser,
 } from "@/services/alerts-service";
 import { AlertPage } from "@/services/alerts-service";
 import { useToast } from "@/hooks/use-toast";
-import { fetchWithAuth } from "@/lib/api-config";
 
 interface AddActionModalProps {
   alertData: AlertPage;
   setRefresh: () => void;
-}
-
-interface PowerUser {
-  usuario_id: number;
-  personas: {
-    nombres: string;
-    apellidos: string;
-    persona_id: number;
-  };
 }
 
 interface AlertState {
@@ -108,16 +100,6 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Se reemplaza la carga desde localStorage por una llamada directa a la API
-        const fetchBitacoraUsers = async (): Promise<PowerUser[]> => {
-          const response = await fetchWithAuth("/auth/usuarios/bitacora");
-          if (!response.ok) {
-            console.error("Error al obtener usuarios de bitácora");
-            return [];
-          }
-          return response.json();
-        };
-
         const [prioridadesData, severidadesData, bitacoraUsers, loadstates] =
           await Promise.all([
             fetchPrority(),

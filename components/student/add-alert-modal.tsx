@@ -27,16 +27,16 @@ import {
   fetchStates,
   fetchPrority,
   fetchSeverity,
+  fetchBitacoraUsers,
   createAlert,
 } from "@/services/alerts-service";
 import type {
   ApiAlertPriority,
-  ApiAlertSeverity,a
+  ApiAlertSeverity,
   CreateAlertParams,
 } from "@/services/alerts-service";
 import { useUser } from "@/middleware/user-context";
 import { useToast } from "@/hooks/use-toast";
-import { fetchWithAuth } from "@/lib/api-config";
 import { invalidateNotificationCache } from "@/services/header-service";
 
 interface AlertState {
@@ -49,15 +49,7 @@ interface AlertState {
   activo: boolean;
 }
 
-interface PowerUser {
-  usuario_id: number;
-  personas: {
-    nombres: string;
-    apellidos: string;
-    persona_id: number;
-  };
-}
-
+import type { PowerUser } from "@/services/alerts-service";
 interface AddAlertModalProps {
   onRefresh: () => void;
   onAddAlert: (alert: {
@@ -125,15 +117,6 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
       setLoading(true);
       setFetchError(null);
       try {
-        const fetchBitacoraUsers = async (): Promise<PowerUser[]> => {
-          const response = await fetchWithAuth("/auth/usuarios/bitacora");
-          if (!response.ok) {
-            console.error("Error al obtener usuarios de bitácora");
-            return [];
-          }
-          return response.json();
-        };
-
         const [prioridadesData, alertStatesData, severidadData, bitacoraUsers] =
           await Promise.all([
             fetchPrority(),
