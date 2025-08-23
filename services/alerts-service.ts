@@ -357,9 +357,24 @@ export async function fetchAlertById(id: number): Promise<AlertPage | null> {
   }
 }
 
-// ❌ ENDPOINT INCORRECTO - ELIMINADO
-// /alertas/recientes - No existe en backend, usar /home/alertas/recientes en su lugar
-// Esta función está duplicada con la de home-service.ts
+export async function fetchRecentAlerts(): Promise<Alert[]> {
+  try {
+    const response = await fetchWithAuth("/alertas/recientes", {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Error fetching recent alerts: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
 
 /**
  * Marks an alert as read by its ID
@@ -707,7 +722,7 @@ export async function deleteAlertBitacora(bitacoraId: number): Promise<void> {
 export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
   try {
     // Realizar la solicitud GET a la API
-    const response = await fetchWithAuth("/api/v1/alertas/alertas_severidades", {
+    const response = await fetchWithAuth("/alertas/alertas_severidades", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -734,7 +749,7 @@ export async function fetchSeverity(): Promise<ApiAlertSeverity[]> {
 export async function fetchPrority(): Promise<ApiAlertPriority[]> {
   try {
     // Realizar la solicitud GET a la API
-    const response = await fetchWithAuth("/api/v1/alertas/alertas_prioridades", {
+    const response = await fetchWithAuth("alertas/alertas_prioridades", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -760,7 +775,7 @@ export async function fetchPrority(): Promise<ApiAlertPriority[]> {
 }
 export async function fetchStates(): Promise<AlertState[]> {
   try {
-    const response = await fetchWithAuth("/api/v1/alertas/alertas_estado", {
+    const response = await fetchWithAuth("/alertas/alertas_estado", {
       method: "GET",
     });
     // Si la respuesta no es exitosa, lanzar un error
@@ -796,7 +811,7 @@ export interface AlertaTipo {
 
 export async function fetchTypes(): Promise<AlertaTipo[]> {
   try {
-    const response = await fetchWithAuth("/api/v1/alertas/alertas_tipos", {
+    const response = await fetchWithAuth("/alertas/alertas_tipos", {
       method: "GET",
     });
     // Si la respuesta no es exitosa, lanzar un error
@@ -861,7 +876,7 @@ export interface UpdateBitacoraParams {
   alumno_id: number;
   plan_accion: string;
   fecha_compromiso: string;
-  fecha_realizacion: string; // Cambiado de opcional a obligatorio
+  fecha_realizacion?: string;
   url_archivo?: string;
 }
 
@@ -918,8 +933,14 @@ export async function getPowerUsers(): Promise<PowerUser[]> {
       );
     }
 
+    // Intentar parsear la respuesta como JSON
     const apiStudents = await response.json();
-    return apiStudents;
+    const filteredStudents = apiStudents.filter((student: PowerUser) =>
+      [5, 6, 7].includes(student.rol_id)
+    );
+
+    // Transformar los datos de la API a nuestro modelo de Student
+    return filteredStudents;
   } catch (error) {
     throw error; // Propagar el error para que se maneje en el componente
   }

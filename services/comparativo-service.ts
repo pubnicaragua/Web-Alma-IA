@@ -1,9 +1,9 @@
 import { fetchWithAuth } from "@/lib/api-config";
-import { AlertPagev1 } from "@/services/alerts-service";
+import { Alert, Alert as AlertPage } from "@/app/alertas/[id]/page";
 import { DataPoint } from "@/components/line-chart-comparison";
 
 // Función para obtener una alerta por ID
-export async function fetchAlertById(id: string): Promise<AlertPagev1 | null> {
+export async function fetchAlertById(id: string): Promise<AlertPage | null> {
   try {
     // Intentar obtener todas las alertas
     const response = await fetchWithAuth(`/alumnos/alertas/${id}`, {
@@ -17,18 +17,36 @@ export async function fetchAlertById(id: string): Promise<AlertPagev1 | null> {
     const alert = await response.json();
 
     if (!alert) {
+      console.error(`No se encontró ninguna alerta con ID ${id}`);
       throw new Error(`No se encontró ninguna alerta con ID ${id}`);
     }
     if (Array.isArray(alert)) return alert[0];
     return alert;
   } catch (error) {
+    console.error(`Error al obtener alerta con ID ${id}:`, error);
     throw error;
   }
 }
 
-// ❌ ENDPOINT INCORRECTO - ELIMINADO
-// /alertas/recientes - No existe en backend, usar /home/alertas/recientes en su lugar
-// Esta función está duplicada con la de home-service.ts
+export async function fetchRecentAlerts(): Promise<Alert[]> {
+  try {
+    const response = await fetchWithAuth("/alertas/recientes", {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Error fetching recent alerts: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error in fetchRecentAlerts:", error);
+    throw error;
+  }
+}
 
 //funcion para la data del chartLine de comparativo
 export async function getComparativaEmotionsCourses(): Promise<any> {
@@ -42,7 +60,9 @@ export async function getComparativaEmotionsCourses(): Promise<any> {
 
     if (!response.ok) {
       const errorText = await response.text();
-
+      console.error(
+        `Error al obtener comparativas: ${response.status} - ${errorText}`
+      );
       throw new Error(
         `Error al obtener comparativas: ${response.status} - ${errorText}`
       );
@@ -51,6 +71,7 @@ export async function getComparativaEmotionsCourses(): Promise<any> {
     const data = await response.json();
     return data;
   } catch (error) {
+    console.error("Error al obtener emociones:", error);
     throw error;
   }
 }
