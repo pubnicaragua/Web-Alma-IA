@@ -372,56 +372,10 @@ export async function fetchTotalAlerts(): Promise<TotalAlert[]> {
   }
 }
 
-export async function fetchEmotions(): Promise<Emotion[]> {
-  try {
-    const response = await fetchWithAuth("/home/emotions/general", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      throw new Error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw error;
-  }
-}
-
-export async function fetchEmotionsByDate(date: string): Promise<Emotion[]> {
-  try {
-    const response = await fetchWithAuth(
-      "/home/emotions/general" + "?fecha_hasta=" + date,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      throw new Error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw error;
-  }
-}
+// ❌ ENDPOINTS INCORRECTOS - ELIMINADOS
+// /home/emotions/general - No existe en backend
+// /home/barra/patologias - No existe en backend  
+// /home/barra/neurodivergencias - No existe en backend
 
 export async function fetchEmotionsForGrade(
   grado_id: number
@@ -480,106 +434,6 @@ export async function fetchPatologieForGrade(
   }
 }
 
-export async function fetchPatologieGeneral(): Promise<Emotion[]> {
-  try {
-    const response = await fetchWithAuth("/home/barra/patologias", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      throw new Error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw error;
-  }
-}
-
-export async function fetchPatologieByDate(date: string): Promise<Emotion[]> {
-  try {
-    const response = await fetchWithAuth(
-      "/home/barra/patologias" + "?fecha_hasta=" + date,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      throw new Error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw error;
-  }
-}
-
-export async function fetchNeurodivergences(): Promise<Emotion[]> {
-  try {
-    const response = await fetchWithAuth("/home/barra/neurodivergencias", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      throw new Error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw error;
-  }
-}
-
-export async function fetchfetchNeurodivergencesByDate(
-  date: string
-): Promise<Emotion[]> {
-  try {
-    const response = await fetchWithAuth(
-      "/home/barra/neurodivergencias" + "?fecha_hasta=" + date,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      throw new Error(
-        `Error al obtener emociones: ${response.status} - ${errorText}`
-      );
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw error;
-  }
-}
+// ❌ ENDPOINTS INCORRECTOS - ELIMINADOS
+// /home/barra/patologias - No existe en backend
+// /home/barra/neurodivergencias - No existe en backend
