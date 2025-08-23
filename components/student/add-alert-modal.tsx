@@ -31,11 +31,12 @@ import {
 } from "@/services/alerts-service";
 import type {
   ApiAlertPriority,
-  ApiAlertSeverity,
+  ApiAlertSeverity,a
   CreateAlertParams,
 } from "@/services/alerts-service";
 import { useUser } from "@/middleware/user-context";
 import { useToast } from "@/hooks/use-toast";
+import { fetchWithAuth } from "@/lib/api-config";
 import { invalidateNotificationCache } from "@/services/header-service";
 
 interface AlertState {
@@ -124,8 +125,22 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
       setLoading(true);
       setFetchError(null);
       try {
-        const [prioridadesData, alertStatesData, severidadData] =
-          await Promise.all([fetchPrority(), fetchStates(), fetchSeverity()]);
+        const fetchBitacoraUsers = async (): Promise<PowerUser[]> => {
+          const response = await fetchWithAuth("/auth/usuarios/bitacora");
+          if (!response.ok) {
+            console.error("Error al obtener usuarios de bitácora");
+            return [];
+          }
+          return response.json();
+        };
+
+        const [prioridadesData, alertStatesData, severidadData, bitacoraUsers] =
+          await Promise.all([
+            fetchPrority(),
+            fetchStates(),
+            fetchSeverity(),
+            fetchBitacoraUsers(),
+          ]);
 
         if (!isMounted) return;
 
@@ -142,7 +157,13 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
         if (severidadData && severidadData.length > 0 && !severidad) {
           setSeveridad(severidadData[0].nombre || "");
         }
+
+        setPowerUsers(bitacoraUsers);
+        if (bitacoraUsers.length > 0) {
+          setSelectedUserId(bitacoraUsers[0].personas.persona_id);
+        }
       } catch (error) {
+        console.error("Error al cargar datos para el modal:", error);
         setFetchError("Error cargando datos para selects.");
       } finally {
         setLoading(false);
@@ -150,17 +171,6 @@ export function AddAlertModal({ onAddAlert, onRefresh }: AddAlertModalProps) {
     };
 
     fetchData();
-
-    try {
-      const storedUsers = localStorage.getItem("powerUsers");
-      if (storedUsers) {
-        const parsedUsers: PowerUser[] = JSON.parse(storedUsers);
-        setPowerUsers(parsedUsers);
-        if (parsedUsers.length > 0) {
-          setSelectedUserId(parsedUsers[0].personas.persona_id);
-        }
-      }
-    } catch (e) { }
 
     return () => {
       isMounted = false;

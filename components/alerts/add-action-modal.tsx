@@ -32,6 +32,7 @@ import {
 } from "@/services/alerts-service";
 import { AlertPage } from "@/services/alerts-service";
 import { useToast } from "@/hooks/use-toast";
+import { fetchWithAuth } from "@/lib/api-config";
 
 interface AddActionModalProps {
   alertData: AlertPage;
@@ -107,25 +108,34 @@ export function AddActionModal({ alertData, setRefresh }: AddActionModalProps) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const storedPowerUsers = localStorage.getItem("powerUsers");
-        if (storedPowerUsers) {
-          const parsedPowerUsers: PowerUser[] = JSON.parse(storedPowerUsers);
-          setPowerUsers(parsedPowerUsers);
-          if (parsedPowerUsers.length > 0) {
-            setResponsableName(
-              parsedPowerUsers[0].personas.persona_id.toString()
-            );
+        // Se reemplaza la carga desde localStorage por una llamada directa a la API
+        const fetchBitacoraUsers = async (): Promise<PowerUser[]> => {
+          const response = await fetchWithAuth("/auth/usuarios/bitacora");
+          if (!response.ok) {
+            console.error("Error al obtener usuarios de bitácora");
+            return [];
           }
+          return response.json();
+        };
+
+        const [prioridadesData, severidadesData, bitacoraUsers, loadstates] =
+          await Promise.all([
+            fetchPrority(),
+            fetchSeverity(),
+            fetchBitacoraUsers(),
+            fetchStates(),
+          ]);
+
+        setPowerUsers(bitacoraUsers);
+        if (bitacoraUsers.length > 0) {
+          setResponsableName(bitacoraUsers[0].personas.persona_id.toString());
         }
-        const [prioridadesData, severidadesData] = await Promise.all([
-          fetchPrority(),
-          fetchSeverity(),
-        ]);
         setPrioridades(prioridadesData);
         setSeveridades(severidadesData);
-        const loadstates: AlertState[] = await fetchStates();
         setAlertStates(loadstates);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Error al cargar datos para el modal:", error);
+      }
     };
     fetchData();
   }, []);

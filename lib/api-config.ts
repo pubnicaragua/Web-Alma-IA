@@ -130,8 +130,7 @@ export const fetchWithAuth = async (
     addSchoolId &&
     !endpoint.endsWith("/colegios") &&
     !endpoint.includes("/preguntas") &&
-    !endpoint.includes("/colegios/usuarios_colegios") &&
-    !endpoint.includes("/auth/usuarios/bitacora")
+    !endpoint.includes("/colegios/usuarios_colegios")
   ) {
     const selectedSchool = getSelectedSchoolId();
     if (selectedSchool) {
