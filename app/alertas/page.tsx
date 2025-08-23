@@ -287,7 +287,7 @@ export default function AlertsPage({
       default:
         return (
           <div className="text-left">
-            {alert[column.key as keyof Alert] || "N/A"}
+            {String(alert[column.key as keyof Alert]) || "N/A"}
           </div>
         );
     }

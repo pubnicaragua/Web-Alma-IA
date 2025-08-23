@@ -159,131 +159,119 @@ export interface Alert {
 function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
   return apiAlerts.map((apiAlert) => {
     try {
-      // Verificar que los objetos necesarios existan
-      if (!apiAlert) {
-        throw new Error("Alert object is undefined");
-      }
+      if (!apiAlert) throw new Error("Alert object is undefined");
+      if (!apiAlert.alumnos) throw new Error("Student object is undefined");
 
-      // Verificar que el objeto alumno exista
-      if (!apiAlert.alumnos) {
-        throw new Error("Student object is undefined");
-      }
-
-      // Extraer la hora y fecha de fecha_generada con manejo seguro
-      let formattedDate = "01/01/2023";
-      let formattedTime = "00:00";
-      let resolutionDate = null;
-      let resolutionTime = null;
-
+      // Fecha/hora generada
+      let formattedDate = "";
+      let formattedTime = "";
       try {
         if (apiAlert.fecha_generada) {
           const generatedDate = new Date(apiAlert.fecha_generada);
-          formattedDate = generatedDate.toLocaleDateString("es-ES", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          });
-          formattedTime = generatedDate.toLocaleTimeString("es-ES", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
+          if (!isNaN(generatedDate.getTime())) {
+            formattedDate = generatedDate.toLocaleDateString("es-ES", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            });
+            formattedTime = generatedDate.toLocaleTimeString("es-ES", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          }
         }
+      } catch {}
 
-        if (apiAlert.fecha_resolucion) {
-          const resolvedDate = new Date(apiAlert.fecha_resolucion);
-          resolutionDate = resolvedDate.toLocaleDateString("es-ES", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-          });
-          resolutionTime = resolvedDate.toLocaleTimeString("es-ES", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
+      // Student safe access
+      const studentName = apiAlert.alumnos?.personas?.nombres || "Estudiante";
+      const studentLastName = apiAlert.alumnos?.personas?.apellidos || "";
+      const studentId = (apiAlert.alumno_id ?? apiAlert.alumnos?.alumno_id)?.toString() || "0";
+
+      // NORMALIZAR TIPO: preferir nombre si no es numérico, si viene numérico o falta usar id
+      let alertType = "General";
+      const tipoNombreRaw = apiAlert.alertas_tipos?.nombre;
+      const tipoId = apiAlert.alertas_tipo_alerta_tipo_id ?? apiAlert.alertas_tipos?.alerta_tipo_id;
+
+      // Debug corto (opcional)
+      console.debug("mapApiAlertsToAlerts - tipo incoming", {
+        alumno_alerta_id: apiAlert.alumno_alerta_id,
+        tipoNombreRaw,
+        tipoId,
+      });
+
+      if (tipoNombreRaw) {
+        const s = String(tipoNombreRaw).trim();
+        if (/^\d+$/.test(s)) {
+          const n = parseInt(s, 10);
+          if (n === 3) alertType = "Amarilla";
+          else if (n === 4) alertType = "Naranja";
+          else alertType = `Tipo ${n}`;
+        } else {
+          alertType = s.charAt(0).toUpperCase() + s.slice(1);
         }
-      } catch (dateError) {}
+      } else if (typeof tipoId === "number") {
+        if (tipoId === 3) alertType = "Amarilla";
+        else if (tipoId === 4) alertType = "Naranja";
+        else alertType = `Tipo ${tipoId}`;
+      }
 
-      // Acceso seguro a propiedades con valores por defecto
-      const studentName =
-        apiAlert.alumnos.personas.nombres || "Estudiante sin nombre";
-      const studentLastName =
-        apiAlert.alumnos.personas.apellidos || "Estudiante sin apellidos";
-      const studentId = apiAlert.alumno_id.toString() || "0";
-
-      // Mapear tipo de alerta
-      let alertType = apiAlert.alertas_tipos.nombre || "General";
-      // Convertir primera letra a mayúscula
-      alertType = alertType.charAt(0).toUpperCase() + alertType.slice(1);
-
-      // Mapear prioridad
+      // PRIORIDAD
       let priority = "Media";
-      if (apiAlert.alertas_prioridades) {
-        if (apiAlert.alertas_prioridades.nombre) {
-          const nivel = apiAlert.alertas_prioridades.nombre.toLowerCase();
-          if (nivel === "alta") priority = "Alta";
-          else if (nivel === "media") priority = "Media";
-          else if (nivel === "baja") priority = "Baja";
-        }
+      const prioridadNombre = apiAlert.alertas_prioridades?.nombre;
+      const prioridadId = apiAlert.prioridad_id;
+      if (prioridadNombre) {
+        const p = String(prioridadNombre).toLowerCase();
+        if (p.includes("alta")) priority = "Alta";
+        else if (p.includes("baja")) priority = "Baja";
+        else priority = "Media";
+      } else if (typeof prioridadId === "number") {
+        if (prioridadId === 1) priority = "Alta";
+        else if (prioridadId === 3) priority = "Baja";
+        else priority = "Media";
       }
 
-      // Mapear severidad
+      // SEVERIDAD
       let severity = "Media";
-      if (apiAlert.alertas_severidades) {
-        if (apiAlert.alertas_severidades.nombre) {
-          const nivel = apiAlert.alertas_severidades.nombre.toLowerCase();
-          if (nivel === "alta") severity = "Alta";
-          else if (nivel === "media") severity = "Media";
-          else if (nivel === "baja") severity = "Baja";
-        }
+      const severidadNombre = apiAlert.alertas_severidades?.nombre;
+      const severidadId = apiAlert.severidad_id;
+      if (severidadNombre) {
+        const s = String(severidadNombre).toLowerCase();
+        if (s.includes("alta")) severity = "Alta";
+        else if (s.includes("baja")) severity = "Baja";
+        else severity = "Media";
+      } else if (typeof severidadId === "number") {
+        if (severidadId === 1) severity = "Alta";
+        else if (severidadId === 3) severity = "Baja";
+        else severity = "Media";
       }
 
-      // Mapear el estado
+      // Estado y demás campos
       let status = apiAlert.estado || "Pendiente";
-      // Asegurarse de que la primera letra sea mayúscula
-      status = status.charAt(0).toUpperCase() + status.slice(1);
-
-      // Mapear si la alerta ha sido leída
-      const isRead = apiAlert.leida || false;
-
-      // Mapear mensaje de la alerta
-      const message = apiAlert.mensaje || "No hay mensaje disponible";
-
-      // Mapear si es anónimo
-      const isAnonymous = apiAlert.anonimo || false;
-
-      // Mapear acción tomada
-      const actionTaken = apiAlert.accion_tomada || "Ninguna acción registrada";
-
-      // Mapear responsable actual
-      const currentResponsible = apiAlert.responsable_actual_id
-        ? apiAlert.responsable_actual_id.toString()
-        : "Sin responsable asignado";
-
-      // Crear la imagen del estudiante
-      const studentImage =
-        apiAlert.alumnos.url_foto_perfil || "/confident-businessman.png";
+      status = String(status).charAt(0).toUpperCase() + String(status).slice(1);
+      const isRead = Boolean(apiAlert.leida);
+      const message = apiAlert.mensaje || "";
+      const isAnonymous = Boolean(apiAlert.anonimo);
+      const actionTaken = apiAlert.accion_tomada || "";
+      const studentImage = apiAlert.alumnos?.url_foto_perfil || "/confident-businessman.png";
 
       return {
         id: apiAlert.alumno_alerta_id.toString(),
         title: alertType,
         description: alertType,
-        detailedDescription: message, // Nuevo campo para el mensaje detallado
+        detailedDescription: message,
         date: formattedDate,
         time: formattedTime,
-        resolutionDate: resolutionDate, // Nuevo campo
-        resolutionTime: resolutionTime, // Nuevo campo
-        status: status,
-        priority: priority,
-        severity: severity, // Nuevo campo
+        status,
+        priority,
+        severity,
         type: alertType,
-        isRead: isRead, // Nuevo campo
-        isAnonymous: isAnonymous, // Nuevo campo
-        actionTaken: actionTaken, // Nuevo campo
-        currentResponsible: currentResponsible, // Nuevo campo
+        isRead,
+        isAnonymous,
+        actionTaken,
+        currentResponsible: apiAlert.responsable_actual_id ? apiAlert.responsable_actual_id.toString() : "0",
         student: {
           id: studentId,
-          name: studentName,
-          lastName: studentLastName,
+          name: `${studentName} ${studentLastName}`.trim(),
           avatar: studentImage,
         },
         // Nuevos campos adicionales
@@ -979,8 +967,8 @@ export async function updateAlertAndBitacora(
   try {
     // Ejecutar ambas actualizaciones en paralelo
     const [alertResponse, bitacoraResponse] = await Promise.all([
-      updateAlert(alertData),
-      createAccionAlert(bitacoraData),
+ updateAlert(alertData),
+ createAccionAlert(bitacoraData as CreateAccionAlertParams),
     ]);
 
     return [alertResponse, bitacoraResponse];
