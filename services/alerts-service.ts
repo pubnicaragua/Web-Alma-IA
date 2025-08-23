@@ -148,15 +148,16 @@ export interface Alert {
   status: string;
   priority: string;
   isAnonymous: boolean;
-  type: string;
-  student?: {
+  type: string;              // garantizar siempre string
+  student: {                 // asegurar estructura consistente
     id: string;
     name: string;
     avatar?: string;
   };
-  // nuevo campo: id numérico del tipo (útil para mapear color de forma determinista)
-  alertTypeId?: number;
+  // nuevo campo obligatorio: id numérico del tipo
+  alertTypeId: number;
 }
+
 // ...existing code...
 
 function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
@@ -200,14 +201,32 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
       const alertTypeId = tipoIdFromName ?? tipoIdFromField ?? 0;
 
       // Normalizar texto a partir del id (más determinista)
-      let alertTypeText = "General";
-      if (alertTypeId === 4) alertTypeText = "Amarilla";
-      else if (alertTypeId === 3) alertTypeText = "Naranja";
-      else if (tipoNombreRaw && typeof tipoNombreRaw === "string") {
-        const s = tipoNombreRaw.trim();
-        if (!/^\d+$/.test(s)) alertTypeText = s.charAt(0).toUpperCase() + s.slice(1);
+let alertTypeText = "General";
+// Mapeo determinista por id
+switch (alertTypeId) {
+  case 1:
+    alertTypeText = "Sos";
+    break;
+  case 2:
+    alertTypeText = "Denuncias";
+    break;
+  case 3:
+    alertTypeText = "Amarilla";
+    break;
+  case 4:
+    alertTypeText = "Naranja";
+    break;
+  case 5:
+    alertTypeText = "Roja";
+    break;
+  default:
+    if (tipoNombreRaw && typeof tipoNombreRaw === "string") {
+      const s = tipoNombreRaw.trim();
+      if (!/^\d+$/.test(s)) {
+        alertTypeText = s.charAt(0).toUpperCase() + s.slice(1);
       }
-
+    }
+}
       // PRIORIDAD (igual lógica de fallback por nombre o id)
       let priority = "Media";
       const prioridadNombre = apiAlert.alertas_prioridades?.nombre;
