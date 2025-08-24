@@ -100,15 +100,6 @@ export default function AlertsPage({
 
   const selectByDefaul = () => {
     switch (localStorage.getItem("selectedTab")) {
-      case "Denuncias":
-        setTypeFilter("Denuncias");
-        break;
-      case "SOS Alma":
-        setTypeFilter("SOS Alma");
-        break;
-      case "Alertas Alma":
-        setTypeFilter("Amarilla");
-        break;
       default:
         setTypeFilter("Todos");
         break;
@@ -116,7 +107,13 @@ export default function AlertsPage({
   };
 
   const getTypeOptions = () => {
-    return ["Todos", ...alertTypes.map((t) => t.nombre)];
+    return ["Todos", ...alertTypes.map((t) => {
+      if (t.nombre === "SOS Alma") {
+        return t.nombre = "Sos"
+      } else {
+        return t.nombre
+      }
+    })];
   };
 
   const getPriorityOptions = () => {
