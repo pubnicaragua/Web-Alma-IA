@@ -9,6 +9,8 @@ import {
   DevicePhoneMobileIcon,
   StarIcon,
 } from "@heroicons/react/24/solid";
+import { DialogHeader } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
 
 const APP_INFO = {
   name: "AlmaIA",
@@ -59,6 +61,8 @@ function renderStars(rating: number) {
 
 export default function AndroidDownload() {
   const [showTechnical, setShowTechnical] = useState(false);
+
+  const [showQRModal, setShowQRModal] = useState<boolean>(false)
 
   return (
     <div className="max-w-md mx-auto mt-4 p-8 bg-white rounded-3xl shadow-2xl relative">
@@ -134,7 +138,7 @@ export default function AndroidDownload() {
 
               {/* Botón de descarga iOS */}
               <motion.a
-                href="https://almaia.cl/app-ios-almaia.ipa"
+                onClick={() => setShowQRModal(true)}
                 download={`${APP_INFO.name}.ipa`}
                 className="flex items-center gap-2 px-6 py-3 text-white rounded-full font-semibold bg-blue-500 transition-all shadow-lg hover:bg-blue-600"
                 whileHover={{ scale: 1.04 }}
@@ -199,6 +203,30 @@ export default function AndroidDownload() {
           </AnimatePresence>
         </motion.div>
       </AnimatePresence>
+      <Dialog open={showQRModal} onOpenChange={setShowQRModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Descargar AlmaIA para iOS
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center space-y-4 p-4">
+            <p className="text-sm text-gray-600 text-center">
+              Escanea este código QR con tu dispositivo iOS para descargar la aplicación
+            </p>
+            <div className="bg-white p-4 rounded-lg shadow-inner border">
+              <img
+                src="/qr.png"
+                alt="Código QR para descargar AlmaIA iOS"
+                className="w-48 h-48 object-contain"
+              />
+            </div>
+            <p className="text-xs text-gray-500 text-center">
+              Compatible con iOS 13 o superior
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
