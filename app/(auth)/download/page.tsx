@@ -101,10 +101,10 @@ export default function AndroidDownload() {
             </div>
             <div className="flex items-center gap-2 col-span-2">
               <DevicePhoneMobileIcon className="w-5 h-5 text-green-500" />
-              <span>
-                Requiere Android {APP_INFO.minAndroidVersion} o superior
-                Requiere IOs 13 o superior
-              </span>
+              <div>
+                <p>Requiere Android {APP_INFO.minAndroidVersion} o superior</p>
+                <p>Requiere iOS 13 o superior</p>
+              </div>
             </div>
           </div>
 
