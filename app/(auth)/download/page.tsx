@@ -178,7 +178,7 @@ export default function AndroidDownload() {
                 className="overflow-hidden text-gray-700 bg-gray-50 rounded-lg p-4 mt-4 text-sm shadow-inner"
               >
                 <p>
-                  <strong>Nombre APP:</strong> {APP_INFO.name}.apk
+                  <strong>Nombre APP:</strong> {APP_INFO.name}
                 </p>
                 <p>
                   <strong>Tamaño:</strong> {APP_INFO.size}
