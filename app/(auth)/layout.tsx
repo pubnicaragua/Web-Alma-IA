@@ -49,9 +49,8 @@ export default function AuthLayout({
         {/* Contenido con animación */}
         <div className="flex-1 flex justify-center items-start">
           <div
-            className={`items-center w-full max-w-md px-4 oscillate${
-              isHovered ? " paused" : ""
-            }`}
+            className={`items-center w-full max-w-md px-4 oscillate${isHovered ? " paused" : ""
+              }`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
@@ -69,7 +68,7 @@ export default function AuthLayout({
               href="/download"
               className="mb-8 inline-flex items-center gap-2 px-5 py-3 bg-green-600 text-white font-semibold rounded-full shadow-lg hover:bg-green-700 transition"
             >
-              Descargar APK
+              Descargar
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5"

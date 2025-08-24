@@ -135,7 +135,7 @@ export default function AndroidDownload() {
               <motion.a
                 href="https://almaia.cl/app-ios-almaia.ipa"
                 download={`${APP_INFO.name}.ipa`}
-                className="flex items-center gap-2 px-6 py-3 text-white rounded-full font-semibold bg-green-500 transition-all shadow-lg hover:bg-green-600"
+                className="flex items-center gap-2 px-6 py-3 text-white rounded-full font-semibold bg-blue-500 transition-all shadow-lg hover:bg-blue-600"
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
                 aria-label={`Descargar ${APP_INFO.name} para iOS`}
