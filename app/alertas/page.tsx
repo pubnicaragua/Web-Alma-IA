@@ -246,21 +246,18 @@ export default function AlertsPage({
           <StudentCell alert={alert} onClick={() => handleAlertClick(alert)} />
         );
       case "type":
-  return (
-    <div className="flex justify-start w-full">
-      <AlertBadge
-        type="type"
-        value={
-          typeof alert.alertTypeId === "number"
-            ? alert.alertTypeId
-            : typeof alert.type === "string"
-            ? alert.type
-            : // fallback seguro a string
-              (alert.type as any)?.name ?? String(alert.type ?? "")
-        }
-      />
-    </div>
-  );
+        return (
+          <div className="flex justify-start w-full">
+            <AlertBadge
+              type="type"
+              value={
+                typeof alert.type === "string"
+                  ? alert.type
+                  : (alert.type as any)?.name ?? ""
+              }
+            />
+          </div>
+        );
       case "priority":
         return (
           <div className="flex justify-start w-full">

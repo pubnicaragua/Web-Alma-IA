@@ -45,13 +45,12 @@ function renderStars(rating: number) {
     stars.push(
       <StarIcon
         key={i}
-        className={`w-5 h-5 ${
-          i <= Math.floor(rating)
-            ? "text-yellow-400"
-            : i - rating <= 0.5
+        className={`w-5 h-5 ${i <= Math.floor(rating)
+          ? "text-yellow-400"
+          : i - rating <= 0.5
             ? "text-yellow-300"
             : "text-gray-300"
-        }`}
+          }`}
       />
     );
   }
@@ -117,20 +116,36 @@ export default function AndroidDownload() {
           </div>
 
           {/* Botones de acción */}
-          <div className="flex items-center gap-4 mb-5">
-            {/* Enlace directo para descarga evita CORS */}
-            <motion.a
-              href={APP_INFO.Url}
-              download={`${APP_INFO.name}.apk`}
-              className="flex items-center gap-2 px-6 py-3 text-white rounded-full font-semibold bg-green-500 transition-all shadow-lg hover:bg-green-600"
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              aria-label={`Descargar ${APP_INFO.name}`}
-            >
-              <ArrowDownTrayIcon className="w-5 h-5" />
-              Descargar
-            </motion.a>
+          <div className="flex flex-col items-center gap-4 mb-5">
+            <div className="flex flex-wrap justify-center gap-4">
+              {/* Botón de descarga Android */}
+              <motion.a
+                href="https://almaia.cl/app-android-almaia.apk"
+                download={`${APP_INFO.name}.apk`}
+                className="flex items-center gap-2 px-6 py-3 text-white rounded-full font-semibold bg-green-500 transition-all shadow-lg hover:bg-green-600"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                aria-label={`Descargar ${APP_INFO.name} para Android`}
+              >
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                Descargar Android
+              </motion.a>
 
+              {/* Botón de descarga iOS */}
+              <motion.a
+                href="https://almaia.cl/app-ios-almaia.ipa"
+                download={`${APP_INFO.name}.ipa`}
+                className="flex items-center gap-2 px-6 py-3 text-white rounded-full font-semibold bg-green-500 transition-all shadow-lg hover:bg-green-600"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                aria-label={`Descargar ${APP_INFO.name} para iOS`}
+              >
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                Descargar iOS
+              </motion.a>
+            </div>
+
+            {/* Botón de información técnica */}
             <motion.button
               onClick={() => setShowTechnical((v) => !v)}
               whileHover={{ scale: 1.04, backgroundColor: "#e0e7ff" }}
