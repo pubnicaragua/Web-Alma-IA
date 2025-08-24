@@ -103,6 +103,7 @@ export default function AndroidDownload() {
               <DevicePhoneMobileIcon className="w-5 h-5 text-green-500" />
               <span>
                 Requiere Android {APP_INFO.minAndroidVersion} o superior
+                Requiere IOs 13 o superior
               </span>
             </div>
           </div>
