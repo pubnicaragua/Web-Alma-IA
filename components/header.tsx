@@ -60,6 +60,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
     try {
       const count = await getNotificationCount(selectedSchoolId || undefined);
       setNotificationCount(count);
+      window.dispatchEvent(new Event("refresh-notifications"));
     } catch {
       setNotificationCount(0);
     }
