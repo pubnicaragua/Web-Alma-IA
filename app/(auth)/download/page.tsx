@@ -198,7 +198,7 @@ export default function AndroidDownload() {
                 <p>
                   <strong>Descargas totales:</strong> {APP_INFO.downloads}
                 </p>
-                <p>APP Android/iOS firmado digitalmente y libre de virus.</p>
+                <p>APP Android/iOS firmada digitalmente y libre de virus.</p>
               </motion.div>
             )}
           </AnimatePresence>
