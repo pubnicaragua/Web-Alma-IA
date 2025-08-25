@@ -10,6 +10,7 @@ import {
   fetchStates,
   fetchTypes,
   fetchPrority,
+  fetchAlertsByType,
 } from "@/services/alerts-service";
 import { getSearchParam } from "@/lib/search-params";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -18,12 +19,14 @@ import { StudentCell } from "@/components/alerts/student-cell";
 import { LoadingState } from "@/components/alerts/loading-state";
 import { ErrorState } from "@/components/alerts/error-state";
 import { NoResults } from "@/components/alerts/no-results";
+import { useUser } from "@/middleware/user-context";
 
 export default function AlertsPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const { selectedSchoolId } = useUser()
   const router = useRouter();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,6 +39,8 @@ export default function AlertsPage({
   const [horaFilter, setHoraFilter] = useState<string>();
   const [currentPage, setCurrentPage] = useState(1);
   const [filtersLoading, setFiltersLoading] = useState(true);
+  const [redAlerts, setRedAlerts] = useState<Alert[]>([])
+  const [orangeAlerts, setOrangeAlerts] = useState<Alert[]>([])
 
   // Estados para almacenar los datos desde la BD
   const [alertStates, setAlertStates] = useState<
@@ -58,6 +63,14 @@ export default function AlertsPage({
         setError(null);
 
         let data = await fetchAlerts();
+
+        let redData = await fetchAlertsByType("5", selectedSchoolId!)
+        setRedAlerts(redData)
+        console.log(redData)
+
+        let orangeData = await fetchAlertsByType("4", selectedSchoolId!)
+        setOrangeAlerts(orangeData)
+        console.log(orangeData)
 
         // Filtrar por notificaciones si aplica  
         const params = getSearchParam(searchParams, "notifications");
@@ -160,8 +173,18 @@ export default function AlertsPage({
     return new Date(year, month - 1, day, hours, minutes);
   };
 
+  console.log(typeFilter)
+
   const filteredAlerts = useMemo(() => {
     setCurrentPage(1);
+
+    if (typeFilter === "Roja") {
+      return redAlerts
+    }
+
+    if (typeFilter === "Naranja") {
+      return orangeAlerts
+    }
 
     const filtered = alerts.filter((alert) => {
       if (typeFilter !== "Todos" && alert.type !== typeFilter) return false;
@@ -318,6 +341,7 @@ export default function AlertsPage({
       </AppLayout>
     );
   }
+
 
   return (
     <AppLayout>
