@@ -1,156 +1,102 @@
 "use client";
-
 import type React from "react";
-
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
+import { useForm } from "react-hook-form";
+import ReCAPTCHA from "react-google-recaptcha";
+import { removeAuthToken, setAuthToken } from "@/lib/api-config";
+import { fetchUserProfile } from "@/services/profile-service";
+import { ReCaptchaInput } from "@/components/ui/recaptcha";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { AuthLoginSchema } from "@/zod/auth";
 import { useToast } from "@/hooks/use-toast";
-import { removeAuthToken, setAuthToken } from "@/lib/api-config";
-import { fetchUserProfile } from "@/services/profile-service";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AuthActionResponse, AuthLoginSchemaType } from "@/types/auth";
+import { ActionMakeLogin } from "@/actions/auth";
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+
+  const form = useForm<AuthLoginSchemaType>({
+    resolver: zodResolver(AuthLoginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      captcha: "",
+      rememberMe: false
+    },
+  })
+
+  // Estados
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isCaptchaChecked, setIsCaptchaChecked] = useState(true); // Nuevo estado para el checkbox de captcha
+  const captchRef = useRef<ReCAPTCHA>(null);
 
-  const getFriendlyErrorMessage = (error: any): string => {
-    if (typeof error === "object" && error !== null) {
-      if (error.error === "Invalid login credentials") {
-        return "Las credenciales ingresadas no son válidas. Por favor, verifica tu correo y contraseña.";
-      }
-      if (error.message) {
-        return error.message;
-      }
+  useEffect(() => {
+    if (form.formState.submitCount > 0) {
+      captchRef.current?.reset();
     }
+  }, [form.formState.submitCount]);
 
-    if (
-      typeof error === "string" &&
-      error.includes("Invalid login credentials")
-    ) {
-      return "Las credenciales ingresadas no son válidas. Por favor, verifica tu correo y contraseña.";
-    }
+  const onSubmit = useCallback(async (values: AuthLoginSchemaType) => {
 
-    if (
-      typeof error === "string" &&
-      error.includes("Error interno del servidor")
-    ) {
-      return "Ha ocurrido un problema en el servidor. Por favor, intenta nuevamente más tarde.";
-    }
+    const response = await ActionMakeLogin(values);
 
-    return "Ha ocurrido un error al intentar iniciar sesión. Por favor, intenta nuevamente.";
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    if (!isCaptchaChecked) {
-      setError("Por favor, marca la casilla 'No soy un robot'.");
-      setIsLoading(false);
+    if (response.status === 'error') {
+      form.resetField('password');
+      form.resetField('captcha');
+      setError(response.message);
       toast({
-        title: "Error de validación",
-        description: "Por favor, marca la casilla 'No soy un robot'.",
+        title: response.title || "Error de inicio de sesión",
+        description: response.message || "Error desconocido al iniciar sesión",
         variant: "destructive",
       });
       return;
     }
 
+    const { data } = response as unknown as AuthActionResponse;
+    setAuthToken(data?.token);
+    localStorage.setItem("isAuthenticated", "true");
+
     try {
-      const response = await fetch("/api/proxy/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(JSON.stringify(data));
-      }
-
-      if (data.token) {
-        setAuthToken(data.token);
-        localStorage.setItem("isAuthenticated", "true");
-
-        try {
-          const profile = await fetchUserProfile();
-          if (!profile) return;
-          if (
-            profile.rol.nombre === "Alumno" ||
-            profile.rol.nombre === "Apoderado"
-          ) {
-            toast({
-              title: "Acceso denegado",
-              description: "No tienes permiso para acceder a esta sección.",
-              variant: "destructive",
-            });
-            removeAuthToken();
-            localStorage.setItem("isAuthenticated", "false");
-            // form reset
-            return;
-          }
-        } catch (error) {
-          removeAuthToken();
-          localStorage.setItem("isAuthenticated", "false");
-          return;
-        }
-
-        // Mostrar notificación de éxito
+      const profile = await fetchUserProfile();
+      if (!profile) return;
+      if (
+        profile.rol.nombre === "Alumno" ||
+        profile.rol.nombre === "Apoderado"
+      ) {
         toast({
-          title: "Inicio de sesión exitoso",
-          description: "Has iniciado sesión correctamente. Redirigiendo...",
+          title: "Acceso denegado",
+          description: "No tienes permiso para acceder a esta sección.",
+          variant: "destructive",
         });
-
-        // Redirección a la página de selección de colegio
-        router.push("/select-school");
-      } else {
-        throw new Error("No se recibió un token válido");
+        removeAuthToken();
+        localStorage.setItem("isAuthenticated", "false");
+        // form reset
+        return;
       }
     } catch (error) {
-      let errorMessage = "";
-      try {
-        const errorObj =
-          error instanceof Error
-            ? error.message.startsWith("{")
-              ? JSON.parse(error.message)
-              : error.message
-            : "Error desconocido al iniciar sesión";
-
-        errorMessage = getFriendlyErrorMessage(errorObj);
-      } catch (e) {
-        errorMessage =
-          error instanceof Error
-            ? error.message
-            : "Error desconocido al iniciar sesión";
-        errorMessage = getFriendlyErrorMessage(errorMessage);
-      }
-
-      setError(errorMessage);
-
-      toast({
-        title: "Error de inicio de sesión",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+      removeAuthToken();
+      localStorage.setItem("isAuthenticated", "false");
+      return;
     }
-  };
+
+    // Mostrar notificación de éxito
+    toast({
+      title: "Inicio de sesión exitoso",
+      description: "Has iniciado sesión correctamente. Redirigiendo...",
+    });
+
+    // Redirección a la página de selección de colegio
+    router.push("/select-school");
+
+  }, []);
 
   return (
     <div className="bg-white rounded-lg p-8 shadow-md">
@@ -163,14 +109,12 @@ export default function LoginPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Input
             type="text"
             placeholder="Correo electrónico o usuario"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            {...form.register("email", { required: true })}
           />
         </div>
 
@@ -178,8 +122,7 @@ export default function LoginPage() {
           <Input
             type={showPassword ? "text" : "password"}
             placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            {...form.register("password", { required: true })}
             required
           />
           <button
@@ -191,12 +134,20 @@ export default function LoginPage() {
           </button>
         </div>
 
+        <ReCaptchaInput
+          ref={captchRef}
+          onChange={(token: string | null) => form.setValue("captcha", token ?? "")}
+        />
+
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Checkbox
               id="remember"
-              checked={rememberMe}
-              onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+              {...form.register("rememberMe")}
+              checked={form.watch("rememberMe")}
+              onCheckedChange={(checked) => {
+                form.setValue("rememberMe", checked as boolean);
+              }}
             />
             <Label htmlFor="remember" className="text-sm">
               Recuérdame
@@ -211,46 +162,12 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <div className="border rounded-md p-3 flex items-center space-x-3">
-          <Checkbox
-            id="captcha"
-            checked={isCaptchaChecked} // Conectar el estado
-            onCheckedChange={(checked) =>
-              setIsCaptchaChecked(checked as boolean)
-            } // Actualizar el estado
-          />
-          <Label htmlFor="captcha">No soy un robot</Label>
-          <div className="ml-auto">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect width="24" height="24" rx="4" fill="#F0F0F0" />
-              <path
-                d="M12 6V18"
-                stroke="#A0A0A0"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <path
-                d="M6 12H18"
-                stroke="#A0A0A0"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-        </div>
-
         <Button
           type="submit"
           className="w-full bg-blue-500 hover:bg-blue-600"
-          disabled={isLoading}
+          disabled={form.formState.isSubmitting}
         >
-          {isLoading ? "Iniciando sesión..." : "Ingresar"}
+          {form.formState.isSubmitting ? "Iniciando sesión..." : "Ingresar"}
         </Button>
         {/* Nuevo bloque pregunta y botón */}
         {/* <div className="flex items-center justify-between mb-6 px-2">
