@@ -178,7 +178,7 @@ export default function AndroidDownload() {
                 className="overflow-hidden text-gray-700 bg-gray-50 rounded-lg p-4 mt-4 text-sm shadow-inner"
               >
                 <p>
-                  <strong>Nombre APK:</strong> {APP_INFO.name}.apk
+                  <strong>Nombre APP:</strong> {APP_INFO.name}
                 </p>
                 <p>
                   <strong>Tamaño:</strong> {APP_INFO.size}
@@ -193,11 +193,12 @@ export default function AndroidDownload() {
                 <p>
                   <strong>Requisitos mínimos:</strong> Android{" "}
                   {APP_INFO.minAndroidVersion}
+                  <p>Requiere iOS 13 o superior</p>
                 </p>
                 <p>
                   <strong>Descargas totales:</strong> {APP_INFO.downloads}
                 </p>
-                <p>PACK APK firmado digitalmente y libre de virus.</p>
+                <p>APP Android/iOS firmada digitalmente y libre de virus.</p>
               </motion.div>
             )}
           </AnimatePresence>
