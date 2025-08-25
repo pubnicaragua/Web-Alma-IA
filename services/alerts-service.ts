@@ -184,7 +184,7 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
             });
           }
         }
-      } catch {}
+      } catch { }
 
       // Student safe access
       const studentName = apiAlert.alumnos?.personas?.nombres || "Estudiante";
@@ -201,32 +201,32 @@ function mapApiAlertsToAlerts(apiAlerts: ApiAlert[]): Alert[] {
       const alertTypeId = tipoIdFromName ?? tipoIdFromField ?? 0;
 
       // Normalizar texto a partir del id (más determinista)
-let alertTypeText = "General";
-// Mapeo determinista por id
-switch (alertTypeId) {
-  case 1:
-    alertTypeText = "Sos";
-    break;
-  case 2:
-    alertTypeText = "Denuncias";
-    break;
-  case 3:
-    alertTypeText = "Amarilla";
-    break;
-  case 4:
-    alertTypeText = "Naranja";
-    break;
-  case 5:
-    alertTypeText = "Roja";
-    break;
-  default:
-    if (tipoNombreRaw && typeof tipoNombreRaw === "string") {
-      const s = tipoNombreRaw.trim();
-      if (!/^\d+$/.test(s)) {
-        alertTypeText = s.charAt(0).toUpperCase() + s.slice(1);
+      let alertTypeText = "General";
+      // Mapeo determinista por id
+      switch (alertTypeId) {
+        case 1:
+          alertTypeText = "Sos";
+          break;
+        case 2:
+          alertTypeText = "Denuncias";
+          break;
+        case 3:
+          alertTypeText = "Amarilla";
+          break;
+        case 4:
+          alertTypeText = "Naranja";
+          break;
+        case 5:
+          alertTypeText = "Roja";
+          break;
+        default:
+          if (tipoNombreRaw && typeof tipoNombreRaw === "string") {
+            const s = tipoNombreRaw.trim();
+            if (!/^\d+$/.test(s)) {
+              alertTypeText = s.charAt(0).toUpperCase() + s.slice(1);
+            }
+          }
       }
-    }
-}
       // PRIORIDAD (igual lógica de fallback por nombre o id)
       let priority = "Media";
       const prioridadNombre = apiAlert.alertas_prioridades?.nombre;
@@ -283,6 +283,42 @@ switch (alertTypeId) {
       throw error;
     }
   });
+}
+
+export async function fetchAlertsByType(type: string, colegio_id: string): Promise<Alert[]> {
+  let endpoint = `/alumnos/obtenerAlertasPorId`
+
+  if (type && colegio_id) {
+    endpoint += `?colegio_id=${colegio_id}&alerta_tipo_id=${type}`
+  }
+
+  try {
+    const response = await fetchWithAuth(endpoint, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }, false);
+
+    if (!response.ok) {
+      // Intentar leer el mensaje de error
+      const errorText = await response.text();
+
+      throw new Error(
+        `Error al obtener alertas: ${response.status} - ${errorText}`
+      );
+    }
+
+    // Intentar parsear la respuesta como JSON
+    const apiAlerts: ApiAlert[] = await response.json();
+
+    // Convertir los datos de la API al formato de la UI
+    const alerts = mapApiAlertsToAlerts(apiAlerts);
+    return alerts;
+  } catch (error) {
+    // Usar datos de ejemplo en caso de error
+    throw error;
+  }
 }
 
 // Función para obtener todas las alertas
@@ -962,8 +998,8 @@ export async function updateAlertAndBitacora(
   try {
     // Ejecutar ambas actualizaciones en paralelo
     const [alertResponse, bitacoraResponse] = await Promise.all([
- updateAlert(alertData),
- createAccionAlert(bitacoraData as CreateAccionAlertParams),
+      updateAlert(alertData),
+      createAccionAlert(bitacoraData as CreateAccionAlertParams),
     ]);
 
     return [alertResponse, bitacoraResponse];

@@ -62,6 +62,7 @@ function renderStars(rating: number) {
 export default function AndroidDownload() {
   const [showTechnical, setShowTechnical] = useState(false);
 
+  const [showQRAndroidModal, setShowQRAndroidModal] = useState<boolean>(false)
   const [showQRModal, setShowQRModal] = useState<boolean>(false)
 
   return (
@@ -126,6 +127,7 @@ export default function AndroidDownload() {
               {/* Botón de descarga Android */}
               <motion.a
                 href="https://almaia.cl/app-android-almaia.apk"
+                onClick={() => setShowQRAndroidModal(true)}
                 download={`${APP_INFO.name}.apk`}
                 className="flex items-center gap-2 px-6 py-3 text-white rounded-full font-semibold bg-green-500 transition-all shadow-lg hover:bg-green-600"
                 whileHover={{ scale: 1.04 }}
@@ -178,7 +180,7 @@ export default function AndroidDownload() {
                 className="overflow-hidden text-gray-700 bg-gray-50 rounded-lg p-4 mt-4 text-sm shadow-inner"
               >
                 <p>
-                  <strong>Nombre APK:</strong> {APP_INFO.name}.apk
+                  <strong>Nombre APP:</strong> {APP_INFO.name}
                 </p>
                 <p>
                   <strong>Tamaño:</strong> {APP_INFO.size}
@@ -193,11 +195,12 @@ export default function AndroidDownload() {
                 <p>
                   <strong>Requisitos mínimos:</strong> Android{" "}
                   {APP_INFO.minAndroidVersion}
+                  <p>Requiere iOS 13 o superior</p>
                 </p>
                 <p>
                   <strong>Descargas totales:</strong> {APP_INFO.downloads}
                 </p>
-                <p>PACK APK firmado digitalmente y libre de virus.</p>
+                <p>APP Android/iOS firmada digitalmente y libre de virus.</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -216,13 +219,37 @@ export default function AndroidDownload() {
             </p>
             <div className="bg-white p-4 rounded-lg shadow-inner border">
               <img
-                src="/qr.png"
+                src="/qr-ios.png"
                 alt="Código QR para descargar AlmaIA iOS"
                 className="w-48 h-48 object-contain"
               />
             </div>
             <p className="text-xs text-gray-500 text-center">
               Compatible con iOS 13 o superior
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showQRAndroidModal} onOpenChange={setShowQRAndroidModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              Descargar AlmaIA para Android
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center space-y-4 p-4">
+            <p className="text-sm text-gray-600 text-center">
+              Escanea este código QR con tu dispositivo android para descargar la aplicación
+            </p>
+            <div className="bg-white p-4 rounded-lg shadow-inner border">
+              <img
+                src="/qr-android.png"
+                alt="Código QR para descargar AlmaIA iOS"
+                className="w-48 h-48 object-contain"
+              />
+            </div>
+            <p className="text-xs text-gray-500 text-center">
+              Compatible con android 6.0 o superior
             </p>
           </div>
         </DialogContent>

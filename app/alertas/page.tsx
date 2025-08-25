@@ -10,6 +10,7 @@ import {
   fetchStates,
   fetchTypes,
   fetchPrority,
+  fetchAlertsByType,
 } from "@/services/alerts-service";
 import { getSearchParam } from "@/lib/search-params";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -18,12 +19,14 @@ import { StudentCell } from "@/components/alerts/student-cell";
 import { LoadingState } from "@/components/alerts/loading-state";
 import { ErrorState } from "@/components/alerts/error-state";
 import { NoResults } from "@/components/alerts/no-results";
+import { useUser } from "@/middleware/user-context";
 
 export default function AlertsPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const { selectedSchoolId } = useUser()
   const router = useRouter();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,6 +39,12 @@ export default function AlertsPage({
   const [horaFilter, setHoraFilter] = useState<string>();
   const [currentPage, setCurrentPage] = useState(1);
   const [filtersLoading, setFiltersLoading] = useState(true);
+  const [redAlerts, setRedAlerts] = useState<Alert[]>([])
+  const [orangeAlerts, setOrangeAlerts] = useState<Alert[]>([])
+  const [denunciasAlerts, setDenunciasAlerts] = useState<Alert[]>([])
+  const [sosAlerts, setSosAlerts] = useState<Alert[]>([])
+  const [amarillasAlerts, setAmarillasAlerts] = useState<Alert[]>([])
+
 
   // Estados para almacenar los datos desde la BD
   const [alertStates, setAlertStates] = useState<
@@ -71,22 +80,33 @@ export default function AlertsPage({
       } finally {
         setIsLoading(false);
       }
-    };
+    }
 
     // Cargar filtros en segundo plano  
     const loadFilters = async () => {
       try {
         setFiltersLoading(true)
 
-        const [statesData, typesData, prioritiesData] = await Promise.all([
+        const [statesData, typesData, prioritiesData, sosData, denunciasData, amarillasData, naranjasData, rojasData] = await Promise.all([
           fetchStates(),
           fetchTypes(),
-          fetchPrority()
+          fetchPrority(),
+          fetchAlertsByType("1", selectedSchoolId!),
+          fetchAlertsByType("2", selectedSchoolId!),
+          fetchAlertsByType("3", selectedSchoolId!),
+          fetchAlertsByType("4", selectedSchoolId!),
+          fetchAlertsByType("5", selectedSchoolId!),
         ]);
 
+        console.log(denunciasData.length)
         setAlertStates(statesData);
         setAlertTypes(typesData);
         setAlertPriorities(prioritiesData);
+        setSosAlerts(sosData);
+        setDenunciasAlerts(denunciasData);
+        setAmarillasAlerts(amarillasData);
+        setOrangeAlerts(naranjasData);
+        setRedAlerts(rojasData);
       } catch (err) {
         console.error("Error cargando filtros:", err);
       } finally {
@@ -100,15 +120,6 @@ export default function AlertsPage({
 
   const selectByDefaul = () => {
     switch (localStorage.getItem("selectedTab")) {
-      case "Denuncias":
-        setTypeFilter("Denuncias");
-        break;
-      case "SOS Alma":
-        setTypeFilter("SOS Alma");
-        break;
-      case "Alertas Alma":
-        setTypeFilter("Amarilla");
-        break;
       default:
         setTypeFilter("Todos");
         break;
@@ -116,7 +127,13 @@ export default function AlertsPage({
   };
 
   const getTypeOptions = () => {
-    return ["Todos", ...alertTypes.map((t) => t.nombre)];
+    return ["Todos", ...alertTypes.map((t) => {
+      if (t.nombre === "SOS Alma") {
+        return t.nombre = "Sos"
+      } else {
+        return t.nombre
+      }
+    })];
   };
 
   const getPriorityOptions = () => {
@@ -163,11 +180,37 @@ export default function AlertsPage({
     return new Date(year, month - 1, day, hours, minutes);
   };
 
+  console.log(typeFilter)
+
   const filteredAlerts = useMemo(() => {
     setCurrentPage(1);
 
-    const filtered = alerts.filter((alert) => {
-      if (typeFilter !== "Todos" && alert.type !== typeFilter) return false;
+    // 🔹 Elegimos la fuente según el typeFilter
+    let source: Alert[] = alerts;
+
+    switch (typeFilter) {
+      case "Roja":
+        source = redAlerts;
+        break;
+      case "Naranja":
+        source = orangeAlerts;
+        break;
+      case "Denuncias":
+        source = denunciasAlerts;
+        break;
+      case "Sos":
+        source = sosAlerts;
+        break;
+      case "Amarilla":
+        source = amarillasAlerts;
+        break;
+      default:
+        source = alerts;
+        break;
+    }
+
+    // 🔹 Aplicamos el resto de filtros
+    const filtered = source.filter((alert) => {
       if (priorityFilter !== "Todos" && alert.priority !== priorityFilter)
         return false;
       if (statusFilter !== "Todos" && alert.status !== statusFilter)
@@ -208,6 +251,7 @@ export default function AlertsPage({
       return true;
     });
 
+    // 🔹 Ordenamos por fecha/hora
     return filtered.sort((a, b) => {
       const dateTimeA =
         parseAlertDateTime(a.date || "", a.time || "") || new Date(0);
@@ -218,6 +262,11 @@ export default function AlertsPage({
     });
   }, [
     alerts,
+    redAlerts,
+    orangeAlerts,
+    denunciasAlerts,
+    sosAlerts,
+    amarillasAlerts,
     typeFilter,
     priorityFilter,
     statusFilter,
@@ -225,6 +274,7 @@ export default function AlertsPage({
     selectedDate,
     horaFilter,
   ]);
+
 
   const columns = [
     { key: "student", title: "Alumno" },
@@ -321,6 +371,7 @@ export default function AlertsPage({
       </AppLayout>
     );
   }
+
 
   return (
     <AppLayout>
